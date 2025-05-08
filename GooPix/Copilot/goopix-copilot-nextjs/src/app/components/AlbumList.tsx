@@ -5,29 +5,37 @@ import { useEffect, useState } from 'react';
 import { Album, getAlbums } from '../services/photos';
 
 export default function AlbumList() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [albums, setAlbums] = useState<Album[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchAlbums() {
-      if (session?.accessToken) {
+      if (status === 'authenticated' && session?.accessToken) {
         try {
-          const albumData = await getAlbums(session.accessToken as string);
-          setAlbums(albumData);
+          setLoading(true);
           setError(null);
+          const albumData = await getAlbums(session.accessToken);
+          setAlbums(albumData);
         } catch (e) {
+          console.error('Error fetching albums:', e);
           setError(e instanceof Error ? e.message : 'Failed to fetch albums');
+          setAlbums([]);
+        } finally {
+          setLoading(false);
         }
-        setLoading(false);
       }
     }
 
     fetchAlbums();
-  }, [session]);
+  }, [session, status]);
 
-  if (!session) {
+  if (status === 'loading') {
+    return <div className="text-center p-4">Loading session...</div>;
+  }
+
+  if (status === 'unauthenticated') {
     return <div className="text-center p-4">Please sign in to view your albums</div>;
   }
 

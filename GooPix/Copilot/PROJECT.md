@@ -12,6 +12,10 @@ A Web Application that allows users to connect to the Google Photos API and retr
 - Node.js (v14+)
 - npm (>=6.0)
 - Next.js (v14+)
+    - next-auth: for user authentication and authorization
+
+## Constraints
+- Never call `git init`, the repositories are already initialized.
 
 ## Goals
 1. Connect to the Google Photos API
