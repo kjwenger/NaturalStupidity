@@ -4,9 +4,7 @@
 #include <Arduino_LED_Matrix.h>
 
 ArduinoLEDMatrix matrix;
-#ifndef graphics
-#define graphics matrix
-#endif
+ArduinoLEDMatrix & graphics = matrix;
 
 void setup() {
   matrix.begin();
@@ -60,14 +58,6 @@ void loop() {
       }
     }
   }
-  graphics.endDraw();
-  delay(1000);
-
-  // Scrolling text
-  graphics.beginDraw();
-  graphics.clear();
-  graphics.textFont(Font_5x7);
-  graphics.text("UNO R4 WiFi!", 0, 3);
   graphics.endDraw();
   delay(1000);
 }
