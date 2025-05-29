@@ -36,4 +36,38 @@ void loop() {
   graphics.text("R4", 1, 1); // Start at x=0, y=3
   graphics.endDraw();
   delay(1000);
+
+  // Display a heart shape
+  graphics.beginDraw();
+  graphics.clear();
+  graphics.stroke(0xFF);
+  graphics.fill(0xFF);
+  // Heart pattern on 12x8 matrix (centered)
+  uint8_t heart[8][12] = {
+    {0,0,1,1,0,0,0,0,1,1,0,0},
+    {0,1,1,1,1,0,0,1,1,1,1,0},
+    {1,1,1,1,1,1,1,1,1,1,1,1},
+    {1,1,1,1,1,1,1,1,1,1,1,1},
+    {0,1,1,1,1,1,1,1,1,1,1,0},
+    {0,0,1,1,1,1,1,1,1,1,0,0},
+    {0,0,0,1,1,1,1,1,1,0,0,0},
+    {0,0,0,0,1,1,1,1,0,0,0,0}
+  };
+  for (int y = 0; y < 8; y++) {
+    for (int x = 0; x < 12; x++) {
+      if (heart[y][x]) {
+        graphics.point(x, y);
+      }
+    }
+  }
+  graphics.endDraw();
+  delay(1000);
+
+  // Scrolling text
+  graphics.beginDraw();
+  graphics.clear();
+  graphics.textFont(Font_5x7);
+  graphics.text("UNO R4 WiFi!", 0, 3);
+  graphics.endDraw();
+  delay(1000);
 }
