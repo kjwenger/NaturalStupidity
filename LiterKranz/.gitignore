@@ -3,9 +3,8 @@
 
 # WordPress development environment
 wordpress/uploads/
-wordpress/themes/twentytwenty*/
-wordpress/plugins/akismet/
-wordpress/plugins/hello.php
+wordpress/themes/
+wordpress/plugins/
 
 # Docker volumes and containers
 **/docker-compose.override.yml
