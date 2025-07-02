@@ -1,0 +1,20 @@
+# Downloaded website for migration reference
+.website/
+
+# WordPress development environment
+wordpress/uploads/
+wordpress/themes/twentytwenty*/
+wordpress/plugins/akismet/
+wordpress/plugins/hello.php
+
+# Docker volumes and containers
+**/docker-compose.override.yml
+**/.env
+
+# Logs
+*.log
+
+# Temporary files
+*~
+.DS_Store
+Thumbs.db
