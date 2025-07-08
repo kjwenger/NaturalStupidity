@@ -1,2 +1,2 @@
 # NaturalStupidity
-Playground for all things Artificiel Intelligence
+Playground for all things Artificial Intelligence
