@@ -122,3 +122,20 @@ These files are now ready for you to fill in with your application's specific de
 - **CLAUDE.md**: Added Save action in preview pane for permanent rotation with backup to trash, updated permissions to include WRITE_EXTERNAL_STORAGE for file manipulation
 - **PROJECT_STRUCTURE.md**: Added PermanentRotationProcessor class, TrashManager utility, ic_save.xml icon, and detailed data flow showing trash backup process followed by permanent rotation of originals
 - **REQUIREMENTS.md**: Added Save Action Requirements section with trash backup, permanent rotation, file overwriting, and quality preservation. Updated Preview Pane Requirements to include Save button. Added user stories for permanent saving, trash backup, button state management, and operation feedback. Updated technical constraints for Android Trash folder integration and file operations
+
+## Prompt 15
+**User:** Oh, please also add an appropriate README.md and fill it with everything you know bout this project so far and the typicl standards for a god readme on GitHub.
+
+**Assistant:** Created a comprehensive README.md following GitHub best practices:
+
+- **Project Overview**: Clear description of PhotoStic as a native Android image rotation app
+- **Features Section**: Detailed breakdown of file system navigation, dual-tab interface, smart selection, preview mode, and safe save operations
+- **Technical Specifications**: Architecture details, required permissions, and minimum requirements
+- **Project Structure**: Complete directory tree showing Android project layout
+- **Key Components**: Core classes and UI elements
+- **Installation & Usage**: Setup instructions and basic workflow
+- **Development Status**: Current phase indicators and progress tracking
+- **Documentation Links**: References to all specification files
+- **Contact Information**: Maintainer details
+
+The README includes emojis, proper headings, code blocks, and all standard sections expected in a professional GitHub repository.
