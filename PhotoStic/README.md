@@ -14,9 +14,11 @@ PhotoStic is a powerful image rotation tool that allows you to navigate through 
 - Navigate through complete file system with hierarchical display
 - Support for various file types with appropriate icons
 
-### 📱 Dual-Tab Interface
-- **Browse Tab**: File system navigation with folder/subfolder browsing
-- **Rotate Tab**: Image grid display with action toolbar and selection capabilities
+### 📱 Responsive Interface
+- **Phone Layout**: Dual-tab interface with Browse and Rotate tabs at bottom
+- **Tablet Layout**: Split-pane interface with Browse on left, Rotate on right (no tabs)
+- **Browse Panel**: File system navigation with folder/subfolder browsing
+- **Rotate Panel**: Image grid display with action toolbar and selection capabilities
 
 ### 🖼️ Smart Image Selection
 - **Manual Selection**: Tap individual images to select/deselect
@@ -42,7 +44,8 @@ PhotoStic is a powerful image rotation tool that allows you to navigate through 
 - **Platform**: Native Android Application
 - **Languages**: Java/Kotlin
 - **UI Framework**: Android SDK with Material Design components
-- **Navigation**: Bottom Navigation with Fragment-based architecture
+- **Navigation**: Responsive layout - Bottom Navigation (phones) / Split-pane (tablets)
+- **Device Detection**: Automatic tablet/phone detection using screen width (≥600dp)
 
 ### Permissions Required
 - `READ_EXTERNAL_STORAGE` - Access device storage for browsing
@@ -63,13 +66,14 @@ PhotoStic/
 │   │   ├── main/
 │   │   │   ├── java/              # Java/Kotlin source files
 │   │   │   │   └── com/github/kjwenger/photostic/
-│   │   │   │       ├── activities/    # MainActivity
+│   │   │   │       ├── activities/    # MainActivity with responsive layout
 │   │   │   │       ├── fragments/     # Browse, Rotate, Preview fragments
 │   │   │   │       ├── adapters/      # File system and image grid adapters
+│   │   │   │       ├── listeners/     # Fragment communication interfaces
 │   │   │   │       ├── models/        # Data models with selection state
 │   │   │   │       ├── processors/    # Image rotation processors
 │   │   │   │       ├── managers/      # State management
-│   │   │   │       └── utils/         # Utility classes
+│   │   │   │       └── utils/         # Device detection utilities
 │   │   │   ├── res/               # Resources
 │   │   │   │   ├── layout/        # XML layouts
 │   │   │   │   ├── drawable/      # Icons and drawables
@@ -86,16 +90,19 @@ PhotoStic/
 ## Key Components
 
 ### Core Classes
-- `MainActivity` - Main activity with bottom navigation
-- `BrowseFragment` - File system navigation
+- `MainActivity` - Main activity with responsive navigation (tablets/phones)
+- `BrowseFragment` - File system navigation with communication support
 - `RotateFragment` - Image grid with selection and actions
 - `PreviewFragment` - Overlay preview pane
+- `DeviceUtils` - Tablet/phone detection utility
+- `FragmentCommunicationListener` - Interface for tablet split-pane communication
 - `ImageRotationProcessor` - Handle permanent rotations
 - `PreviewRotationProcessor` - Handle temporary preview rotations
 - `TrashManager` - Android trash folder operations
 
 ### User Interface
-- Bottom navigation tabs (Browse/Rotate)
+- **Phone**: Bottom navigation tabs (Browse/Rotate)
+- **Tablet**: Split-pane layout (Browse left, Rotate right)
 - Action toolbar with rotation and preview actions
 - Grid layout for image display
 - Row layout for preview mode
@@ -155,11 +162,14 @@ This project follows standard Android development practices:
 
 ## Development Status
 
-📋 **Current Phase**: Initial Implementation Complete
+📋 **Current Phase**: Core Implementation with Tablet Support Complete
 - ✅ Requirements documentation complete
 - ✅ Architecture design finalized  
 - ✅ Android project structure created
 - ✅ Basic UI components implemented (MainActivity, Browse/Rotate fragments)
+- ✅ Responsive layout system (phone/tablet detection)
+- ✅ Tablet split-pane layout implementation
+- ✅ Fragment communication system for tablets
 - ✅ File system navigation functionality
 - ✅ Image grid display with selection
 - ⏳ Image rotation processing pending
@@ -176,6 +186,14 @@ The PhotoStic Android application has been created and can be built using Androi
 2. Let Android Studio sync the project and download dependencies
 3. Build the project using: **Build > Make Project** or **Ctrl+F9**
 4. Run on device/emulator: **Run > Run 'app'** or **Shift+F10**
+   - For tablet testing: Use "Pixel Tablet 2" or any device ≥600dp width
+   - For phone testing: Use standard phone emulators
+
+### APK Building
+To create an APK file for distribution:
+1. **Build → Build Bundle(s) / APK(s) → Build APK(s)**
+2. APK location: `app/build/outputs/apk/debug/app-debug.apk`
+3. Install on device: Drag & drop APK onto emulator or use `adb install`
 
 ### Command Line Building
 ```bash

@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import com.github.kjwenger.photostic.adapters.ImageGridAdapter
 import com.github.kjwenger.photostic.databinding.FragmentRotateBinding
+import com.github.kjwenger.photostic.listeners.FragmentCommunicationListener
 import java.io.File
 
 class RotateFragment : Fragment() {
@@ -17,6 +18,7 @@ class RotateFragment : Fragment() {
     
     private lateinit var imageAdapter: ImageGridAdapter
     private val selectedImages = mutableSetOf<File>()
+    private var communicationListener: FragmentCommunicationListener? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -114,6 +116,9 @@ class RotateFragment : Fragment() {
     private fun updateActionButtons() {
         val hasSelection = selectedImages.isNotEmpty()
         binding.btnPreview.isEnabled = hasSelection
+        
+        // Notify listener about selection changes
+        communicationListener?.onImagesSelected(selectedImages)
     }
 
     private fun isImageFile(extension: String): Boolean {
@@ -124,6 +129,17 @@ class RotateFragment : Fragment() {
         // This is a simplified check. In a real implementation,
         // you would read the actual image dimensions
         return true // Placeholder - assume some images are portrait
+    }
+
+    fun loadImagesFromFolder(folder: File) {
+        selectedImages.clear()
+        imageAdapter.updateSelection(selectedImages)
+        loadImagesFromDirectory(folder.absolutePath)
+        updateActionButtons()
+    }
+    
+    fun setCommunicationListener(listener: FragmentCommunicationListener?) {
+        communicationListener = listener
     }
 
     override fun onDestroyView() {
