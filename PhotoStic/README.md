@@ -111,9 +111,10 @@ PhotoStic/
 3. Copy `.env.example` to `.env.local` and configure paths:
    ```bash
    cp .env.example .env.local
-   # Edit .env.local with your local Android Studio path
+   # Edit .env.local with your local Android Studio and SDK paths
    ```
 4. Open project in Android Studio (path from ${ANDROID_STUDIO_PATH})
+   - SDK will be configured from ${ANDROID_SDK_PATH}
 5. Configure Android SDK (API 21+)
 6. Build and run on device/emulator
 

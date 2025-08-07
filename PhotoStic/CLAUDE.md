@@ -25,7 +25,7 @@ Android native application using Java/Kotlin with Android SDK
 
 ## Development Setup
 - Android Studio IDE (Path configured in .env.local: ${ANDROID_STUDIO_PATH})
-- Android SDK
+- Android SDK (Path configured in .env.local: ${ANDROID_SDK_PATH})
 - Java/Kotlin development environment
 - Copy .env.example to .env.local and configure local paths
 - [ADDITIONAL SETUP REQUIREMENTS TO BE FILLED]
