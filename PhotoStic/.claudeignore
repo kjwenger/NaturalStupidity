@@ -1,0 +1,64 @@
+# Android build outputs
+build/
+app/build/
+.gradle/
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# Android generated files
+bin/
+gen/
+out/
+release/
+
+# Gradle files
+.gradle/
+gradle-app.setting
+!gradle-wrapper.jar
+!gradle-wrapper.properties
+
+# Local configuration file (contains SDK path)
+local.properties
+
+# Log files
+*.log
+
+# Android Studio files
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+
+# Lint reports
+lint-results.html
+lint-results.xml
+
+# Test outputs
+androidTest/
+test/
+
+# ProGuard generated files
+proguard/
+
+# Keystore files
+*.jks
+*.keystore
+
+# NDK build files
+obj/
+libs/
