@@ -108,9 +108,14 @@ PhotoStic/
 ### Development Setup
 1. Install Android Studio
 2. Clone this repository
-3. Open project in Android Studio  
-4. Configure Android SDK (API 21+)
-5. Build and run on device/emulator
+3. Copy `.env.example` to `.env.local` and configure paths:
+   ```bash
+   cp .env.example .env.local
+   # Edit .env.local with your local Android Studio path
+   ```
+4. Open project in Android Studio (path from ${ANDROID_STUDIO_PATH})
+5. Configure Android SDK (API 21+)
+6. Build and run on device/emulator
 
 ### Prerequisites
 - Android Studio Arctic Fox or later
