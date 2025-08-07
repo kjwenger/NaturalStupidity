@@ -139,3 +139,20 @@ These files are now ready for you to fill in with your application's specific de
 - **Contact Information**: Maintainer details
 
 The README includes emojis, proper headings, code blocks, and all standard sections expected in a professional GitHub repository.
+
+## Prompt 16
+**User:** My Android Studio is located here: "C:\Users\kjwenger\AppData\Local\Programs\Android Studio"
+
+**Assistant:** Created environment variable configuration system for Android Studio path, including .env.local (local file), .env.example (committed template), updated .gitignore, and references in documentation.
+
+## Prompt 17
+**User:** My Android SDK can be found here "C:\Users\kjwenger\AppData\Local\Android\Sdk". Please do the same things as with the Android Studio path.
+
+**Assistant:** Updated environment configuration to include Android SDK path:
+
+- **.env.local**: Added ANDROID_SDK_PATH variable with your local SDK path
+- **.env.example**: Added ANDROID_SDK_PATH variable to template
+- **CLAUDE.md**: Updated development setup to reference ${ANDROID_SDK_PATH} environment variable
+- **README.md**: Updated setup instructions to mention both Android Studio and SDK path configuration
+
+Both Android Studio and SDK paths are now properly configured through environment variables for consistent development setup.
