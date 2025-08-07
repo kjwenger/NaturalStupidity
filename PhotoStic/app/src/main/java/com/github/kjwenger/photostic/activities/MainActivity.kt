@@ -13,22 +13,64 @@ import androidx.navigation.findNavController
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.setupWithNavController
 import com.github.kjwenger.photostic.R
+import com.github.kjwenger.photostic.fragments.BrowseFragment
+import com.github.kjwenger.photostic.fragments.RotateFragment
+import com.github.kjwenger.photostic.listeners.FragmentCommunicationListener
+import com.github.kjwenger.photostic.utils.DeviceUtils
 // Note: databinding import will be auto-generated after first build
 // import com.github.kjwenger.photostic.databinding.ActivityMainBinding
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import java.io.File
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), FragmentCommunicationListener {
 
     // private lateinit var binding: ActivityMainBinding
     private val STORAGE_PERMISSION_CODE = 1001
     private val MANAGE_STORAGE_PERMISSION_CODE = 1002
+    
+    private var isTablet: Boolean = false
+    private var rotateFragment: RotateFragment? = null
+    private var browseFragment: BrowseFragment? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        // Determine if we're on a tablet
+        isTablet = DeviceUtils.isTablet(this)
+        
+        if (isTablet) {
+            setupTabletLayout()
+        } else {
+            setupPhoneLayout()
+        }
+        
+        // Request necessary permissions
+        checkAndRequestPermissions()
+    }
+    
+    private fun setupTabletLayout() {
+        // In tablet mode, we use split pane layout
+        // Add BrowseFragment to left container
+        browseFragment = BrowseFragment().apply {
+            setCommunicationListener(this@MainActivity)
+        }
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.browse_container, browseFragment!!)
+            .commit()
+            
+        // Add RotateFragment to right container
+        rotateFragment = RotateFragment().apply {
+            setCommunicationListener(this@MainActivity)
+        }
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.rotate_container, rotateFragment!!)
+            .commit()
+    }
+    
+    private fun setupPhoneLayout() {
+        // In phone mode, we use bottom navigation with fragments
         val navView: BottomNavigationView = findViewById(R.id.bottom_navigation)
-
         val navController = findNavController(R.id.nav_host_fragment)
         
         // Passing each menu ID as a set of Ids because each
@@ -38,9 +80,6 @@ class MainActivity : AppCompatActivity() {
         )
         
         navView.setupWithNavController(navController)
-        
-        // Request necessary permissions
-        checkAndRequestPermissions()
     }
 
     private fun checkAndRequestPermissions() {
@@ -138,5 +177,24 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+    }
+    
+    // FragmentCommunicationListener implementation
+    override fun onFolderSelected(folder: File) {
+        // In tablet mode, notify the rotate fragment about folder selection
+        if (isTablet) {
+            rotateFragment?.loadImagesFromFolder(folder)
+        }
+    }
+    
+    override fun onImagesSelected(selectedImages: Set<File>) {
+        // Handle image selection - could be used for updating UI
+        // For example, could show selection count in action bar
+    }
+    
+    override fun onPreviewRequested(selectedImages: Set<File>) {
+        // Handle preview request - would show preview overlay
+        // TODO: Implement preview overlay functionality
+        Toast.makeText(this, "Preview requested for ${selectedImages.size} images", Toast.LENGTH_SHORT).show()
     }
 }

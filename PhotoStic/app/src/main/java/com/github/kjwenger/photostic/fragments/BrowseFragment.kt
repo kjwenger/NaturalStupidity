@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.github.kjwenger.photostic.R
 // import com.github.kjwenger.photostic.databinding.FragmentBrowseBinding
 import com.github.kjwenger.photostic.adapters.FileSystemAdapter
+import com.github.kjwenger.photostic.listeners.FragmentCommunicationListener
 import java.io.File
 
 class BrowseFragment : Fragment() {
@@ -19,6 +20,7 @@ class BrowseFragment : Fragment() {
     private lateinit var fileAdapter: FileSystemAdapter
     private var currentPath: String = "/storage/emulated/0"
     private lateinit var rootView: View
+    private var communicationListener: FragmentCommunicationListener? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -77,9 +79,15 @@ class BrowseFragment : Fragment() {
     private fun onFileItemClick(file: File) {
         if (file.isDirectory) {
             loadDirectory(file.absolutePath)
+            // Notify listener that a folder was selected (for tablet mode)
+            communicationListener?.onFolderSelected(file)
         }
         // If it's a file, we don't need to do anything in browse mode
         // File selection happens in the rotate tab
+    }
+
+    fun setCommunicationListener(listener: FragmentCommunicationListener?) {
+        communicationListener = listener
     }
 
     override fun onDestroyView() {
