@@ -20,6 +20,22 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <TextView
+        android:id="@+id/text_current_path"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        android:text="/storage/emulated/0"
+        android:textAppearance="@android:style/TextAppearance.Material.Caption"
+        android:textColor="@android:color/darker_gray"
+        android:singleLine="true"
+        android:ellipsize="start"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/title_browse" />
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_view_directories"
         android:layout_width="0dp"
@@ -31,7 +47,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/title_browse"
+        app:layout_constraintTop_toBottomOf="@+id/text_current_path"
         tools:listitem="@layout/item_directory" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

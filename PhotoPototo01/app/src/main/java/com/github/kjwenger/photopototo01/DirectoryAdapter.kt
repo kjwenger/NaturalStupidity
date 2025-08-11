@@ -38,15 +38,30 @@ class DirectoryAdapter(
         private val sizeTextView: TextView = itemView.findViewById(R.id.text_file_size)
         
         fun bind(file: File, onItemClick: (File) -> Unit) {
-            nameTextView.text = file.name
-            
-            if (file.isDirectory) {
-                iconImageView.setImageResource(R.drawable.ic_folder)
-                val itemCount = file.listFiles()?.size ?: 0
-                sizeTextView.text = "$itemCount items"
-            } else {
-                iconImageView.setImageResource(R.drawable.ic_file)
-                sizeTextView.text = formatFileSize(file.length())
+            when {
+                file.name == ".." -> {
+                    // Parent directory
+                    nameTextView.text = ".. (Parent Directory)"
+                    iconImageView.setImageResource(R.drawable.ic_folder)
+                    sizeTextView.text = "Go up"
+                }
+                file.isDirectory -> {
+                    // Regular directory
+                    nameTextView.text = file.name
+                    iconImageView.setImageResource(R.drawable.ic_folder)
+                    try {
+                        val itemCount = file.listFiles()?.size ?: 0
+                        sizeTextView.text = if (itemCount == 1) "1 item" else "$itemCount items"
+                    } catch (e: SecurityException) {
+                        sizeTextView.text = "Access denied"
+                    }
+                }
+                else -> {
+                    // Regular file
+                    nameTextView.text = file.name
+                    setFileIcon(file)
+                    sizeTextView.text = formatFileSize(file.length())
+                }
             }
             
             itemView.setOnClickListener {
@@ -54,12 +69,25 @@ class DirectoryAdapter(
             }
         }
         
+        private fun setFileIcon(file: File) {
+            val extension = file.extension.lowercase()
+            val iconRes = when (extension) {
+                "jpg", "jpeg", "png", "gif", "bmp", "webp" -> R.drawable.ic_image
+                "mp4", "avi", "mkv", "mov", "wmv", "flv", "webm" -> R.drawable.ic_video
+                "mp3", "wav", "flac", "aac", "ogg", "m4a" -> R.drawable.ic_audio
+                "pdf" -> R.drawable.ic_document
+                else -> R.drawable.ic_file
+            }
+            iconImageView.setImageResource(iconRes)
+        }
+        
         private fun formatFileSize(sizeInBytes: Long): String {
             return when {
+                sizeInBytes == 0L -> "0 B"
                 sizeInBytes < 1024 -> "$sizeInBytes B"
-                sizeInBytes < 1024 * 1024 -> "${sizeInBytes / 1024} KB"
-                sizeInBytes < 1024 * 1024 * 1024 -> "${sizeInBytes / (1024 * 1024)} MB"
-                else -> "${sizeInBytes / (1024 * 1024 * 1024)} GB"
+                sizeInBytes < 1024 * 1024 -> "${(sizeInBytes / 1024.0).let { if (it < 10) "%.1f".format(it) else "${it.toInt()}" }} KB"
+                sizeInBytes < 1024 * 1024 * 1024 -> "${(sizeInBytes / (1024.0 * 1024)).let { if (it < 10) "%.1f".format(it) else "${it.toInt()}" }} MB"
+                else -> "${(sizeInBytes / (1024.0 * 1024 * 1024)).let { if (it < 10) "%.1f".format(it) else "${it.toInt()}" }} GB"
             }
         }
     }
