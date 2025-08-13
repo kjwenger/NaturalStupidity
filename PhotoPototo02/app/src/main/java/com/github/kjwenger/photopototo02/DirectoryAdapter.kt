@@ -9,7 +9,8 @@ import androidx.recyclerview.widget.RecyclerView
 import java.io.File
 
 class DirectoryAdapter(
-    private val onItemClick: (File) -> Unit
+    private val onItemClick: (File) -> Unit,
+    private val onFolderLongClick: ((File) -> Unit)? = null
 ) : RecyclerView.Adapter<DirectoryAdapter.ViewHolder>() {
     
     private var files: List<File> = emptyList()
@@ -27,7 +28,7 @@ class DirectoryAdapter(
     
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val file = files[position]
-        holder.bind(file, onItemClick)
+        holder.bind(file, onItemClick, onFolderLongClick)
     }
     
     override fun getItemCount(): Int = files.size
@@ -37,7 +38,7 @@ class DirectoryAdapter(
         private val nameTextView: TextView = itemView.findViewById(R.id.text_file_name)
         private val sizeTextView: TextView = itemView.findViewById(R.id.text_file_size)
         
-        fun bind(file: File, onItemClick: (File) -> Unit) {
+        fun bind(file: File, onItemClick: (File) -> Unit, onFolderLongClick: ((File) -> Unit)?) {
             when {
                 file.name == ".." -> {
                     // Parent directory
@@ -66,6 +67,16 @@ class DirectoryAdapter(
             
             itemView.setOnClickListener {
                 onItemClick(file)
+            }
+            
+            // Add long click listener for folders (except parent directory)
+            if (file.isDirectory && file.name != ".." && onFolderLongClick != null) {
+                itemView.setOnLongClickListener {
+                    onFolderLongClick(file)
+                    true
+                }
+            } else {
+                itemView.setOnLongClickListener(null)
             }
         }
         
