@@ -6,7 +6,7 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import java.io.File
 
-class MainActivity : AppCompatActivity(), FolderSelectionListener {
+class MainActivity : AppCompatActivity() {
     
     private lateinit var bottomNavigation: BottomNavigationView
     private lateinit var browseFragment: BrowseFragment
@@ -19,9 +19,6 @@ class MainActivity : AppCompatActivity(), FolderSelectionListener {
         browseFragment = BrowseFragment()
         previewFragment = PreviewFragment()
         
-        // Set folder selection listener for browse fragment
-        browseFragment.folderSelectionListener = this
-        
         bottomNavigation = findViewById(R.id.bottom_navigation)
         bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {
@@ -30,6 +27,16 @@ class MainActivity : AppCompatActivity(), FolderSelectionListener {
                     true
                 }
                 R.id.nav_preview -> {
+                    // When Preview tab is selected, load images from current folder
+                    try {
+                        val currentFolder = browseFragment.getCurrentFolder()
+                        if (currentFolder != null && currentFolder.isDirectory) {
+                            previewFragment.loadImagesFromFolder(currentFolder)
+                        }
+                    } catch (e: Exception) {
+                        // If browsing hasn't started yet, just show empty preview
+                        // User can navigate in Browse tab first
+                    }
                     loadFragment(previewFragment)
                     true
                 }
@@ -40,15 +47,6 @@ class MainActivity : AppCompatActivity(), FolderSelectionListener {
         // Load initial fragment
         loadFragment(browseFragment)
         bottomNavigation.selectedItemId = R.id.nav_browse
-    }
-    
-    override fun onFolderSelected(folder: File) {
-        // Load images in preview fragment when a folder is selected
-        previewFragment.loadImagesFromFolder(folder)
-        
-        // Automatically switch to preview tab
-        bottomNavigation.selectedItemId = R.id.nav_preview
-        loadFragment(previewFragment)
     }
     
     private fun loadFragment(fragment: Fragment) {
@@ -65,8 +63,4 @@ class MainActivity : AppCompatActivity(), FolderSelectionListener {
             super.onBackPressed()
         }
     }
-}
-
-interface FolderSelectionListener {
-    fun onFolderSelected(folder: File)
 }

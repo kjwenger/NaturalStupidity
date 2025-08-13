@@ -29,9 +29,6 @@ class BrowseFragment : Fragment() {
     private lateinit var pathTextView: TextView
     private var currentPath: File = Environment.getExternalStorageDirectory()
     
-    // Listener for folder selection
-    var folderSelectionListener: FolderSelectionListener? = null
-    
     // Permission request launchers for different Android versions
     private lateinit var storagePermissionLauncher: ActivityResultLauncher<Array<String>>
     private lateinit var manageStorageLauncher: ActivityResultLauncher<Intent>
@@ -70,18 +67,13 @@ class BrowseFragment : Fragment() {
         recyclerView = view.findViewById(R.id.recycler_view_directories)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         
-        directoryAdapter = DirectoryAdapter(
-            onItemClick = { file ->
-                if (file.isDirectory) {
-                    navigateToDirectory(file)
-                } else {
-                    showFileInfo(file)
-                }
-            },
-            onFolderLongClick = { folder ->
-                showFolderSelectionDialog(folder)
+        directoryAdapter = DirectoryAdapter { file ->
+            if (file.isDirectory) {
+                navigateToDirectory(file)
+            } else {
+                showFileInfo(file)
             }
-        )
+        }
         
         recyclerView.adapter = directoryAdapter
         
@@ -351,17 +343,8 @@ class BrowseFragment : Fragment() {
         }
     }
     
-    private fun showFolderSelectionDialog(folder: File) {
-        AlertDialog.Builder(requireContext())
-            .setTitle("Select Folder for Preview")
-            .setMessage("Load images from '${folder.name}' in the Preview tab?")
-            .setPositiveButton("Select") { _, _ ->
-                folderSelectionListener?.onFolderSelected(folder)
-            }
-            .setNegativeButton("Cancel") { dialog, _ ->
-                dialog.dismiss()
-            }
-            .show()
+    fun getCurrentFolder(): File? {
+        return currentPath
     }
     
     override fun onResume() {
