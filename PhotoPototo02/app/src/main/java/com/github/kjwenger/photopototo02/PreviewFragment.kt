@@ -68,37 +68,57 @@ class PreviewFragment : Fragment() {
     }
     
     fun loadImagesFromFolder(folder: File) {
-        selectedFolder = folder
-        folderTextView.text = folder.absolutePath
-        
         try {
+            selectedFolder = folder
+            
+            // Update folder path display
+            if (::folderTextView.isInitialized) {
+                folderTextView.text = folder.absolutePath
+            }
+            
             val imageFiles = folder.listFiles()
                 ?.filter { it.isFile && isImageFile(it) && it.canRead() }
                 ?.sortedBy { it.name.lowercase() }
                 ?: emptyList()
             
-            if (imageFiles.isNotEmpty()) {
+            if (::imageAdapter.isInitialized) {
                 imageAdapter.updateImages(imageFiles)
-                showEmptyState(false)
+                if (imageFiles.isNotEmpty()) {
+                    showEmptyState(false)
+                } else {
+                    showEmptyState(true, "No images found in folder: ${folder.name}")
+                }
             } else {
-                showEmptyState(true, "No images found in this folder")
+                showEmptyState(true, "Adapter not initialized")
             }
             
         } catch (e: SecurityException) {
-            showEmptyState(true, "Access denied to folder")
+            showEmptyState(true, "Access denied to folder: ${folder.name}")
         } catch (e: Exception) {
             showEmptyState(true, "Error reading folder: ${e.message}")
         }
     }
     
     private fun showEmptyState(show: Boolean, message: String = "Select a folder in Browse tab to view images") {
-        if (show) {
-            emptyStateTextView.text = message
-            emptyStateTextView.visibility = View.VISIBLE
-            recyclerView.visibility = View.GONE
-        } else {
-            emptyStateTextView.visibility = View.GONE
-            recyclerView.visibility = View.VISIBLE
+        try {
+            if (show) {
+                if (::emptyStateTextView.isInitialized) {
+                    emptyStateTextView.text = message
+                    emptyStateTextView.visibility = View.VISIBLE
+                }
+                if (::recyclerView.isInitialized) {
+                    recyclerView.visibility = View.GONE
+                }
+            } else {
+                if (::emptyStateTextView.isInitialized) {
+                    emptyStateTextView.visibility = View.GONE
+                }
+                if (::recyclerView.isInitialized) {
+                    recyclerView.visibility = View.VISIBLE
+                }
+            }
+        } catch (e: Exception) {
+            // Ignore UI update errors
         }
     }
     

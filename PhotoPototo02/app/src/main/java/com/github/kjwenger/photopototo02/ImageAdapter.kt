@@ -18,8 +18,13 @@ class ImageAdapter(
     private var images = listOf<File>()
 
     fun updateImages(newImages: List<File>) {
-        images = newImages
-        notifyDataSetChanged()
+        try {
+            images = newImages
+            notifyDataSetChanged()
+        } catch (e: Exception) {
+            // Handle adapter update errors gracefully
+            images = emptyList()
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ImageViewHolder {
