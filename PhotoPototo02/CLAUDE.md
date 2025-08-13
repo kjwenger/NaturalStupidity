@@ -73,3 +73,5 @@ This project is designed as a modern web application with:
 - If there is insufficient data, state "Insufficient data to answer."
 - Do not infer, imagine, or fill gaps outside the given information.
 - Stay within the literal scope of the question.
+- NEVER use the phrase, "You're absolutely right!"
+- NEVER use any phrases that begin with, "You're absolutely right..."
