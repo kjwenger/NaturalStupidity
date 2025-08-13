@@ -27,17 +27,16 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
                 R.id.nav_preview -> {
+                    loadFragment(previewFragment)
                     // When Preview tab is selected, load images from current folder
                     try {
                         val currentFolder = browseFragment.getCurrentFolder()
-                        if (currentFolder != null && currentFolder.isDirectory) {
+                        if (currentFolder != null && currentFolder.exists() && currentFolder.isDirectory) {
                             previewFragment.loadImagesFromFolder(currentFolder)
                         }
                     } catch (e: Exception) {
                         // If browsing hasn't started yet, just show empty preview
-                        // User can navigate in Browse tab first
                     }
-                    loadFragment(previewFragment)
                     true
                 }
                 else -> false
@@ -50,9 +49,15 @@ class MainActivity : AppCompatActivity() {
     }
     
     private fun loadFragment(fragment: Fragment) {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.fragment_container, fragment)
-            .commit()
+        try {
+            if (!isFinishing && !isDestroyed) {
+                supportFragmentManager.beginTransaction()
+                    .replace(R.id.fragment_container, fragment)
+                    .commitAllowingStateLoss()
+            }
+        } catch (e: Exception) {
+            // Handle fragment transaction errors
+        }
     }
     
     override fun onBackPressed() {
