@@ -38,21 +38,31 @@ class PreviewFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_preview, container, false)
         
-        folderTextView = view.findViewById(R.id.text_selected_folder)
-        emptyStateTextView = view.findViewById(R.id.text_empty_state)
-        recyclerView = view.findViewById(R.id.recycler_view_images)
-        
-        // Use a 2-column grid layout
-        recyclerView.layoutManager = GridLayoutManager(requireContext(), 2)
-        
-        imageAdapter = ImageAdapter(requireContext()) { imageFile ->
-            showImageInfo(imageFile)
+        try {
+            folderTextView = view.findViewById(R.id.text_selected_folder)
+            emptyStateTextView = view.findViewById(R.id.text_empty_state)
+            recyclerView = view.findViewById(R.id.recycler_view_images)
+            
+            // Use a 2-column grid layout
+            recyclerView.layoutManager = GridLayoutManager(requireContext(), 2)
+            
+            imageAdapter = ImageAdapter(requireContext()) { imageFile ->
+                try {
+                    showImageInfo(imageFile)
+                } catch (e: Exception) {
+                    // Handle any errors in image info display
+                }
+            }
+            
+            recyclerView.adapter = imageAdapter
+            
+            // Show empty state initially
+            showEmptyState(true)
+            
+        } catch (e: Exception) {
+            // Handle any initialization errors
+            showEmptyState(true, "Error initializing preview")
         }
-        
-        recyclerView.adapter = imageAdapter
-        
-        // Show empty state initially
-        showEmptyState(true)
         
         return view
     }
