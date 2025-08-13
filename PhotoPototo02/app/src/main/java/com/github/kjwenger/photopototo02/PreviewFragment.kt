@@ -99,7 +99,7 @@ class PreviewFragment : Fragment() {
         }
     }
     
-    private fun showEmptyState(show: Boolean, message: String = "Select a folder in Browse tab to view images") {
+    fun showEmptyState(show: Boolean, message: String = "Select a folder in Browse tab to view images") {
         try {
             if (show) {
                 if (::emptyStateTextView.isInitialized) {

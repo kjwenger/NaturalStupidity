@@ -349,9 +349,31 @@ class BrowseFragment : Fragment() {
     
     override fun onResume() {
         super.onResume()
-        // Refresh directory listing when returning to fragment
-        if (::directoryAdapter.isInitialized) {
-            checkPermissionsAndLoad()
+        // Only refresh directory listing if permissions are already granted
+        // to avoid dual permission requests
+        if (::directoryAdapter.isInitialized && hasPermissions()) {
+            loadDirectories()
+        }
+    }
+    
+    private fun hasPermissions(): Boolean {
+        return when {
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.R -> {
+                Environment.isExternalStorageManager()
+            }
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU -> {
+                ContextCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.READ_MEDIA_IMAGES
+                ) == PackageManager.PERMISSION_GRANTED
+            }
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.M -> {
+                ContextCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.READ_EXTERNAL_STORAGE
+                ) == PackageManager.PERMISSION_GRANTED
+            }
+            else -> true // Pre-Android 6
         }
     }
 }
