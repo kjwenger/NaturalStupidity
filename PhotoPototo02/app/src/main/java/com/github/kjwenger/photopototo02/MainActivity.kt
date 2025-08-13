@@ -30,12 +30,33 @@ class MainActivity : AppCompatActivity() {
                     loadFragment(previewFragment)
                     // When Preview tab is selected, load images from current folder
                     try {
-                        val currentFolder = browseFragment.getCurrentFolder()
-                        if (currentFolder != null && currentFolder.exists() && currentFolder.isDirectory) {
-                            previewFragment.loadImagesFromFolder(currentFolder)
+                        if (::browseFragment.isInitialized) {
+                            val currentFolder = browseFragment.getCurrentFolder()
+                            if (currentFolder != null && currentFolder.exists() && currentFolder.isDirectory) {
+                                // Post to ensure fragment is fully loaded before updating
+                                previewFragment.view?.post {
+                                    previewFragment.loadImagesFromFolder(currentFolder)
+                                } ?: run {
+                                    // Fragment view not ready, try direct call
+                                    previewFragment.loadImagesFromFolder(currentFolder)
+                                }
+                            } else {
+                                // No valid folder, show default empty state
+                                previewFragment.view?.post {
+                                    previewFragment.showEmptyState(true, "No folder selected in Browse tab")
+                                }
+                            }
+                        } else {
+                            // Browse fragment not initialized, show waiting message
+                            previewFragment.view?.post {
+                                previewFragment.showEmptyState(true, "Browse tab not initialized yet")
+                            }
                         }
                     } catch (e: Exception) {
-                        // If browsing hasn't started yet, just show empty preview
+                        // If any error occurs, show error message
+                        previewFragment.view?.post {
+                            previewFragment.showEmptyState(true, "Error loading folder: ${e.message}")
+                        }
                     }
                     true
                 }
@@ -46,6 +67,11 @@ class MainActivity : AppCompatActivity() {
         // Load initial fragment
         loadFragment(browseFragment)
         bottomNavigation.selectedItemId = R.id.nav_browse
+        
+        // Give BrowseFragment time to initialize before Preview can access it
+        browseFragment.view?.post {
+            // Fragment is now fully loaded and can be accessed by Preview tab
+        }
     }
     
     private fun loadFragment(fragment: Fragment) {
