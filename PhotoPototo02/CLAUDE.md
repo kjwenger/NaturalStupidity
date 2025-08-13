@@ -61,6 +61,7 @@ This project is designed as a modern web application with:
 - Follow the existing project structure and patterns
 - Check for existing similar components before creating new ones
 - Update this file when project structure or commands change
+- **Always add prompts and answers to PROMPTS.md for project history tracking**
 
 ### Communication Guidelines
 
