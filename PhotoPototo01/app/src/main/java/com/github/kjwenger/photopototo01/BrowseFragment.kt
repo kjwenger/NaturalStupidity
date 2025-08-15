@@ -28,6 +28,7 @@ class BrowseFragment : Fragment() {
     private lateinit var directoryAdapter: DirectoryAdapter
     private lateinit var pathTextView: TextView
     private var currentPath: File = Environment.getExternalStorageDirectory()
+    private var permissionRequested = false
     
     // Permission request launchers for different Android versions
     private lateinit var storagePermissionLauncher: ActivityResultLauncher<Array<String>>
@@ -40,12 +41,14 @@ class BrowseFragment : Fragment() {
         storagePermissionLauncher = registerForActivityResult(
             ActivityResultContracts.RequestMultiplePermissions()
         ) { permissions ->
+            permissionRequested = false
             handlePermissionResults(permissions)
         }
         
         manageStorageLauncher = registerForActivityResult(
             ActivityResultContracts.StartActivityForResult()
         ) { result ->
+            permissionRequested = false
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 if (Environment.isExternalStorageManager()) {
                     loadDirectories()
@@ -89,6 +92,10 @@ class BrowseFragment : Fragment() {
     }
     
     private fun checkPermissionsAndLoad() {
+        if (permissionRequested) {
+            return
+        }
+        
         when {
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.R -> {
                 // Android 11+ - Check for MANAGE_EXTERNAL_STORAGE
@@ -111,6 +118,7 @@ class BrowseFragment : Fragment() {
                 }
                 
                 if (permissions.isNotEmpty()) {
+                    permissionRequested = true
                     storagePermissionLauncher.launch(permissions.toTypedArray())
                 } else {
                     loadDirectories()
@@ -124,6 +132,11 @@ class BrowseFragment : Fragment() {
     }
     
     private fun requestManageExternalStoragePermission() {
+        if (permissionRequested) {
+            return
+        }
+        
+        permissionRequested = true
         AlertDialog.Builder(requireContext())
             .setTitle("Storage Access Required")
             .setMessage("This app needs access to browse all files and folders on your device. Please enable 'All files access' in the next screen.")
@@ -135,6 +148,7 @@ class BrowseFragment : Fragment() {
                 }
             }
             .setNegativeButton("Cancel") { dialog, _ ->
+                permissionRequested = false
                 dialog.dismiss()
                 loadLimitedDirectories()
             }
@@ -157,6 +171,7 @@ class BrowseFragment : Fragment() {
             .setTitle("Permission Required")
             .setMessage("Storage permission is needed to browse folders. Without it, you can only access limited directories.")
             .setPositiveButton("Grant Permission") { _, _ ->
+                permissionRequested = false
                 checkPermissionsAndLoad()
             }
             .setNegativeButton("Limited Access") { _, _ ->
@@ -319,9 +334,24 @@ class BrowseFragment : Fragment() {
     
     override fun onResume() {
         super.onResume()
-        // Refresh directory listing when returning to fragment
-        if (::directoryAdapter.isInitialized) {
-            checkPermissionsAndLoad()
+        // Only refresh if we have permissions, don't trigger permission requests again
+        if (::directoryAdapter.isInitialized && hasPermissions()) {
+            loadDirectories()
+        }
+    }
+    
+    private fun hasPermissions(): Boolean {
+        return when {
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.R -> {
+                Environment.isExternalStorageManager()
+            }
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.M -> {
+                ContextCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.READ_EXTERNAL_STORAGE
+                ) == PackageManager.PERMISSION_GRANTED
+            }
+            else -> true
         }
     }
 }
