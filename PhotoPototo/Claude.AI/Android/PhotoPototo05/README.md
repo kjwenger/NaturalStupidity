@@ -7,6 +7,7 @@ A native Android photo browsing application built with Kotlin that provides dire
 - **Browse Tab**: Native Android directory browsing with full file system access
 - **Preview Tab**: Image grid display with folder-based photo viewing
 - **Toolbar Actions**: Advanced selection tools with image orientation detection
+  - **Grid Size Dropdown**: Change image cell sizes (Small 64dp, Medium 128dp, Large 256dp)
   - Select All: Select all images in the current folder
   - Select None: Clear all selections
   - Invert Selection: Toggle selection state of all images

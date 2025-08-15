@@ -119,6 +119,17 @@ This document contains all requirements for the PhotoPototo05 Android applicatio
   - Error handling for unreadable image files
   - Performance optimized to read only image headers, not full image data
 
+### R017 - Dynamic Grid Size Selection
+- **Requirement**: Implement dropdown menu for changing image cell sizes in Preview fragment
+- **Status**: ✅ Implemented
+- **Details**:
+  - Dropdown menu with three size options: Small (64dp), Medium (128dp), Large (256dp)
+  - Grid layout automatically adjusts column count (6/3/2 columns respectively)
+  - Dynamic cell sizing with ImageAdapter setCellSize() method
+  - Proper icon color consistency with other toolbar icons
+  - Submenu structure for dropdown functionality
+  - Vector icons for each size option with Material Design styling
+
 ## Technical Requirements
 
 ### R100 - Build System

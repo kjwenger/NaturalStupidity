@@ -151,6 +151,18 @@ class PreviewFragment : Fragment() {
     
     private fun handleMenuItemClick(menuItem: MenuItem): Boolean {
         return when (menuItem.itemId) {
+            R.id.action_size_small -> {
+                setGridSize(64)
+                true
+            }
+            R.id.action_size_medium -> {
+                setGridSize(128)
+                true
+            }
+            R.id.action_size_large -> {
+                setGridSize(256)
+                true
+            }
             R.id.action_select_all -> {
                 selectAllImages()
                 true
@@ -207,6 +219,24 @@ class PreviewFragment : Fragment() {
         if (::imageAdapter.isInitialized) {
             imageAdapter.selectPortrait()
             updateToolbarTitle()
+        }
+    }
+    
+    private fun setGridSize(sizeDp: Int) {
+        if (::imageAdapter.isInitialized) {
+            imageAdapter.setCellSize(sizeDp)
+            
+            // Also update grid layout span count based on size
+            val gridLayoutManager = recyclerView.layoutManager as? GridLayoutManager
+            gridLayoutManager?.let {
+                val spanCount = when (sizeDp) {
+                    64 -> 6   // Small: 6 columns
+                    128 -> 3  // Medium: 3 columns
+                    256 -> 2  // Large: 2 columns
+                    else -> 3 // Default: 3 columns
+                }
+                it.spanCount = spanCount
+            }
         }
     }
     

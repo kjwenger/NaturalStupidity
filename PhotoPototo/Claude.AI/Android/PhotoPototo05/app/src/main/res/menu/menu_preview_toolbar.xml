@@ -3,6 +3,27 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/action_grid_size"
+        android:icon="@drawable/ic_grid_size"
+        android:title="Grid Size"
+        app:showAsAction="always">
+        <menu>
+            <item
+                android:id="@+id/action_size_small"
+                android:icon="@drawable/ic_image_size_small"
+                android:title="Small" />
+            <item
+                android:id="@+id/action_size_medium"
+                android:icon="@drawable/ic_image_size_medium"
+                android:title="Medium" />
+            <item
+                android:id="@+id/action_size_large"
+                android:icon="@drawable/ic_image_size_large"
+                android:title="Large" />
+        </menu>
+    </item>
+
+    <item
         android:id="@+id/action_select_all"
         android:icon="@drawable/ic_select_all"
         android:title="Select All"

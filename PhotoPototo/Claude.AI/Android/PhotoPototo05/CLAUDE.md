@@ -116,6 +116,8 @@ These files serve as the project's memory and MUST be maintained across all sess
 - ✅ Custom photo application icon
 - ✅ Toolbar with selection actions (Select All, Select None, Invert Selection)
 - ✅ Landscape/Portrait selection based on image dimensions
+- ✅ Dynamic grid size dropdown menu (Small 64dp, Medium 128dp, Large 256dp)
+- ✅ Responsive column layout that adjusts with grid size changes
 
 ### Known Issues Fixed:
 - ✅ Duplicate permission requests
