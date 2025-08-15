@@ -29,6 +29,7 @@ class BrowseFragment : Fragment() {
     private lateinit var pathTextView: TextView
     private var currentPath: File = Environment.getExternalStorageDirectory()
     private var permissionRequested = false
+    private var folderSelectionListener: FolderSelectionListener? = null
     
     // Permission request launchers for different Android versions
     private lateinit var storagePermissionLauncher: ActivityResultLauncher<Array<String>>
@@ -36,6 +37,9 @@ class BrowseFragment : Fragment() {
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Set up the folder selection listener
+        folderSelectionListener = activity as? FolderSelectionListener
         
         // Initialize permission launchers
         storagePermissionLauncher = registerForActivityResult(
@@ -276,6 +280,8 @@ class BrowseFragment : Fragment() {
         } else if (file.isDirectory && file.canRead()) {
             currentPath = file
             loadDirectories()
+            // Notify listener about folder selection
+            folderSelectionListener?.onFolderSelected(currentPath)
         } else {
             Toast.makeText(
                 requireContext(),
@@ -290,6 +296,8 @@ class BrowseFragment : Fragment() {
         if (parent != null && parent.canRead()) {
             currentPath = parent
             loadDirectories()
+            // Notify listener about folder selection
+            folderSelectionListener?.onFolderSelected(currentPath)
         }
     }
     
@@ -326,6 +334,8 @@ class BrowseFragment : Fragment() {
         return if (parent != null && parent.canRead()) {
             currentPath = parent
             loadDirectories()
+            // Notify listener about folder selection
+            folderSelectionListener?.onFolderSelected(currentPath)
             true
         } else {
             false

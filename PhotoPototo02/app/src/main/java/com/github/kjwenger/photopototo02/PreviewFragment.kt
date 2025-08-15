@@ -32,7 +32,13 @@ class PreviewFragment : Fragment() {
         emptyTextView = view.findViewById(R.id.text_empty)
         
         setupRecyclerView()
-        showEmptyState()
+        
+        // Load images if folder was set before view was created
+        if (currentFolder != null) {
+            loadImages()
+        } else {
+            showEmptyGrid()
+        }
     }
     
     private fun setupRecyclerView() {
@@ -47,7 +53,11 @@ class PreviewFragment : Fragment() {
     
     fun showImagesForFolder(folder: File) {
         currentFolder = folder
-        loadImages()
+        // Only load images if view is created
+        if (::recyclerView.isInitialized) {
+            loadImages()
+        }
+        // If view is not created yet, loadImages() will be called in onViewCreated()
     }
     
     private fun loadImages() {
@@ -59,12 +69,12 @@ class PreviewFragment : Fragment() {
             }?.toList() ?: emptyList()
             
             if (imageFiles.isEmpty()) {
-                showEmptyState()
+                showEmptyGrid()
             } else {
                 showImages(imageFiles)
             }
         } catch (e: SecurityException) {
-            showEmptyState()
+            showEmptyGrid()
         }
     }
     
@@ -78,6 +88,12 @@ class PreviewFragment : Fragment() {
         emptyTextView.visibility = View.GONE
         recyclerView.visibility = View.VISIBLE
         imageAdapter.updateImages(images)
+    }
+    
+    private fun showEmptyGrid() {
+        emptyTextView.visibility = View.GONE
+        recyclerView.visibility = View.VISIBLE
+        imageAdapter.updateImages(emptyList())
     }
     
     private fun showEmptyState() {
