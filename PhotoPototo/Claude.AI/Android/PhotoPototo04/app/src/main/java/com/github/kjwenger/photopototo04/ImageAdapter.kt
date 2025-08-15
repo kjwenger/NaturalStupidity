@@ -44,6 +44,50 @@ class ImageAdapter(
         notifyDataSetChanged()
     }
     
+    fun selectLandscape() {
+        selectedImages.clear()
+        images.forEach { imageFile ->
+            if (isLandscape(imageFile)) {
+                selectedImages.add(imageFile)
+            }
+        }
+        notifyDataSetChanged()
+    }
+    
+    fun selectPortrait() {
+        selectedImages.clear()
+        images.forEach { imageFile ->
+            if (isPortrait(imageFile)) {
+                selectedImages.add(imageFile)
+            }
+        }
+        notifyDataSetChanged()
+    }
+    
+    private fun isLandscape(imageFile: File): Boolean {
+        return try {
+            val options = BitmapFactory.Options().apply {
+                inJustDecodeBounds = true
+            }
+            BitmapFactory.decodeFile(imageFile.absolutePath, options)
+            options.outWidth > options.outHeight
+        } catch (e: Exception) {
+            false // If we can't read dimensions, don't select
+        }
+    }
+    
+    private fun isPortrait(imageFile: File): Boolean {
+        return try {
+            val options = BitmapFactory.Options().apply {
+                inJustDecodeBounds = true
+            }
+            BitmapFactory.decodeFile(imageFile.absolutePath, options)
+            options.outHeight > options.outWidth
+        } catch (e: Exception) {
+            false // If we can't read dimensions, don't select
+        }
+    }
+    
     fun getSelectedImages(): Set<File> = selectedImages.toSet()
     
     fun isSelected(file: File): Boolean = selectedImages.contains(file)

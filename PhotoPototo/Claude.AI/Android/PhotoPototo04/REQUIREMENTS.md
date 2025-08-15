@@ -109,6 +109,16 @@ This document contains all requirements for the PhotoPototo04 Android applicatio
   - Added to CLAUDE.md development commands
   - Tested app installation and launching
 
+### R016 - Landscape/Portrait Image Selection
+- **Requirement**: Implement toolbar actions for selecting images based on orientation
+- **Status**: ✅ Implemented
+- **Details**:
+  - Select Landscape: Selects only images where width > height
+  - Select Portrait: Selects only images where height > width
+  - Efficient dimension detection using BitmapFactory.Options with inJustDecodeBounds
+  - Error handling for unreadable image files
+  - Performance optimized to read only image headers, not full image data
+
 ## Technical Requirements
 
 ### R100 - Build System
