@@ -114,6 +114,8 @@ These files serve as the project's memory and MUST be maintained across all sess
 - ✅ Empty grid display when no folder selected
 - ✅ Modern Android permission handling
 - ✅ Custom photo application icon
+- ✅ Toolbar with selection actions (Select All, Select None, Invert Selection)
+- ✅ Landscape/Portrait selection based on image dimensions
 
 ### Known Issues Fixed:
 - ✅ Duplicate permission requests

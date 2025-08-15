@@ -197,13 +197,17 @@ class PreviewFragment : Fragment() {
     }
     
     private fun selectLandscapeImages() {
-        // TODO: Implement landscape selection based on image dimensions
-        showToast("Select Landscape - Not yet implemented")
+        if (::imageAdapter.isInitialized) {
+            imageAdapter.selectLandscape()
+            updateToolbarTitle()
+        }
     }
     
     private fun selectPortraitImages() {
-        // TODO: Implement portrait selection based on image dimensions
-        showToast("Select Portrait - Not yet implemented")
+        if (::imageAdapter.isInitialized) {
+            imageAdapter.selectPortrait()
+            updateToolbarTitle()
+        }
     }
     
     private fun handleSelectionChange(imageFile: File, isSelected: Boolean) {
