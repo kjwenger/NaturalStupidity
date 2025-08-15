@@ -4,12 +4,14 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import java.io.File
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), FolderSelectionListener {
     
     private lateinit var bottomNavigation: BottomNavigationView
     private lateinit var browseFragment: BrowseFragment
     private lateinit var previewFragment: PreviewFragment
+    private var currentSelectedFolder: File? = null
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,6 +29,10 @@ class MainActivity : AppCompatActivity() {
                 }
                 R.id.nav_preview -> {
                     loadFragment(previewFragment)
+                    // Update preview with current selected folder when tab is clicked
+                    currentSelectedFolder?.let { folder ->
+                        previewFragment.showImagesForFolder(folder)
+                    }
                     true
                 }
                 else -> false
@@ -50,6 +56,15 @@ class MainActivity : AppCompatActivity() {
             // Fragment handled the back press
         } else {
             super.onBackPressed()
+        }
+    }
+    
+    override fun onFolderSelected(folder: File) {
+        currentSelectedFolder = folder
+        // If preview fragment is currently visible, update it immediately
+        val currentFragment = supportFragmentManager.findFragmentById(R.id.fragment_container)
+        if (currentFragment is PreviewFragment) {
+            previewFragment.showImagesForFolder(folder)
         }
     }
 }
