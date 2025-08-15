@@ -4,4 +4,8 @@
         android:id="@+id/nav_browse"
         android:icon="@drawable/ic_folder"
         android:title="Browse" />
+    <item
+        android:id="@+id/nav_preview"
+        android:icon="@drawable/ic_image"
+        android:title="Preview" />
 </menu>

@@ -9,18 +9,24 @@ class MainActivity : AppCompatActivity() {
     
     private lateinit var bottomNavigation: BottomNavigationView
     private lateinit var browseFragment: BrowseFragment
+    private lateinit var previewFragment: PreviewFragment
     
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         
         browseFragment = BrowseFragment()
+        previewFragment = PreviewFragment()
         
         bottomNavigation = findViewById(R.id.bottom_navigation)
         bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.nav_browse -> {
                     loadFragment(browseFragment)
+                    true
+                }
+                R.id.nav_preview -> {
+                    loadFragment(previewFragment)
                     true
                 }
                 else -> false
