@@ -19,6 +19,7 @@ class ImageAdapter(
     
     private var images = listOf<File>()
     private val selectedImages = mutableSetOf<File>()
+    private var cellSizeDp = 128 // Default medium size
     
     fun updateImages(newImages: List<File>) {
         images = newImages
@@ -88,6 +89,11 @@ class ImageAdapter(
         }
     }
     
+    fun setCellSize(sizeDp: Int) {
+        cellSizeDp = sizeDp
+        notifyDataSetChanged()
+    }
+    
     fun getSelectedImages(): Set<File> = selectedImages.toSet()
     
     fun isSelected(file: File): Boolean = selectedImages.contains(file)
@@ -127,8 +133,16 @@ class ImageAdapter(
         private val imageView: ImageView = itemView.findViewById(R.id.image_view)
         private val nameTextView: TextView = itemView.findViewById(R.id.text_name)
         private val checkbox: CheckBox = itemView.findViewById(R.id.checkbox_select)
+        private val frameLayout: ViewGroup = itemView.findViewById(R.id.image_frame)
         
         fun bind(imageFile: File) {
+            // Update frame layout size based on current cell size
+            val density = context.resources.displayMetrics.density
+            val pixelSize = (cellSizeDp * density).toInt()
+            val layoutParams = frameLayout.layoutParams
+            layoutParams.width = pixelSize
+            layoutParams.height = pixelSize
+            frameLayout.layoutParams = layoutParams
             nameTextView.text = imageFile.name
             
             // Clear any existing listeners to prevent issues

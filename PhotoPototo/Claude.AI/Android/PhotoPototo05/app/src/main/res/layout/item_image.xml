@@ -9,6 +9,7 @@
     android:focusable="true">
 
     <FrameLayout
+        android:id="@+id/image_frame"
         android:layout_width="128dp"
         android:layout_height="128dp"
         android:layout_gravity="center">
