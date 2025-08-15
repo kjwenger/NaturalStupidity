@@ -507,3 +507,108 @@ Successfully renamed everything from PhotoPototo02 to PhotoPototo03 (case insens
 - Build verification successful with `gradle assembleDebug`
 
 All references to PhotoPototo02 have been systematically replaced with PhotoPototo03 throughout the project.
+
+## Prompt 37
+Now, add an toolbar to the top of the Preview fragment
+
+## Response 37
+Successfully added a toolbar to the top of the Preview fragment! Here's what was implemented:
+
+**Changes made:**
+- **Layout Update**: Modified `fragment_preview.xml` to include a `MaterialToolbar` at the top with proper Material Design styling
+- **Fragment Code**: Updated `PreviewFragment.kt` to initialize and configure the toolbar
+- **Dynamic Title**: The toolbar title updates to show the selected folder name or "Preview" when no folder is selected
+- **Visual Integration**: Used Material Design colors and elevation for consistent app theming
+
+The toolbar now appears at the top of the Preview fragment and dynamically shows the current folder name when a folder is selected from the Browse tab. The app has been successfully built and deployed to the virtual device for testing.
+
+## Prompt 38
+Uninstall the app from that virtual device
+
+## Response 38
+PhotoPototo03 app uninstalled successfully from virtual device.
+
+## Prompt 39
+Add the following actions aka toolbar buttons with icon images to the toolbar in the fragment named Preview: Select All, Select None, Invert Selection, Select Landscape, Select Portrait. Use the name of the actions as tooltips while showing adequate icons for the actions based on their names.
+
+## Response 39
+Successfully added toolbar buttons with icons to the Preview fragment! Here's what was implemented:
+
+**Toolbar Actions Added:**
+- **Select All** - Icon showing a checklist with all items selected
+- **Select None** - Icon showing an empty selection box  
+- **Invert Selection** - Icon showing a half-filled circle representing inversion
+- **Select Landscape** - Icon showing a landscape-oriented rectangle
+- **Select Portrait** - Icon showing a portrait-oriented rectangle
+
+**Implementation Details:**
+- **Vector Icons**: Created Material Design-style vector drawable icons for each action with proper tinting
+- **Menu Resource**: Added menu XML with proper `showAsAction="ifRoom"` to display icons in toolbar
+- **Action Handlers**: Implemented click handlers for each button with placeholder functionality (currently shows toast messages)
+- **Tooltips**: Action names automatically serve as tooltips when users long-press the buttons
+- **Material Design**: Used proper Material Design colors and styling for consistency
+
+The toolbar now displays the action buttons with appropriate icons. Each button currently shows a toast message indicating the action (placeholder for future implementation). The app has been successfully built and deployed to the virtual device for testing.
+
+## Prompt 40
+Make the app and run it in the active virtual device
+
+## Response 40
+PhotoPototo03 app successfully built, installed, and launched on the virtual device! The app is now running with the toolbar buttons in the Preview fragment. You can now test the new toolbar actions (Select All, Select None, Invert Selection, Select Landscape, Select Portrait) by navigating to the Preview tab and tapping the toolbar buttons.
+
+## Prompt 41
+Uninstall the app from that virtual device
+
+## Response 41
+PhotoPototo03 app uninstalled successfully from virtual device.
+
+## Prompt 42
+That worked well. Only, remove that Download placeholder you added when creating the toolbar
+
+## Response 42
+I need to clarify what you're referring to. I don't see any "Download placeholder" in the toolbar implementation I just created. The toolbar buttons I added were:
+
+- Select All
+- Select None  
+- Invert Selection
+- Select Landscape
+- Select Portrait
+
+Could you clarify which specific element you'd like me to remove? Are you perhaps referring to:
+1. One of the existing toolbar action buttons?
+2. Some text or placeholder content?
+3. Something else you observed when testing the app?
+
+Let me know exactly what you'd like removed and I'll take care of it.
+
+## Prompt 43
+The toolbar seems to contain the text Download ... please remove that
+
+## Response 43
+I've updated the toolbar menu to use `app:showAsAction="always"` instead of `"ifRoom"` which should prevent Android from showing any "Download" or overflow menu text. The toolbar should now display only the five action icons without any additional text placeholders.
+
+The change forces all toolbar items to always show as icons rather than allowing Android to decide whether to show them in an overflow menu, which likely was causing the "Download" text to appear. The app has been rebuilt and installed - you can now test the toolbar to confirm the "Download" text is removed.
+
+## Prompt 44
+Uninstall the app from that virtual device
+
+## Response 44
+PhotoPototo03 app uninstalled successfully from virtual device.
+
+## Prompt 45
+That worked well. Commit and push the changes in this folder with auto-comments.
+
+## Response 45
+Successfully committed and pushed all toolbar changes! The commit includes:
+
+- **Toolbar Implementation**: Added MaterialToolbar to Preview fragment with dynamic title updates
+- **Selection Icons**: Created 5 vector drawable icons with proper Material Design styling and tinting
+- **Menu System**: Implemented comprehensive toolbar menu with action handlers
+- **Layout Updates**: Converted fragment layout to support toolbar integration
+- **Action Handling**: Added placeholder functionality with toast feedback for all selection actions
+- **UI Polish**: Configured toolbar to always show icons to prevent unwanted overflow text
+
+The PhotoPototo03 project with the new toolbar functionality has been committed to the repository.
+
+## Prompt 46
+You still do not heed everything in CLAUDE.md because the prompts and answers do not always get added to the PROMPTS.md
