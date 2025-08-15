@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/action_grid_size"
+        android:icon="@drawable/ic_grid_size"
+        android:title="Grid Size"
+        app:showAsAction="always">
+        <menu>
+            <item
+                android:id="@+id/action_size_small"
+                android:icon="@drawable/ic_image_size_small"
+                android:title="Small" />
+            <item
+                android:id="@+id/action_size_medium"
+                android:icon="@drawable/ic_image_size_medium"
+                android:title="Medium" />
+            <item
+                android:id="@+id/action_size_large"
+                android:icon="@drawable/ic_image_size_large"
+                android:title="Large" />
+        </menu>
+    </item>
+
+    <item
+        android:id="@+id/action_select_all"
+        android:icon="@drawable/ic_select_all"
+        android:title="Select All"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_select_none"
+        android:icon="@drawable/ic_select_none"
+        android:title="Select None"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_invert_selection"
+        android:icon="@drawable/ic_invert_selection"
+        android:title="Invert Selection"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_select_landscape"
+        android:icon="@drawable/ic_select_landscape"
+        android:title="Select Landscape"
+        app:showAsAction="always" />
+
+    <item
+        android:id="@+id/action_select_portrait"
+        android:icon="@drawable/ic_select_portrait"
+        android:title="Select Portrait"
+        app:showAsAction="always" />
+
+</menu>
