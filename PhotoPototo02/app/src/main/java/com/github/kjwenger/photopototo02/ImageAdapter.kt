@@ -65,15 +65,15 @@ class ImageAdapter(
                 val bitmap = BitmapFactory.decodeFile(imageFile.absolutePath, options)
                 if (bitmap != null) {
                     imageView.setImageBitmap(bitmap)
-                    imageView.scaleType = ImageView.ScaleType.CENTER_CROP
+                    imageView.scaleType = ImageView.ScaleType.CENTER_INSIDE
                 } else {
                     imageView.setImageResource(R.drawable.ic_image)
-                    imageView.scaleType = ImageView.ScaleType.CENTER
+                    imageView.scaleType = ImageView.ScaleType.CENTER_INSIDE
                 }
             } catch (e: Exception) {
                 // Fallback to generic image icon
                 imageView.setImageResource(R.drawable.ic_image)
-                imageView.scaleType = ImageView.ScaleType.CENTER
+                imageView.scaleType = ImageView.ScaleType.CENTER_INSIDE
             }
         }
         
