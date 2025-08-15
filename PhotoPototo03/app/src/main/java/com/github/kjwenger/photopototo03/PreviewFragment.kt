@@ -61,10 +61,17 @@ class PreviewFragment : Fragment() {
     }
     
     private fun setupRecyclerView() {
-        imageAdapter = ImageAdapter(requireContext()) { imageFile ->
-            // Handle image click - could open full screen view
-            // For now, just show a toast or do nothing
-        }
+        imageAdapter = ImageAdapter(
+            requireContext(),
+            onImageClick = { imageFile ->
+                // Handle image click - could open full screen view
+                // For now, just show a toast or do nothing
+            },
+            onSelectionChange = { imageFile, isSelected ->
+                // Handle selection change
+                handleSelectionChange(imageFile, isSelected)
+            }
+        )
         
         recyclerView.layoutManager = GridLayoutManager(requireContext(), 3)
         recyclerView.adapter = imageAdapter
@@ -128,7 +135,17 @@ class PreviewFragment : Fragment() {
     
     private fun updateToolbarTitle() {
         if (::toolbar.isInitialized) {
-            toolbar.title = currentFolder?.name ?: "Preview"
+            val baseName = currentFolder?.name ?: "Preview"
+            if (::imageAdapter.isInitialized) {
+                val selectedCount = imageAdapter.getSelectedImages().size
+                if (selectedCount > 0) {
+                    toolbar.title = "$baseName ($selectedCount selected)"
+                } else {
+                    toolbar.title = baseName
+                }
+            } else {
+                toolbar.title = baseName
+            }
         }
     }
     
@@ -159,28 +176,39 @@ class PreviewFragment : Fragment() {
     }
     
     private fun selectAllImages() {
-        // TODO: Implement select all functionality
-        showToast("Select All - Not yet implemented")
+        if (::imageAdapter.isInitialized) {
+            imageAdapter.selectAll()
+            updateToolbarTitle()
+        }
     }
     
     private fun selectNoneImages() {
-        // TODO: Implement select none functionality
-        showToast("Select None - Not yet implemented")
+        if (::imageAdapter.isInitialized) {
+            imageAdapter.selectNone()
+            updateToolbarTitle()
+        }
     }
     
     private fun invertSelection() {
-        // TODO: Implement invert selection functionality
-        showToast("Invert Selection - Not yet implemented")
+        if (::imageAdapter.isInitialized) {
+            imageAdapter.invertSelection()
+            updateToolbarTitle()
+        }
     }
     
     private fun selectLandscapeImages() {
-        // TODO: Implement select landscape functionality
+        // TODO: Implement landscape selection based on image dimensions
         showToast("Select Landscape - Not yet implemented")
     }
     
     private fun selectPortraitImages() {
-        // TODO: Implement select portrait functionality
+        // TODO: Implement portrait selection based on image dimensions
         showToast("Select Portrait - Not yet implemented")
+    }
+    
+    private fun handleSelectionChange(imageFile: File, isSelected: Boolean) {
+        // Update toolbar title to show selection count
+        updateToolbarTitle()
     }
     
     private fun showToast(message: String) {
