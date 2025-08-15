@@ -118,7 +118,9 @@ These files serve as the project's memory and MUST be maintained across all sess
 ### Known Issues Fixed:
 - ✅ Duplicate permission requests
 - ✅ Preview fragment crash on tab switch
-- ✅ Package name refactoring from PhotoPototo02 to PhotoPototo04
+- ✅ Package name refactoring from PhotoPototo02 to PhotoPototo03
+- ✅ Complete project rename from PhotoPototo03 to PhotoPototo04
+- ✅ Virtual device preference persistence (Pixel Tablet API 35)
 
 ### Development Best Practices:
 - Use TodoWrite tool for task planning and tracking

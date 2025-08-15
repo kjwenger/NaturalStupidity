@@ -92,6 +92,23 @@ This document contains all requirements for the PhotoPototo04 Android applicatio
   - CLAUDE.md enhanced with session management instructions
   - REQUIREMENTS.md continuously updated with new features
 
+### R014 - Project Renaming to PhotoPototo04
+- **Requirement**: Complete rename from PhotoPototo03 to PhotoPototo04 throughout project
+- **Status**: ✅ Implemented
+- **Details**:
+  - Updated all package names and namespaces
+  - Renamed directory structures
+  - Updated documentation and configuration files
+  - Verified build and functionality
+
+### R015 - Preferred Virtual Device Configuration
+- **Requirement**: Configure and persist preferred virtual device for testing
+- **Status**: ✅ Implemented
+- **Details**:
+  - Pixel Tablet API 35 set as preferred emulator
+  - Added to CLAUDE.md development commands
+  - Tested app installation and launching
+
 ## Technical Requirements
 
 ### R100 - Build System
