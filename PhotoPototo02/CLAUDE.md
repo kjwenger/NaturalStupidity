@@ -4,12 +4,28 @@ This file provides context and instructions for Claude Code when working on the 
 
 ## Project Overview
 
-PhotoPototo02 is a native Android application built with Kotlin that provides directory browsing functionality. The app allows users to navigate through the device's file system with proper permission handling for different Android versions.
+PhotoPototo02 is a native Android application built with Kotlin that provides directory browsing and image preview functionality. The app features:
+
+- **Browse Fragment**: Navigate through the device's file system with proper permission handling for different Android versions
+- **Preview Fragment**: Display images from selected folders in a grid layout
+- **Tab-based Navigation**: Bottom navigation with Browse and Preview tabs
+- **Fragment Communication**: Seamless data sharing between Browse and Preview fragments via FolderSelectionListener interface
 
 ## Project Structure
 
 - `app/src/main/java/com/github/kjwenger/photopototo02/` - Kotlin source files
+  - `MainActivity.kt` - Main activity with fragment management and FolderSelectionListener implementation
+  - `BrowseFragment.kt` - Directory browsing with permission handling
+  - `PreviewFragment.kt` - Image grid display with crash prevention
+  - `DirectoryAdapter.kt` - RecyclerView adapter for file/folder listing
+  - `ImageAdapter.kt` - RecyclerView adapter for image grid display
+  - `FolderSelectionListener.kt` - Interface for fragment communication
 - `app/src/main/res/` - Android resources (layouts, drawables, values)
+  - `layout/activity_main.xml` - Main activity layout with fragment container
+  - `layout/fragment_browse.xml` - Browse fragment layout
+  - `layout/fragment_preview.xml` - Preview fragment layout with image grid
+  - `layout/item_image.xml` - Image item layout for grid display
+  - `menu/bottom_navigation.xml` - Bottom navigation menu with Browse and Preview tabs
 - `app/build.gradle` - App-level build configuration
 - `build.gradle` - Project-level build configuration
 - `settings.gradle` - Project settings
@@ -43,10 +59,19 @@ When working on this project, use these commands:
 ## Architecture Notes
 
 This project is a native Android application with:
-- Fragment-based UI architecture
-- RecyclerView for directory listing
-- Modern Android permission handling
-- Material Design 3 theming
+- **Fragment-based UI architecture** with MainActivity coordinating two main fragments
+- **Bottom Navigation** with Browse and Preview tabs
+- **RecyclerView implementations** for both directory listing and image grid display
+- **Modern Android permission handling** across different API levels
+- **Fragment Communication** via FolderSelectionListener interface
+- **Crash Prevention** with proper view initialization checks
+- **Material Design 3 theming** throughout the application
+
+### Key Architectural Patterns:
+- **Observer Pattern**: FolderSelectionListener for fragment communication
+- **Adapter Pattern**: DirectoryAdapter and ImageAdapter for RecyclerView data binding
+- **Fragment Lifecycle Management**: Proper handling of view creation timing
+- **Permission Strategy Pattern**: Different permission handling based on Android version
 
 ## Testing Strategy
 
@@ -66,6 +91,40 @@ This project is a native Android application with:
 - Check for existing similar components before creating new ones
 - Update this file when project structure or commands change
 - **Always add prompts and answers to PROMPTS.md for project history tracking**
+
+## MANDATORY SESSION MANAGEMENT
+
+**CRITICAL**: In every session, Claude Code MUST:
+
+1. **Update PROMPTS.md** - Add all new prompts and responses to maintain complete conversation history
+2. **Update CLAUDE.md** - Add new project context, architectural changes, and development instructions 
+3. **Update REQUIREMENTS.md** - Add new requirements and mark completed ones as implemented
+
+These files serve as the project's memory and MUST be maintained across all sessions to ensure continuity.
+
+## Current Implementation Status
+
+### Completed Features:
+- ✅ Browse fragment with file system navigation
+- ✅ Preview fragment with image grid display
+- ✅ Tab-based navigation between Browse and Preview
+- ✅ Fragment communication via FolderSelectionListener
+- ✅ Crash prevention with proper view initialization
+- ✅ Empty grid display when no folder selected
+- ✅ Modern Android permission handling
+- ✅ Custom photo application icon
+
+### Known Issues Fixed:
+- ✅ Duplicate permission requests
+- ✅ Preview fragment crash on tab switch
+- ✅ Package name refactoring from PhotoPototo01 to PhotoPototo02
+
+### Development Best Practices:
+- Use TodoWrite tool for task planning and tracking
+- Always test on virtual device after changes
+- Commit with detailed auto-generated messages
+- Maintain proper fragment lifecycle management
+- Handle all Android API level differences
 
 ### Communication Guidelines
 
