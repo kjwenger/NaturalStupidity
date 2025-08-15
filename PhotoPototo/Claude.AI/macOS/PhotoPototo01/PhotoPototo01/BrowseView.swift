@@ -71,15 +71,14 @@ class BrowseView: NSView {
         }
         
         // Add user directories
-        if let homeURL = fileManager.urls(for: .homeDirectory, in: .userDomainMask).first {
-            directories.append(homeURL)
-            addDirectoryIfExists(homeURL.appendingPathComponent("Desktop"))
-            addDirectoryIfExists(homeURL.appendingPathComponent("Documents"))
-            addDirectoryIfExists(homeURL.appendingPathComponent("Downloads"))
-            addDirectoryIfExists(homeURL.appendingPathComponent("Pictures"))
-            addDirectoryIfExists(homeURL.appendingPathComponent("Music"))
-            addDirectoryIfExists(homeURL.appendingPathComponent("Movies"))
-        }
+        let homeURL = FileManager.default.homeDirectoryForCurrentUser
+        directories.append(homeURL)
+        addDirectoryIfExists(homeURL.appendingPathComponent("Desktop"))
+        addDirectoryIfExists(homeURL.appendingPathComponent("Documents"))
+        addDirectoryIfExists(homeURL.appendingPathComponent("Downloads"))
+        addDirectoryIfExists(homeURL.appendingPathComponent("Pictures"))
+        addDirectoryIfExists(homeURL.appendingPathComponent("Music"))
+        addDirectoryIfExists(homeURL.appendingPathComponent("Movies"))
         
         // Sort directories by path
         directories.sort { $0.path < $1.path }
