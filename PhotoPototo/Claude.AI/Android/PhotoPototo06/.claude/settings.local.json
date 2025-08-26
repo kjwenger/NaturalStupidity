@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gradle:*)",
+      "Bash(\"C:\\Users\\kjwenger\\AppData\\Local\\Android\\Sdk\\platform-tools\\adb.exe\" install -r \"app\\build\\outputs\\apk\\debug\\app-debug.apk\")",
+      "Bash(\"C:\\Users\\kjwenger\\AppData\\Local\\Android\\Sdk\\platform-tools\\adb.exe\" shell am start -n com.github.kjwenger.photopototo06/.MainActivity)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

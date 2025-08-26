@@ -129,17 +129,22 @@ These files serve as the project's memory and MUST be maintained across all sess
 - ✅ Empty grid display when no folder selected
 - ✅ Modern Android permission handling
 - ✅ Custom photo application icon
-- ✅ Toolbar with selection actions (Select All, Select None, Invert Selection)
-- ✅ Landscape/Portrait selection based on image dimensions
-- ✅ Dynamic grid size dropdown menu (Small 64dp, Medium 128dp, Large 256dp)
+- ✅ Toolbar with organized dropdown menus (Grid Size and Select)
+- ✅ Grid Size dropdown menu (Small 64dp, Medium 128dp, Large 256dp)
+- ✅ Select dropdown menu with all selection actions:
+  - Select All, Select None, Invert Selection
+  - Select Landscape (width > height), Select Portrait (height > width)
 - ✅ Responsive column layout that adjusts with grid size changes
+- ✅ Consistent icon color scheme across dropdown menus
+- ✅ Dynamic toolbar title showing folder name or "Preview" with selection counts
 
 ### Known Issues Fixed:
 - ✅ Duplicate permission requests
 - ✅ Preview fragment crash on tab switch
 - ✅ Package name refactoring from PhotoPototo02 to PhotoPototo03
 - ✅ Complete project rename from PhotoPototo03 to PhotoPototo06
-- ✅ Virtual device preference persistence (Pixel Tablet API 35)
+- ✅ Virtual device compatibility (switched from Pixel Tablet API 35 ARM64 to Medium Phone API 36.0 x86_64)
+- ✅ Icon color consistency between Grid Size and Select dropdown menus
 
 ### Development Best Practices:
 - Use TodoWrite tool for task planning and tracking

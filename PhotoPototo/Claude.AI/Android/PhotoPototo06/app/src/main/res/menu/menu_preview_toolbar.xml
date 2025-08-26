@@ -24,33 +24,32 @@
     </item>
 
     <item
-        android:id="@+id/action_select_all"
-        android:icon="@drawable/ic_select_all"
-        android:title="Select All"
-        app:showAsAction="always" />
-
-    <item
-        android:id="@+id/action_select_none"
-        android:icon="@drawable/ic_select_none"
-        android:title="Select None"
-        app:showAsAction="always" />
-
-    <item
-        android:id="@+id/action_invert_selection"
-        android:icon="@drawable/ic_invert_selection"
-        android:title="Invert Selection"
-        app:showAsAction="always" />
-
-    <item
-        android:id="@+id/action_select_landscape"
-        android:icon="@drawable/ic_select_landscape"
-        android:title="Select Landscape"
-        app:showAsAction="always" />
-
-    <item
-        android:id="@+id/action_select_portrait"
-        android:icon="@drawable/ic_select_portrait"
-        android:title="Select Portrait"
-        app:showAsAction="always" />
+        android:id="@+id/action_select"
+        android:icon="@drawable/ic_select"
+        android:title="Select"
+        app:showAsAction="always">
+        <menu>
+            <item
+                android:id="@+id/action_select_all"
+                android:icon="@drawable/ic_select_all"
+                android:title="Select All" />
+            <item
+                android:id="@+id/action_select_none"
+                android:icon="@drawable/ic_select_none"
+                android:title="Select None" />
+            <item
+                android:id="@+id/action_invert_selection"
+                android:icon="@drawable/ic_invert_selection"
+                android:title="Invert Selection" />
+            <item
+                android:id="@+id/action_select_landscape"
+                android:icon="@drawable/ic_select_landscape"
+                android:title="Select Landscape" />
+            <item
+                android:id="@+id/action_select_portrait"
+                android:icon="@drawable/ic_select_portrait"
+                android:title="Select Portrait" />
+        </menu>
+    </item>
 
 </menu>

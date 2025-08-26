@@ -144,6 +144,38 @@ This document contains all requirements for the PhotoPototo06 Android applicatio
   - Submenu structure for dropdown functionality
   - Vector icons for each size option with Material Design styling
 
+### R018 - Toolbar Reorganization and Dropdown Menus
+- **Requirement**: Reorganize toolbar actions into organized dropdown menus for better UI/UX
+- **Status**: ✅ Implemented
+- **Details**:
+  - Created "Select" dropdown menu containing all selection actions
+  - Grouped Select All, Select None, Invert Selection, Select Landscape, Select Portrait under single dropdown
+  - Maintained existing Grid Size dropdown for image cell sizing
+  - Created new ic_select.xml icon for Select dropdown with proper Material Design styling
+  - All dropdown menu items use consistent icon color scheme (colorOnSurface)
+  - Cleaner, more organized toolbar interface with grouped functionality
+  - All existing functionality preserved with improved accessibility
+
+### R019 - Virtual Device Compatibility and Build Environment
+- **Requirement**: Ensure compatibility with available virtual devices and build environment
+- **Status**: ✅ Implemented  
+- **Details**:
+  - Configured Android SDK location in local.properties for Windows environment
+  - Switched from Pixel Tablet API 35 (ARM64) to Medium Phone API 36.0 (x86_64) for compatibility
+  - Updated CLAUDE.md with correct virtual device preference
+  - Verified full clean builds and APK installation process
+  - Established reliable development workflow on Windows with Android SDK
+
+### R020 - Icon Color Consistency Across UI Components
+- **Requirement**: Maintain consistent visual styling across all toolbar dropdown menus
+- **Status**: ✅ Implemented
+- **Details**:
+  - Updated all Select dropdown icons to use android:tint="?attr/colorOnSurface"
+  - Ensures consistent foreground/background colors between Grid Size and Select dropdowns
+  - Modified ic_select_all.xml, ic_select_none.xml, ic_invert_selection.xml, ic_select_landscape.xml, ic_select_portrait.xml
+  - Cohesive Material Design visual experience across all toolbar components
+  - Professional appearance with unified color scheme
+
 ## Technical Requirements
 
 ### R100 - Build System
