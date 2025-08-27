@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:photos.google.com)",
+      "WebFetch(domain:www.google.com)",
+      "Bash(git log:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Read(D:\\com.github\\kjwenger\\NaturalStupidity\\ShmooglePhotos/**)",
+      "Read(D:\\com.github\\kjwenger\\NaturalStupidity\\ShmooglePhotos/**)",
+      "Read(D:\\com.github\\kjwenger\\NaturalStupidity\\ShmooglePhotos/**)",
+      "Read(D:\\com.github\\kjwenger\\NaturalStupidity\\ShmooglePhotos/**)",
+      "Read(D:\\com.github\\kjwenger\\NaturalStupidity\\ShmooglePhotos/**)",
+      "Read(D:\\com.github\\kjwenger\\NaturalStupidity\\ShmooglePhotos/**)",
+      "Read(D:\\com.github\\kjwenger\\NaturalStupidity\\ShmooglePhotos/**)",
+      "Read(D:\\com.github\\kjwenger\\NaturalStupidity\\ShmooglePhotos/**)",
+      "Read(D:\\com.github\\kjwenger\\NaturalStupidity\\ShmooglePhotos/**)",
+      "Bash(npm install:*)",
+      "Bash(npm run dev:*)",
+      "Bash(git push:*)"
+    ],
+    "deny": [],
+    "ask": [],
+    "additionalDirectories": [
+      "D:\\com.github\\kjwenger\\NaturalStupidity"
+    ]
+  }
+}
