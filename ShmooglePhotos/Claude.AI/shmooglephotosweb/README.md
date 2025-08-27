@@ -27,8 +27,62 @@ A React-based web application for the ShmooglePhotos photo management platform.
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 20+ (LTS recommended)
 - npm or yarn
+
+### Node.js Setup with NVM (Recommended)
+
+We recommend using Node Version Manager (NVM) to install and manage Node.js versions.
+
+#### Install NVM
+
+**Windows:**
+1. Download and install nvm-windows from: https://github.com/coreybutler/nvm-windows/releases
+2. Download the `nvm-setup.exe` file from the latest release
+3. Run the installer as Administrator
+4. Restart your terminal/command prompt
+
+**macOS:**
+```bash
+# Install using Homebrew (recommended)
+brew install nvm
+
+# Or install using curl
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
+```
+
+**Linux:**
+```bash
+# Install using curl
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
+
+# Or install using wget
+wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.0/install.sh | bash
+```
+
+After installation on macOS/Linux, restart your terminal or run:
+```bash
+source ~/.bashrc
+# or
+source ~/.zshrc
+```
+
+#### Install and Set Node.js Version
+
+Once NVM is installed:
+
+```bash
+# Install Node.js 20 LTS
+nvm install 20
+
+# Set Node.js 20 as default
+nvm use 20
+nvm alias default 20
+
+# Verify installation
+node --version  # Should show v20.x.x
+npm --version   # Should show npm version
+```
 
 ### Installation
 
