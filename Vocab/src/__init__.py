@@ -1,0 +1,1 @@
+"""Multilingual Mnemonic Generator package."""
