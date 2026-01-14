@@ -7,7 +7,11 @@ To manage Node.js versions, it's recommended to install `nvm` (Node Version Mana
 
 ### Linux and macOS
 
-To install `nvm` on Linux or macOS, you can use the following `curl` or `wget` commands:
+To install `nvm` on Linux or macOS, you have a couple of options:
+
+#### Using `curl` or `wget` (Recommended for fresh installs)
+
+You can use the following `curl` or `wget` commands:
 
 ```bash
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
@@ -17,7 +21,17 @@ or
 wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
 ```
 
-After installation, close and reopen your terminal, or source your shell's profile script (e.g., `source ~/.bashrc`, `source ~/.zshrc`).
+#### Using Homebrew (If Homebrew is already installed)
+
+If you have Homebrew installed on macOS, you can install `nvm` using:
+
+```bash
+brew install nvm
+```
+
+After installing with Homebrew, you'll need to follow the instructions provided by Homebrew to set up `nvm` in your shell. This usually involves adding lines to your shell's profile file (e.g., `~/.bashrc`, `~/.zshrc`).
+
+After installation (using either method), close and reopen your terminal, or source your shell's profile script (e.g., `source ~/.bashrc`, `source ~/.zshrc`).
 
 You can then install the latest Node.js LTS version:
 ```bash
