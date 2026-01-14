@@ -26,6 +26,7 @@ Playground for all things Artificial Intelligence
     - [Goose CLI](#goose-cli)
       - [Using Goose with Local LLMs via LM Studio](#using-goose-with-local-llms-via-lm-studio)
     - [Grok CLI](#grok-cli)
+    - [OpenHands CLI](#openhands-cli)
     - [Qwen CLI](#qwen-cli)
       - [Using Qwen with Local LLMs via LM Studio](#using-qwen-with-local-llms-via-lm-studio)
     - [Warp CLI](#warp-cli)
@@ -416,6 +417,40 @@ export GOOSE_MODEL=openai/gpt-oss-120b
 ```
 
 Replace the model identifier with your actual model from LM Studio. The commented-out line shows an alternative model example.
+
+#### OpenHands CLI
+
+OpenHands CLI brings AI-powered development assistance directly to your terminal, enabling autonomous coding, debugging, and task execution.
+
+**Install using npm:**
+```bash
+npm install -g openhands-cli
+```
+
+**Install using pip:**
+```bash
+pip install openhands-cli
+```
+
+**Setup:**
+
+Configure your API key using environment variables:
+```bash
+export OPENHANDS_API_KEY=your-api-key-here
+```
+
+You can also configure the LLM provider:
+```bash
+export OPENHANDS_LLM_PROVIDER=openai  # or anthropic, azure, etc.
+export OPENHANDS_LLM_MODEL=gpt-4      # your preferred model
+```
+
+**Usage:**
+```bash
+openhands "your task description"
+```
+
+For more information, visit [OpenHands CLI blog post](https://openhands.dev/blog/the-openhands-cli-ai-powered-development-in-your-terminal) and [OpenHands documentation](https://openhands.dev/).
 
 #### Qwen CLI
 
