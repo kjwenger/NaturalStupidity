@@ -163,17 +163,24 @@ For more information, visit [GitHub Copilot CLI documentation](https://githubnex
 
 Google's Gemini AI CLI tool.
 
-Install using pip:
+**Run instantly with npx (no installation required):**
 ```bash
-pip install google-generativeai
+npx @google/gemini-cli
 ```
 
-Set your Google API key:
+**Install globally with npm:**
 ```bash
-export GOOGLE_API_KEY=your-api-key-here
+npm install -g @google/gemini-cli
 ```
 
-For more information, visit [Google AI documentation](https://ai.google.dev/).
+**Install globally with Homebrew (macOS/Linux):**
+```bash
+brew install gemini-cli
+```
+
+After installation, you'll be prompted to authenticate with your Google account on first use.
+
+For more information, visit [Gemini CLI's GitHub repository](https://github.com/google-gemini/gemini-cli).
 
 #### Qwen CLI
 
