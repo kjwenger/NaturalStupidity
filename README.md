@@ -345,6 +345,24 @@ Goose is also available as a desktop application. Download `Goose.zip` from the 
 
 For more information, visit [Goose's documentation](https://block.github.io/goose/docs/getting-started/installation) and [GitHub repository](https://github.com/block/goose).
 
+##### Using Goose with Local LLMs via LM Studio
+
+You can use Goose with local LLMs served by LM Studio's OpenAI-compatible API:
+
+1. Start LM Studio and load your preferred model
+2. Enable the Local Server feature in LM Studio (default port: 1234)
+3. Configure environment variables:
+
+```bash
+export GOOSE_PROVIDER=openai
+export OPENAI_API_BASE=http://localhost:1234/v1
+export OPENAI_API_KEY=lm-studio
+# export GOOSE_MODEL=qwen3-coder-30b-a3b-instruct
+export GOOSE_MODEL=openai/gpt-oss-120b
+```
+
+Replace the model identifier with your actual model from LM Studio. The commented-out line shows an alternative model example.
+
 #### Qwen CLI
 
 Qwen Code is Alibaba Cloud's AI-powered coding assistant CLI.
