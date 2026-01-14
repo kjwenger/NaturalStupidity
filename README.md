@@ -1,7 +1,26 @@
 # NaturalStupidity
 Playground for all things Artificial Intelligence
 
+## Table of Contents
+- [Prerequisites](#prerequisites)
+  - [Node.js Installation](#nodejs-installation)
+    - [Linux and macOS](#linux-and-macos)
+    - [Using `curl` or `wget` (Recommended for fresh installs)](#using-curl-or-wget-recommended-for-fresh-installs)
+    - [Using Homebrew (If Homebrew is already installed)](#using-homebrew-if-homebrew-is-already-installed)
+    - [Windows](#windows)
+    - [Using `nvm` to Install Node.js](#using-nvm-to-install-nodejs)
+  - [AI CLI Tools](#ai-cli-tools)
+    - [Aider CLI](#aider-cli)
+    - [Claude CLI](#claude-cli)
+    - [Codex CLI](#codex-cli)
+    - [Copilot CLI](#copilot-cli)
+    - [Gemini CLI](#gemini-cli)
+    - [Qwen CLI](#qwen-cli)
+    - [Warp CLI](#warp-cli)
+
 ## Prerequisites
+
+### Node.js Installation
 
 To manage Node.js versions, it's recommended to install `nvm` (Node Version Manager).
 
@@ -68,3 +87,122 @@ For example, to use Node.js version 18:
 ```bash
 nvm use 18
 ```
+
+### AI CLI Tools
+
+#### Aider CLI
+
+Aider is an AI pair programming tool in your terminal.
+
+Install using pip:
+```bash
+pip install aider-chat
+```
+
+Or using pipx (recommended for isolated installation):
+```bash
+pipx install aider-chat
+```
+
+After installation, you'll need to set your API key (e.g., OpenAI):
+```bash
+export OPENAI_API_KEY=your-api-key-here
+```
+
+For more information, visit [Aider's GitHub repository](https://github.com/paul-gauthier/aider).
+
+#### Claude CLI
+
+Claude CLI provides command-line access to Anthropic's Claude AI.
+
+Install using npm:
+```bash
+npm install -g @anthropic-ai/claude-cli
+```
+
+Configure with your Anthropic API key:
+```bash
+export ANTHROPIC_API_KEY=your-api-key-here
+```
+
+For more information, visit [Anthropic's documentation](https://www.anthropic.com/).
+
+#### Codex CLI
+
+OpenAI Codex CLI for code generation and completion.
+
+Install using pip:
+```bash
+pip install openai
+```
+
+Set your OpenAI API key:
+```bash
+export OPENAI_API_KEY=your-api-key-here
+```
+
+#### Copilot CLI
+
+GitHub Copilot CLI brings GitHub Copilot to the command line.
+
+Install using npm:
+```bash
+npm install -g @githubnext/github-copilot-cli
+```
+
+Authenticate with GitHub:
+```bash
+github-copilot-cli auth
+```
+
+For more information, visit [GitHub Copilot CLI documentation](https://githubnext.com/projects/copilot-cli/).
+
+#### Gemini CLI
+
+Google's Gemini AI CLI tool.
+
+Install using pip:
+```bash
+pip install google-generativeai
+```
+
+Set your Google API key:
+```bash
+export GOOGLE_API_KEY=your-api-key-here
+```
+
+For more information, visit [Google AI documentation](https://ai.google.dev/).
+
+#### Qwen CLI
+
+Qwen (通义千问) is Alibaba Cloud's AI assistant CLI.
+
+Install using pip:
+```bash
+pip install dashscope
+```
+
+Configure with your API key:
+```bash
+export DASHSCOPE_API_KEY=your-api-key-here
+```
+
+For more information, visit [Qwen's documentation](https://help.aliyun.com/zh/dashscope/).
+
+#### Warp CLI
+
+Warp is a modern terminal with AI-powered command suggestions.
+
+**macOS:**
+Download from [Warp's website](https://www.warp.dev/) or install using Homebrew:
+```bash
+brew install --cask warp
+```
+
+**Linux:**
+Download the appropriate package from [Warp's website](https://www.warp.dev/).
+
+**Windows:**
+Download the installer from [Warp's website](https://www.warp.dev/).
+
+After installation, launch Warp and sign in to access AI features.
