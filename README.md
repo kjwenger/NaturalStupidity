@@ -21,6 +21,7 @@ Playground for all things Artificial Intelligence
     - [Codex CLI](#codex-cli)
     - [Copilot CLI](#copilot-cli)
     - [Gemini CLI](#gemini-cli)
+    - [Goose CLI](#goose-cli)
     - [Grok CLI](#grok-cli)
     - [Qwen CLI](#qwen-cli)
     - [Warp CLI](#warp-cli)
@@ -309,6 +310,40 @@ grok --api-key your_api_key_here
 ```
 
 For more information, visit [Grok CLI's GitHub repository](https://github.com/superagent-ai/grok-cli).
+
+#### Goose CLI
+
+Goose is an open-source, extensible AI agent that automates engineering tasks, capable of building projects, executing code, debugging, and orchestrating workflows autonomously.
+
+**Install using installation script (macOS/Linux):**
+```bash
+curl -fsSL https://github.com/block/goose/releases/latest/download/download_cli.sh | sh
+```
+
+**Install using pre-built binaries:**
+
+Download the appropriate binary for your platform from the [latest release](https://github.com/block/goose/releases/latest):
+
+**macOS:**
+- Apple Silicon (M1/M2): `goose-aarch64-apple-darwin.tar.bz2`
+- Intel: `goose-x86_64-apple-darwin.tar.bz2` or `Goose_intel_mac.zip`
+
+**Linux:**
+- ARM64: `goose-aarch64-unknown-linux-gnu.tar.bz2`
+- x86_64: `goose-x86_64-unknown-linux-gnu.tar.bz2`
+- Debian/Ubuntu: `goose_*_amd64.deb`
+- Fedora/RHEL: `Goose-*.x86_64.rpm`
+
+**Windows:**
+- `goose-x86_64-pc-windows-gnu.zip` or `Goose-win32-x64.zip`
+
+Extract the binary and add it to your PATH, or use your package manager to install the .deb or .rpm package.
+
+**Desktop App:**
+
+Goose is also available as a desktop application. Download `Goose.zip` from the [latest release](https://github.com/block/goose/releases/latest).
+
+For more information, visit [Goose's documentation](https://block.github.io/goose/docs/getting-started/installation) and [GitHub repository](https://github.com/block/goose).
 
 #### Qwen CLI
 
