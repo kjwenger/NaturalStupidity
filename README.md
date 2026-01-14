@@ -177,19 +177,32 @@ For more information, visit [Google AI documentation](https://ai.google.dev/).
 
 #### Qwen CLI
 
-Qwen (通义千问) is Alibaba Cloud's AI assistant CLI.
+Qwen Code is Alibaba Cloud's AI-powered coding assistant CLI.
 
-Install using pip:
+**Prerequisites:**
+Node.js 20+ is required:
 ```bash
-pip install dashscope
+curl -qL https://www.npmjs.com/install.sh | sh
 ```
 
-Configure with your API key:
+**Install using npm (recommended):**
 ```bash
-export DASHSCOPE_API_KEY=your-api-key-here
+npm install -g @qwen-code/qwen-code@latest
 ```
 
-For more information, visit [Qwen's documentation](https://help.aliyun.com/zh/dashscope/).
+**Install using Homebrew (macOS, Linux):**
+```bash
+brew install qwen-code
+```
+
+Start Qwen Code:
+```bash
+qwen
+```
+
+On first use, you'll be prompted to sign in. You can run `/auth` anytime to switch authentication methods.
+
+For more information, visit [Qwen Code's GitHub repository](https://github.com/QwenLM/qwen-code).
 
 #### Warp CLI
 
