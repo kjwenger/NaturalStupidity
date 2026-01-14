@@ -33,6 +33,16 @@ After installing with Homebrew, you'll need to follow the instructions provided 
 
 After installation (using either method), close and reopen your terminal, or source your shell's profile script (e.g., `source ~/.bashrc`, `source ~/.zshrc`).
 
+### Windows
+
+For Windows, it is recommended to use `nvm-windows`. You can download the latest installer from the [nvm-windows GitHub repository](https://github.com/coreybutler/nvm-windows/releases).
+
+Follow the installation instructions provided on the GitHub page. After installation, you can use commands like:
+```bash
+nvm install latest
+nvm use latest
+```
+
 ### Using `nvm` to Install Node.js
 
 After `nvm` is installed and configured, you can install Node.js versions.
@@ -57,16 +67,4 @@ nvm use <version>
 For example, to use Node.js version 18:
 ```bash
 nvm use 18
-```
-
-
-
-### Windows
-
-For Windows, it is recommended to use `nvm-windows`. You can download the latest installer from the [nvm-windows GitHub repository](https://github.com/coreybutler/nvm-windows/releases).
-
-Follow the installation instructions provided on the GitHub page. After installation, you can use commands like:
-```bash
-nvm install latest
-nvm use latest
 ```
