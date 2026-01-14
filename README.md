@@ -96,12 +96,12 @@ Aider is an AI pair programming tool in your terminal.
 
 Install using pip:
 ```bash
-pip install aider-chat
+pip install aider-install
 ```
 
 Or using pipx (recommended for isolated installation):
 ```bash
-pipx install aider-chat
+pipx install aider-install
 ```
 
 After installation, you'll need to set your API key (e.g., OpenAI):
@@ -109,7 +109,7 @@ After installation, you'll need to set your API key (e.g., OpenAI):
 export OPENAI_API_KEY=your-api-key-here
 ```
 
-For more information, visit [Aider's GitHub repository](https://github.com/paul-gauthier/aider).
+For more information, visit [Aider's installation documentation](https://aider.chat/docs/install.html).
 
 #### Claude CLI
 
