@@ -245,7 +245,9 @@ You can use Codex CLI with local LLMs served by LM Studio's OpenAI-compatible AP
 
 1. Start LM Studio and load your preferred model
 2. Enable the Local Server feature in LM Studio (default port: 1234)
-3. Configure environment variables:
+3. Configure using one of the following methods:
+
+**Method 1: Using environment variables:**
 
 ```bash
 export OPENAI_API_BASE=http://localhost:1234/v1
@@ -254,6 +256,36 @@ export OPENAI_MODEL=your-model-name
 ```
 
 Replace `your-model-name` with your actual model from LM Studio (e.g., `qwen3-coder-30b-a3b-instruct` or `gpt-oss-120b`).
+
+**Method 2: Using configuration file (~/.codex/config.toml):**
+
+Create or edit `~/.codex/config.toml`:
+
+```toml
+# Codex CLI Configuration for Local LLM via LM Studio
+
+[model_providers.lm_studio]
+name = "LM Studio"
+base_url = "http://localhost:1234/v1"
+
+[profiles.gpt-oss-120b]
+model_provider = "lm_studio"
+model = "openai/gpt-oss-120b"
+
+[profiles.qwen3-coder]
+model_provider = "lm_studio"
+model = "qwen3-coder-30b-a3b-instruct"
+
+[projects."/path/to/your/project"]
+trust_level = "trusted"
+```
+
+Then use the profile with:
+```bash
+codex --profile gpt-oss-120b
+# or
+codex --profile qwen3-coder
+```
 
 For more information, see [Codex CLI with Local Models](https://dev.to/shashikant86/codex-cli-running-gpt-oss-and-local-coding-models-with-ollama-lm-studio-and-mlx-403g).
 
