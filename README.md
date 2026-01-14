@@ -22,6 +22,7 @@ Playground for all things Artificial Intelligence
     - [Codex CLI](#codex-cli)
       - [Using Codex with Local LLMs via LM Studio](#using-codex-with-local-llms-via-lm-studio)
     - [Copilot CLI](#copilot-cli)
+    - [Factory CLI](#factory-cli)
     - [Gemini CLI](#gemini-cli)
     - [Goose CLI](#goose-cli)
       - [Using Goose with Local LLMs via LM Studio](#using-goose-with-local-llms-via-lm-studio)
@@ -305,6 +306,45 @@ github-copilot-cli auth
 ```
 
 For more information, visit [GitHub Copilot CLI documentation](https://githubnext.com/projects/copilot-cli/).
+
+#### Factory CLI
+
+Factory CLI enables AI-powered automation across the software development lifecycle, from CI/CD to code migrations and maintenance.
+
+**Install using installation script:**
+
+**macOS/Linux:**
+```bash
+curl -fsSL https://factory.ai/install.sh | sh
+```
+
+**Windows:**
+```powershell
+irm https://factory.ai/install.ps1 | iex
+```
+
+**Setup:**
+
+Sign up and authenticate:
+```bash
+factory auth
+```
+
+Configure your API key:
+```bash
+export FACTORY_API_KEY=your-api-key-here
+```
+
+**Usage:**
+
+Run Factory Droids for various tasks:
+```bash
+factory run "your automation task"
+```
+
+For CI/CD integration and advanced features, see the [Factory CLI documentation](https://factory.ai/product/cli).
+
+For more information, visit [Factory.ai](https://factory.ai/).
 
 #### Gemini CLI
 
