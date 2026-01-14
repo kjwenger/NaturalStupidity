@@ -21,6 +21,7 @@ Playground for all things Artificial Intelligence
     - [Codex CLI](#codex-cli)
     - [Copilot CLI](#copilot-cli)
     - [Gemini CLI](#gemini-cli)
+    - [Grok CLI](#grok-cli)
     - [Qwen CLI](#qwen-cli)
     - [Warp CLI](#warp-cli)
 
@@ -263,6 +264,43 @@ brew install gemini-cli
 After installation, you'll be prompted to authenticate with your Google account on first use.
 
 For more information, visit [Gemini CLI's GitHub repository](https://github.com/google-gemini/gemini-cli).
+
+#### Grok CLI
+
+Grok CLI is a conversational AI CLI tool powered by xAI's Grok with intelligent text editor capabilities and tool usage.
+
+**Install globally with Bun (recommended):**
+```bash
+bun add -g @vibe-kit/grok-cli
+```
+
+**Install globally with npm:**
+```bash
+npm install -g @vibe-kit/grok-cli
+```
+
+**Setup:**
+
+Get your Grok API key from [X.AI](https://x.ai) and configure it using one of these methods:
+
+Environment variable:
+```bash
+export GROK_API_KEY=your_api_key_here
+```
+
+Or create `~/.grok/user-settings.json`:
+```json
+{
+  "apiKey": "your_api_key_here"
+}
+```
+
+Or use the command line flag:
+```bash
+grok --api-key your_api_key_here
+```
+
+For more information, visit [Grok CLI's GitHub repository](https://github.com/superagent-ai/grok-cli).
 
 #### Qwen CLI
 
