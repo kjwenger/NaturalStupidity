@@ -28,6 +28,7 @@ Playground for all things Artificial Intelligence
       - [Using Goose with Local LLMs via LM Studio](#using-goose-with-local-llms-via-lm-studio)
     - [Grok CLI](#grok-cli)
     - [OpenHands CLI](#openhands-cli)
+    - [OpenCode CLI](#opencode-cli)
     - [Qwen CLI](#qwen-cli)
       - [Using Qwen with Local LLMs via LM Studio](#using-qwen-with-local-llms-via-lm-studio)
     - [Warp CLI](#warp-cli)
@@ -491,6 +492,61 @@ openhands "your task description"
 ```
 
 For more information, visit [OpenHands CLI blog post](https://openhands.dev/blog/the-openhands-cli-ai-powered-development-in-your-terminal) and [OpenHands documentation](https://openhands.dev/).
+
+#### OpenCode CLI
+
+OpenCode CLI is an AI-powered coding assistant that provides a terminal UI (TUI) and command-line interface for code generation, review, and automation.
+
+**Install using curl:**
+```bash
+curl -fsSL https://opencode.ai/install.sh | sh
+```
+
+**Install using npm:**
+```bash
+npm install -g opencode-ai
+```
+
+**Install using pnpm:**
+```bash
+pnpm add -g opencode-ai
+```
+
+**Install using bun:**
+```bash
+bun add -g opencode-ai
+```
+
+**Install using Homebrew (macOS/Linux):**
+```bash
+brew install opencode-ai/tap/opencode
+```
+
+**Setup:**
+
+Authenticate with your OpenCode account:
+```bash
+opencode auth
+```
+
+**Usage:**
+
+Start the interactive TUI:
+```bash
+opencode
+```
+
+Run AI agent tasks:
+```bash
+opencode agent "your task description"
+```
+
+For GitHub integration:
+```bash
+opencode github install
+```
+
+For more information, visit [OpenCode CLI documentation](https://opencode.ai/docs/cli/).
 
 #### Qwen CLI
 
