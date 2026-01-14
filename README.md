@@ -182,6 +182,7 @@ You can use Aider with local LLMs served by LM Studio's OpenAI-compatible API:
 2. Enable the Local Server feature in LM Studio (default port: 1234)
 3. Configure environment variables:
 
+**Method 1: Using generic OpenAI environment variables:**
 ```bash
 export OPENAI_HOST=http://localhost:1234
 export OPENAI_BASE_PATH=v1
@@ -190,7 +191,14 @@ export OPENAI_API_KEY=lm-studio
 export OPENAI_MODEL=openai/qwen3-coder-30b-a3b-instruct
 ```
 
-Replace `openai/qwen3-coder-30b-a3b-instruct` with your actual model identifier from LM Studio.
+**Method 2: Using Aider-specific environment variables:**
+```bash
+export AIDER_OPENAI_API_BASE=http://localhost:1234/v1
+export AIDER_OPENAI_API_KEY=lm-studio
+export AIDER_MODEL=openai/openai/gpt-oss-120b
+```
+
+Replace the model identifier with your actual model from LM Studio (e.g., `openai/qwen3-coder-30b-a3b-instruct` or `openai/openai/gpt-oss-120b`).
 
 For more information, visit [Aider's installation documentation](https://aider.chat/docs/install.html).
 
