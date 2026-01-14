@@ -386,6 +386,24 @@ On first use, you'll be prompted to sign in. You can run `/auth` anytime to swit
 
 For more information, visit [Qwen Code's GitHub repository](https://github.com/QwenLM/qwen-code).
 
+##### Using Qwen with Local LLMs via LM Studio
+
+You can use Qwen with local LLMs served by LM Studio's OpenAI-compatible API:
+
+1. Start LM Studio and load your preferred model
+2. Enable the Local Server feature in LM Studio (default port: 1234)
+3. Configure environment variables:
+
+```bash
+export OPENAI_HOST=http://localhost:1234
+export OPENAI_BASE_PATH=v1
+export OPENAI_BASE_URL=http://localhost:1234/v1
+export OPENAI_API_KEY=lm-studio
+export OPENAI_MODEL=openai/qwen3-coder-30b-a3b-instruct
+```
+
+Replace the model identifier with your actual model from LM Studio.
+
 #### Warp CLI
 
 Warp is a modern terminal with AI-powered command suggestions.
