@@ -131,15 +131,17 @@ For more information, visit [Anthropic's documentation](https://www.anthropic.co
 
 OpenAI Codex CLI for code generation and completion.
 
-Install using pip:
+Install using npm:
 ```bash
-pip install openai
+npm install -g @openai/codex
 ```
 
 Set your OpenAI API key:
 ```bash
 export OPENAI_API_KEY=your-api-key-here
 ```
+
+For more information, visit [OpenAI Codex CLI documentation](https://developers.openai.com/codex/cli/).
 
 #### Copilot CLI
 
