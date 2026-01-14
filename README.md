@@ -16,6 +16,7 @@ Playground for all things Artificial Intelligence
     - [Windows](#windows)
     - [Using `nvm` to Install Node.js](#using-nvm-to-install-nodejs)
   - [AI CLI Tools](#ai-cli-tools)
+    - [Discovering New AI CLI Tools](#discovering-new-ai-cli-tools)
     - [Aider CLI](#aider-cli)
       - [Using Aider with Local LLMs via LM Studio](#using-aider-with-local-llms-via-lm-studio)
     - [Aider-CE CLI](#aider-ce-cli)
@@ -164,6 +165,32 @@ nvm use 18
 ```
 
 ### AI CLI Tools
+
+#### Discovering New AI CLI Tools
+
+The AI CLI landscape is rapidly evolving. To stay up-to-date with the latest and most popular tools:
+
+**OpenRouter AI Rankings:**
+Visit [OpenRouter AI Rankings - Apps](https://openrouter.ai/rankings#apps) to see real-time usage statistics and trending AI applications and CLI tools. This provides insights into:
+- Most popular AI tools by active usage
+- Emerging tools gaining traction
+- Usage patterns and adoption trends
+- Community favorites across different AI platforms
+
+**Other Resources for Discovery:**
+- **GitHub Topics**: Search for [#ai-cli](https://github.com/topics/ai-cli) or [#ai-coding-assistant](https://github.com/topics/ai-coding-assistant)
+- **Package Managers**: Browse npm, PyPI, and Homebrew for AI-related packages
+- **Community Forums**: Follow discussions on Discord, Reddit (r/LocalLLaMA, r/artificial), and Hacker News
+- **AI News Aggregators**: Sites like [There's An AI For That](https://theresanaiforthat.com/) and [Future Tools](https://www.futuretools.io/)
+
+**Evaluating New Tools:**
+When considering a new AI CLI tool, check for:
+- Active development and recent updates
+- Community size and support
+- Documentation quality
+- License and cost model
+- Local vs. cloud options
+- Integration capabilities
 
 #### Aider CLI
 
