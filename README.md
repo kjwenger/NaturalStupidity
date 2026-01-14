@@ -179,12 +179,6 @@ For more information, visit [Google AI documentation](https://ai.google.dev/).
 
 Qwen Code is Alibaba Cloud's AI-powered coding assistant CLI.
 
-**Prerequisites:**
-Node.js 20+ is required:
-```bash
-curl -qL https://www.npmjs.com/install.sh | sh
-```
-
 **Install using npm (recommended):**
 ```bash
 npm install -g @qwen-code/qwen-code@latest
