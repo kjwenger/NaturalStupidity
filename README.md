@@ -18,6 +18,7 @@ Playground for all things Artificial Intelligence
   - [AI CLI Tools](#ai-cli-tools)
     - [Aider CLI](#aider-cli)
       - [Using Aider with Local LLMs via LM Studio](#using-aider-with-local-llms-via-lm-studio)
+    - [Aider-CE CLI](#aider-ce-cli)
     - [Claude CLI](#claude-cli)
     - [Codex CLI](#codex-cli)
       - [Using Codex with Local LLMs via LM Studio](#using-codex-with-local-llms-via-lm-studio)
@@ -209,6 +210,63 @@ export AIDER_MODEL=openai/openai/gpt-oss-120b
 Replace the model identifier with your actual model from LM Studio (e.g., `openai/qwen3-coder-30b-a3b-instruct` or `openai/openai/gpt-oss-120b`).
 
 For more information, visit [Aider's installation documentation](https://aider.chat/docs/install.html).
+
+#### Aider-CE CLI
+
+Aider-CE (cecli) is a community-driven fork of Aider, providing bleeding-edge features and rapid development in the AI pair programming space.
+
+**Install using pip:**
+```bash
+pip install cecli-dev
+```
+
+**Install using uv (recommended for isolation):**
+```bash
+uv tool install --native-tls --python python3.12 cecli-dev
+```
+
+**Configuration:**
+
+Create a `.cecli.conf.yml` file in your project directory:
+
+```yaml
+model: <your-model>
+agent: true
+auto-commits: true
+auto-save: true
+cache-prompts: true
+tui: true
+```
+
+Create a `.aider.env` file for API keys:
+```bash
+ANTHROPIC_API_KEY="..."
+OPENAI_API_KEY="..."
+```
+
+**Usage:**
+
+Start Aider-CE:
+```bash
+cecli
+```
+
+Configure terminal setup (recommended on first run):
+```bash
+cecli --terminal-setup
+```
+
+**Docker:**
+```bash
+docker pull dustinwashington/aider-ce
+docker run -it --user $(id -u):$(id -g) \
+  --volume $(pwd):/app \
+  --volume $(pwd)/.aider.conf.yml:/.aider.conf.yml \
+  --volume $(pwd)/.aider.env:/.aider/.env \
+  dustinwashington/aider-ce --config /app/.aider.conf.yml
+```
+
+For more information, visit [Aider-CE GitHub repository](https://github.com/dwash96/cecli) and join the [Discord community](https://discord.gg/AX9ZEA7nJn).
 
 #### Claude CLI
 
