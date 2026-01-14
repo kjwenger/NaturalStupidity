@@ -23,6 +23,7 @@ Playground for all things Artificial Intelligence
     - [Codex CLI](#codex-cli)
       - [Using Codex with Local LLMs via LM Studio](#using-codex-with-local-llms-via-lm-studio)
     - [Copilot CLI](#copilot-cli)
+    - [DeepSeek CLI](#deepseek-cli)
     - [Factory CLI](#factory-cli)
     - [Gemini CLI](#gemini-cli)
     - [Goose CLI](#goose-cli)
@@ -365,6 +366,63 @@ github-copilot-cli auth
 ```
 
 For more information, visit [GitHub Copilot CLI documentation](https://githubnext.com/projects/copilot-cli/).
+
+#### DeepSeek CLI
+
+DeepSeek CLI is an AI coding assistant leveraging DeepSeek Coder models for code generation, refactoring, and development workflows.
+
+**Install using npm:**
+```bash
+npm install -g run-deepseek-cli
+```
+
+**Local Setup (Recommended - Free & Private):**
+
+1. **Install Ollama:**
+```bash
+# macOS
+brew install ollama
+
+# Linux
+curl -fsSL https://ollama.ai/install.sh | sh
+
+# Windows: Download from https://ollama.ai
+```
+
+2. **Start Ollama and install DeepSeek model:**
+```bash
+# Start Ollama service
+ollama serve
+
+# Install DeepSeek Coder model (choose one)
+ollama pull deepseek-coder:6.7b    # Recommended (4GB)
+ollama pull deepseek-coder:1.3b    # Lightweight (1GB)
+ollama pull deepseek-coder:33b     # Most capable (19GB)
+```
+
+3. **Start using:**
+```bash
+deepseek
+```
+
+**Cloud Setup (Requires API Key):**
+
+Configure API access:
+```bash
+export DEEPSEEK_API_KEY="your_api_key_here"
+export DEEPSEEK_USE_LOCAL=false
+```
+
+Get your API key from [DeepSeek Platform](https://platform.deepseek.com/api_keys).
+
+**Usage:**
+
+```bash
+deepseek
+> Create a FastAPI web application with user authentication
+```
+
+For more information, visit [DeepSeek CLI GitHub repository](https://github.com/holasoymalva/deepseek-cli).
 
 #### Factory CLI
 
