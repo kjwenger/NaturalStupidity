@@ -20,6 +20,7 @@ Playground for all things Artificial Intelligence
       - [Using Aider with Local LLMs via LM Studio](#using-aider-with-local-llms-via-lm-studio)
     - [Claude CLI](#claude-cli)
     - [Codex CLI](#codex-cli)
+      - [Using Codex with Local LLMs via LM Studio](#using-codex-with-local-llms-via-lm-studio)
     - [Copilot CLI](#copilot-cli)
     - [Gemini CLI](#gemini-cli)
     - [Goose CLI](#goose-cli)
@@ -237,6 +238,24 @@ export OPENAI_API_KEY=your-api-key-here
 ```
 
 For more information, visit [OpenAI Codex CLI documentation](https://developers.openai.com/codex/cli/).
+
+##### Using Codex with Local LLMs via LM Studio
+
+You can use Codex CLI with local LLMs served by LM Studio's OpenAI-compatible API:
+
+1. Start LM Studio and load your preferred model
+2. Enable the Local Server feature in LM Studio (default port: 1234)
+3. Configure environment variables:
+
+```bash
+export OPENAI_API_BASE=http://localhost:1234/v1
+export OPENAI_API_KEY=lm-studio
+export OPENAI_MODEL=your-model-name
+```
+
+Replace `your-model-name` with your actual model from LM Studio (e.g., `qwen3-coder-30b-a3b-instruct` or `gpt-oss-120b`).
+
+For more information, see [Codex CLI with Local Models](https://dev.to/shashikant86/codex-cli-running-gpt-oss-and-local-coding-models-with-ollama-lm-studio-and-mlx-403g).
 
 #### Copilot CLI
 
