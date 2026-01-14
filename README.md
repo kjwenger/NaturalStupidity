@@ -3,6 +3,12 @@ Playground for all things Artificial Intelligence
 
 ## Table of Contents
 - [Prerequisites](#prerequisites)
+  - [LM Studio Installation](#lm-studio-installation)
+    - [macOS](#macos)
+    - [macOS with Homebrew](#macos-with-homebrew)
+    - [Linux](#linux)
+    - [Linux with AppImage](#linux-with-appimage)
+    - [Windows](#windows-1)
   - [Node.js Installation](#nodejs-installation)
     - [Linux and macOS](#linux-and-macos)
     - [Using `curl` or `wget` (Recommended for fresh installs)](#using-curl-or-wget-recommended-for-fresh-installs)
@@ -19,6 +25,64 @@ Playground for all things Artificial Intelligence
     - [Warp CLI](#warp-cli)
 
 ## Prerequisites
+
+### LM Studio Installation
+
+LM Studio allows you to run Large Language Models locally on your machine. It provides an OpenAI-compatible API server that can be used with various AI CLI tools.
+
+#### macOS
+
+Download the latest version from [lmstudio.ai/download](https://lmstudio.ai/download):
+1. Download the `.dmg` file for macOS
+2. Open the downloaded file
+3. Drag LM Studio to your Applications folder
+4. Launch LM Studio from Applications
+
+#### macOS with Homebrew
+
+Install using Homebrew:
+```bash
+brew install --cask lm-studio
+```
+
+#### Linux
+
+Download the latest version from [lmstudio.ai/download](https://lmstudio.ai/download):
+1. Download the `.deb` or `.rpm` package for your distribution
+2. Install the package using your package manager
+
+For Debian/Ubuntu:
+```bash
+sudo dpkg -i LM-Studio-*.deb
+```
+
+For Fedora/RHEL:
+```bash
+sudo rpm -i LM-Studio-*.rpm
+```
+
+#### Linux with AppImage
+
+Download and run the AppImage:
+1. Download the `.AppImage` file from [lmstudio.ai/download](https://lmstudio.ai/download)
+2. Make it executable:
+```bash
+chmod +x LM-Studio-*.AppImage
+```
+3. Run the AppImage:
+```bash
+./LM-Studio-*.AppImage
+```
+
+#### Windows
+
+Download the latest version from [lmstudio.ai/download](https://lmstudio.ai/download):
+1. Download the `.exe` installer for Windows
+2. Run the installer
+3. Follow the installation wizard
+4. Launch LM Studio from the Start Menu
+
+For more information, visit [LM Studio documentation](https://lmstudio.ai/docs/app/basics).
 
 ### Node.js Installation
 
