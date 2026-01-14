@@ -33,11 +33,33 @@ After installing with Homebrew, you'll need to follow the instructions provided 
 
 After installation (using either method), close and reopen your terminal, or source your shell's profile script (e.g., `source ~/.bashrc`, `source ~/.zshrc`).
 
-You can then install the latest Node.js LTS version:
+### Using `nvm` to Install Node.js
+
+After `nvm` is installed and configured, you can install Node.js versions.
+
+To install the latest **LTS** (Long Term Support) version of Node.js and set it as default:
 ```bash
 nvm install --lts
-nvm use --lts
+nvm alias default 'lts/*'
 ```
+
+To install the **latest** available version of Node.js (which might not be LTS) and set it as default:
+```bash
+nvm install node
+nvm alias default node
+```
+
+To use a specific installed version:
+```bash
+nvm use <version>
+```
+
+For example, to use Node.js version 18:
+```bash
+nvm use 18
+```
+
+
 
 ### Windows
 
