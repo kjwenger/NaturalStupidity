@@ -109,6 +109,24 @@ After installation, you'll need to set your API key (e.g., OpenAI):
 export OPENAI_API_KEY=your-api-key-here
 ```
 
+##### Using Aider with Local LLMs via LM Studio
+
+You can use Aider with local LLMs served by LM Studio's OpenAI-compatible API:
+
+1. Start LM Studio and load your preferred model
+2. Enable the Local Server feature in LM Studio (default port: 1234)
+3. Configure environment variables:
+
+```bash
+export OPENAI_HOST=http://localhost:1234
+export OPENAI_BASE_PATH=v1
+export OPENAI_BASE_URL=http://localhost:1234/v1
+export OPENAI_API_KEY=lm-studio
+export OPENAI_MODEL=openai/qwen3-coder-30b-a3b-instruct
+```
+
+Replace `openai/qwen3-coder-30b-a3b-instruct` with your actual model identifier from LM Studio.
+
 For more information, visit [Aider's installation documentation](https://aider.chat/docs/install.html).
 
 #### Claude CLI
