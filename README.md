@@ -32,6 +32,8 @@ Playground for all things Artificial Intelligence
     - [Grok CLI](#grok-cli)
     - [OpenHands CLI](#openhands-cli)
     - [OpenCode CLI](#opencode-cli)
+      - [Using OpenCode with Local LLMs via LM Studio](#using-opencode-with-local-llms-via-lm-studio)
+    - [OpenSpec CLI](#openspec-cli)
     - [Qwen CLI](#qwen-cli)
       - [Using Qwen with Local LLMs via LM Studio](#using-qwen-with-local-llms-via-lm-studio)
     - [Warp CLI](#warp-cli)
@@ -690,6 +692,164 @@ opencode github install
 ```
 
 For more information, visit [OpenCode CLI documentation](https://opencode.ai/docs/cli/).
+
+##### Using OpenCode with Local LLMs via LM Studio
+
+You can use OpenCode with local LLMs served by LM Studio's OpenAI-compatible API:
+
+1. Start LM Studio and load your preferred model
+2. Enable the Local Server feature in LM Studio (default port: 1234)
+3. Create or edit the OpenCode configuration file at `~/.config/opencode/opencode.json`:
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "lm-studio": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "LM Studio",
+      "options": {
+        "baseURL": "http://localhost:1234/v1"
+      },
+      "models": {
+        "qwen3-coder-30b-a3b-instruct": {
+          "name": "qwen3-coder-30b-a3b-instruct"
+        },
+        "gpt-oss-120b": {
+          "name": "openai/gpt-oss-120b"
+        }
+      }
+    }
+  }
+}
+```
+
+Replace the model identifiers with your actual models from LM Studio.
+
+**Using Ollama:**
+
+You can also use OpenCode with Ollama:
+
+1. Start Ollama and pull your preferred model
+2. Increase the context window (OpenCode requires at least 64k tokens for best results):
+```bash
+ollama run qwen3:8b
+>>> /set parameter num_ctx 65536
+>>> /save qwen3:8b-64k
+```
+
+3. Create or edit `~/.config/opencode/opencode.json`:
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "ollama": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Ollama",
+      "options": {
+        "baseURL": "http://localhost:11434/v1"
+      },
+      "models": {
+        "qwen3:8b-64k": {
+          "name": "qwen3:8b-64k"
+        }
+      }
+    }
+  }
+}
+```
+
+**Quick Setup with `ollama launch`:**
+
+Ollama provides a convenient command to set up OpenCode automatically:
+```bash
+ollama launch opencode
+```
+
+This configures OpenCode to work with your local Ollama models without manual configuration.
+
+For more information, see [OpenCode Providers documentation](https://opencode.ai/docs/providers/) and [Ollama OpenCode integration](https://docs.ollama.com/integrations/opencode).
+
+#### OpenSpec CLI
+
+OpenSpec is a spec-driven development (SDD) framework for AI coding assistants. It helps you create structured specifications that AI tools can follow, improving consistency and quality of AI-generated code. OpenSpec works alongside other AI CLI tools like Claude Code, Cursor, Gemini CLI, OpenCode, and more.
+
+**Install using npm:**
+```bash
+npm install -g @fission-ai/openspec@latest
+```
+
+**Install using pnpm:**
+```bash
+pnpm add -g @fission-ai/openspec@latest
+```
+
+**Install using yarn:**
+```bash
+yarn global add @fission-ai/openspec@latest
+```
+
+**Install using bun:**
+```bash
+bun add -g @fission-ai/openspec@latest
+```
+
+**Install using Nix (run directly without installation):**
+```bash
+nix run github:Fission-AI/OpenSpec -- init
+```
+
+**Install using Nix (to your profile):**
+```bash
+nix profile install github:Fission-AI/OpenSpec
+```
+
+**Prerequisites:** Requires Node.js 20.19.0 or higher.
+
+**Setup:**
+
+Initialize OpenSpec in your project:
+```bash
+openspec init
+```
+
+During initialization, you'll be prompted to select which AI tools to configure. You can also use non-interactive setup:
+```bash
+openspec init --tools claude,cursor,gemini
+```
+
+Supported tools include: `claude`, `cursor`, `github-copilot`, `cline`, `continue`, `gemini`, `opencode`, `codex`, and more. Use `--tools all` to configure all supported tools.
+
+**Usage:**
+
+The OpenSpec workflow consists of three main steps:
+
+1. **Proposal** - Create a specification document:
+```bash
+openspec proposal create "feature-name"
+```
+
+2. **Apply** - Let AI implement according to the specification
+
+3. **Archive** - Archive completed specifications:
+```bash
+openspec archive
+```
+
+**Configuration:**
+
+View and modify settings:
+```bash
+openspec config
+openspec config edit
+```
+
+Configuration is stored in `openspec/config.yaml`.
+
+**Note:** OpenSpec is a workflow framework that works alongside AI coding assistants rather than making direct LLM calls itself. It provides structured specifications that your AI tools (Claude Code, OpenCode, Cursor, etc.) follow during implementation. Configure local LLM support in your chosen AI tool, and OpenSpec will work with whatever provider that tool uses.
+
+For more information, visit [OpenSpec GitHub repository](https://github.com/Fission-AI/OpenSpec) and the [GitHub Blog on spec-driven development](https://github.blog/ai-and-ml/generative-ai/spec-driven-development-with-ai-get-started-with-a-new-open-source-toolkit/).
 
 #### Qwen CLI
 
