@@ -36,6 +36,7 @@ Playground for all things Artificial Intelligence
     - [OpenSpec CLI](#openspec-cli)
     - [Qwen CLI](#qwen-cli)
       - [Using Qwen with Local LLMs via LM Studio](#using-qwen-with-local-llms-via-lm-studio)
+    - [UV CLI](#uv-cli)
     - [Warp CLI](#warp-cli)
 
 ## Prerequisites
@@ -891,6 +892,47 @@ export OPENAI_MODEL=openai/qwen3-coder-30b-a3b-instruct
 ```
 
 Replace the model identifier with your actual model from LM Studio.
+
+#### UV CLI
+
+UV is an extremely fast Python package installer, resolver, and virtual environment manager from Astral, the makers of Ruff. It is designed as a single, high-performance binary to replace `pip`, `pip-tools`, `pip-compile`, and `venv`. It can also be used to install and run Python CLI tools in isolated environments, similar to `pipx`.
+
+**Install using installation script (macOS/Linux):**
+```bash
+curl -Lsf https://astral.sh/uv/install.sh | sh
+```
+
+**Install using pip or pipx:**
+```bash
+# Using pip to install into the current environment
+pip install uv
+
+# Using pipx for isolated installation (recommended)
+pipx install uv
+```
+
+**Install using Homebrew (macOS/Linux):**
+```bash
+brew install uv
+```
+
+**Windows:**
+```powershell
+powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+**Usage for installing tools:**
+
+You can use `uv tool install` to install Python-based CLI tools, which will then be available on your `PATH`.
+
+```bash
+# Example: Installing Aider-CE using uv
+uv tool install --native-tls --python python3.12 cecli-dev
+```
+
+**Note on Local LLMs:**
+
+`uv` is a development tool and package manager; it does not connect to Large Language Models (LLMs) directly. You can use `uv` to install other AI CLI tools (like Aider-CE as shown above), and then configure those tools to use local LLMs according to their own documentation.
 
 #### Warp CLI
 
