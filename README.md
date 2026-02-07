@@ -33,11 +33,14 @@ Playground for all things Artificial Intelligence
     - [OpenHands CLI](#openhands-cli)
     - [OpenCode CLI](#opencode-cli)
       - [Using OpenCode with Local LLMs via LM Studio](#using-opencode-with-local-llms-via-lm-studio)
-    - [OpenSpec CLI](#openspec-cli)
     - [Qwen CLI](#qwen-cli)
       - [Using Qwen with Local LLMs via LM Studio](#using-qwen-with-local-llms-via-lm-studio)
-    - [UV CLI](#uv-cli)
     - [Warp CLI](#warp-cli)
+  - [AI Spec Tools](#ai-spec-tools)
+    - [OpenSpec CLI](#openspec-cli)
+    - [GitHub Spec Kit](#github-spec-kit)
+  - [Developer Tools](#developer-tools)
+    - [UV CLI](#uv-cli)
 
 ## Prerequisites
 
@@ -167,7 +170,7 @@ For example, to use Node.js version 18:
 nvm use 18
 ```
 
-### AI CLI Tools
+## AI CLI Tools
 
 #### Discovering New AI CLI Tools
 
@@ -772,6 +775,67 @@ This configures OpenCode to work with your local Ollama models without manual co
 
 For more information, see [OpenCode Providers documentation](https://opencode.ai/docs/providers/) and [Ollama OpenCode integration](https://docs.ollama.com/integrations/opencode).
 
+#### Qwen CLI
+
+Qwen Code is Alibaba Cloud's AI-powered coding assistant CLI.
+
+**Install using npm (recommended):**
+```bash
+npm install -g @qwen-code/qwen-code@latest
+```
+
+**Install using Homebrew (macOS, Linux):**
+```bash
+brew install qwen-code
+```
+
+Start Qwen Code:
+```bash
+qwen
+```
+
+On first use, you'll be prompted to sign in. You can run `/auth` anytime to switch authentication methods.
+
+For more information, visit [Qwen Code's GitHub repository](https://github.com/QwenLM/qwen-code).
+
+##### Using Qwen with Local LLMs via LM Studio
+
+You can use Qwen with local LLMs served by LM Studio's OpenAI-compatible API:
+
+1. Start LM Studio and load your preferred model
+2. Enable the Local Server feature in LM Studio (default port: 1234)
+3. Configure environment variables:
+
+```bash
+export OPENAI_HOST=http://localhost:1234
+export OPENAI_BASE_PATH=v1
+export OPENAI_BASE_URL=http://localhost:1234/v1
+export OPENAI_API_KEY=lm-studio
+export OPENAI_MODEL=openai/qwen3-coder-30b-a3b-instruct
+```
+
+Replace the model identifier with your actual model from LM Studio.
+
+#### Warp CLI
+
+Warp is a modern terminal with AI-powered command suggestions.
+
+**macOS:**
+Download from [Warp's website](https://www.warp.dev/) or install using Homebrew:
+```bash
+brew install --cask warp
+```
+
+**Linux:**
+Download the appropriate package from [Warp's website](https://www.warp.dev/).
+
+**Windows:**
+Download the installer from [Warp's website](https://www.warp.dev/).
+
+After installation, launch Warp and sign in to access AI features.
+
+## AI Spec Tools
+
 #### OpenSpec CLI
 
 OpenSpec is a spec-driven development (SDD) framework for AI coding assistants. It helps you create structured specifications that AI tools can follow, improving consistency and quality of AI-generated code. OpenSpec works alongside other AI CLI tools like Claude Code, Cursor, Gemini CLI, OpenCode, and more.
@@ -848,50 +912,43 @@ openspec config edit
 
 Configuration is stored in `openspec/config.yaml`.
 
-**Note:** OpenSpec is a workflow framework that works alongside AI coding assistants rather than making direct LLM calls itself. It provides structured specifications that your AI tools (Claude Code, OpenCode, Cursor, etc.) follow during implementation. Configure local LLM support in your chosen AI tool, and OpenSpec will work with whatever provider that tool uses.
+**Note:** OpenSpec is a workflow framework that works alongside AI coding assistants rather than making direct LLM calls. It provides structured specifications that your AI tools (Claude Code, OpenCode, Cursor, etc.) follow during implementation. Configure local LLM support in your chosen AI tool, and OpenSpec will work with whatever provider that tool uses.
 
 For more information, visit [OpenSpec GitHub repository](https://github.com/Fission-AI/OpenSpec) and the [GitHub Blog on spec-driven development](https://github.blog/ai-and-ml/generative-ai/spec-driven-development-with-ai-get-started-with-a-new-open-source-toolkit/).
 
-#### Qwen CLI
+#### GitHub Spec Kit
 
-Qwen Code is Alibaba Cloud's AI-powered coding assistant CLI.
+GitHub Spec Kit is a fork of OpenSpec, designed for spec-driven development (SDD) in AI-powered workflows. It helps structure project requirements, motivations, and technical details before AI agents build the software. It includes the `specify` CLI for bootstrapping projects with SDD scaffolding and a set of templates and helper scripts.
 
-**Install using npm (recommended):**
+**Prerequisites:**
+- `uv` (for package management)
+- Python 3.11+
+- Git
+- An AI coding agent (e.g., Claude Code, GitHub Copilot, Gemini CLI)
+
+**Installation:**
+
+The recommended persistent installation uses `uv tool install` to make the `specify` command available globally:
 ```bash
-npm install -g @qwen-code/qwen-code@latest
+uv tool install specify-cli --from git+https://github.com/github/spec-kit.git
+```
+After installation, you can use the `specify` command. For example, to create a new project:
+```bash
+specify init <PROJECT_NAME>
+```
+Or to initialize in an existing project:
+```bash
+specify init . --ai claude
+```
+You can check installed tools with `specify check`.
+
+**One-time Usage:**
+For a one-time run without persistent installation, use `uvx`:
+```bash
+uvx --from git+https://github.com/github/spec-kit.git specify init <PROJECT_NAME>
 ```
 
-**Install using Homebrew (macOS, Linux):**
-```bash
-brew install qwen-code
-```
-
-Start Qwen Code:
-```bash
-qwen
-```
-
-On first use, you'll be prompted to sign in. You can run `/auth` anytime to switch authentication methods.
-
-For more information, visit [Qwen Code's GitHub repository](https://github.com/QwenLM/qwen-code).
-
-##### Using Qwen with Local LLMs via LM Studio
-
-You can use Qwen with local LLMs served by LM Studio's OpenAI-compatible API:
-
-1. Start LM Studio and load your preferred model
-2. Enable the Local Server feature in LM Studio (default port: 1234)
-3. Configure environment variables:
-
-```bash
-export OPENAI_HOST=http://localhost:1234
-export OPENAI_BASE_PATH=v1
-export OPENAI_BASE_URL=http://localhost:1234/v1
-export OPENAI_API_KEY=lm-studio
-export OPENAI_MODEL=openai/qwen3-coder-30b-a3b-instruct
-```
-
-Replace the model identifier with your actual model from LM Studio.
+## Developer Tools
 
 #### UV CLI
 
@@ -933,21 +990,3 @@ uv tool install --native-tls --python python3.12 cecli-dev
 **Note on Local LLMs:**
 
 `uv` is a development tool and package manager; it does not connect to Large Language Models (LLMs) directly. You can use `uv` to install other AI CLI tools (like Aider-CE as shown above), and then configure those tools to use local LLMs according to their own documentation.
-
-#### Warp CLI
-
-Warp is a modern terminal with AI-powered command suggestions.
-
-**macOS:**
-Download from [Warp's website](https://www.warp.dev/) or install using Homebrew:
-```bash
-brew install --cask warp
-```
-
-**Linux:**
-Download the appropriate package from [Warp's website](https://www.warp.dev/).
-
-**Windows:**
-Download the installer from [Warp's website](https://www.warp.dev/).
-
-After installation, launch Warp and sign in to access AI features.
