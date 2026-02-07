@@ -395,7 +395,7 @@ Authenticate with GitHub:
 github-copilot-cli auth
 ```
 
-For more information, visit [GitHub Copilot CLI documentation](https://githubnext.com/projects/copilot-cli/).
+For more information, visit [GitHub Copilot CLI documentation](https://docs.github.com/en/copilot/concepts/agents/about-copilot-cli).
 
 #### DeepSeek CLI
 
