@@ -134,6 +134,38 @@ The following models are recommended for use with LM Studio and the AI CLI tools
 - Multi-part GGUF files (GPT-OSS 120B, Llama 4 Scout, Mistral Large) are automatically loaded together by LM Studio.
 - The **Qwen3 Coder 30B A3B** is a mixture-of-experts model with only 3B parameters active per inference, making it efficient despite its 30B total size.
 
+### Recommended Models from Gemini (as of 20206-02-10)
+
+Q: Best local LLM for coders with 96GB GPU memory
+
+With 96GB of GPU memory (such as an 
+
+NVIDIA RTX 6000 Ada/Blackwell or a 96GB Mac Studio M3 Ultra), you are in a high-end, "GPU-rich"  position that allows you to run large, state-of-the-art coding models  with high context lengths, or highly capable models with lower  quantization. 
+
+Here are the best local LLMs for coding with 96GB VRAM as of late 2025/early 2026:
+
+Top Contenders for 96GB VRAM 
+
+- **Qwen3-Coder-Next (80B - 235B):** Qwen3 models are frequently cited as the best, with the 235B (using 2-3 bit quantization) or the 80B (at high precision) being elite for  coding.
+- **GLM-4-Air/4.7-Flash (100B+):** Considered among the best in the ~100B range for general coding, offering high precision and smart reasoning.
+- **DeepSeek-Coder-V2/R1 (MoE):** Highly regarded for code generation. A mixture-of-experts (MoE)  approach allows these to fit while maintaining high performance.
+- **GPT-OSS-120B:** Often recommended for high-end setups due to its capability, running well with 3-bit or 4-bit quantization. 
+
+Recommended Configurations for 96GB
+
+1. **Maximum Intelligence (Mid-Size Model):** **Qwen3-Next-80B (FP8 or Q8)**. Running this at 80B parameters allows you to keep the model in VRAM for very high-speed, accurate coding.
+2. **Maximum Model Size (High-End):** **Qwen3-235B (Q2KXL or 3-bpw EXL3)**. With 96GB, you can use specialized low-bit quants to fit this massive model, which is superior for complex reasoning.
+3. **Balanced Performance:** **GLM 4.5 Air (106B)**, often recommended as a daily driver for high-end workstations. 
+
+Best Tools to Run Them
+
+- **vLLM:** Recommended for maximum speed, especially in a Docker environment.
+- **EXL2/EXL3:** Excellent for high-speed inference on Nvidia cards, especially for loading large models.
+- **[Ollama](https://ollama.com/):** Simple interface for quickly testing these high-parameter models.
+- **[LM Studio](https://lmstudio.ai/):** Great for visual management, with 96GB allowing for high-context, high-quantization setups. 
+
+**Summary Recommendation:** Use **Qwen3-Next-80B** with a high-quality (Q6-Q8) quantization for the fastest and most accurate daily coding, or **Qwen3-235B (IQ3/2-bit)** if you require maximum reasoning for complex, multi-file projects. 
+
 ### Node.js Installation
 
 To manage Node.js versions, it's recommended to install `nvm` (Node Version Manager).
