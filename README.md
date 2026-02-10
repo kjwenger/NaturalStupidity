@@ -4,7 +4,14 @@ Playground for all things Artificial Intelligence
 ## Table of Contents
 
 - [Prerequisites](#prerequisites)
-  - [LM Studio Installation](#lm-studio-installation)
+  - [Node.js Installation](#nodejs-installation)
+    - [Linux and macOS](#linux-and-macos)
+      - [Using curl or wget](#using-curl-or-wget-recommended-for-fresh-installations)
+      - [Using Homebrew](#using-homebrew-if-homebrew-is-already-installed)
+    - [Windows](#windows-1)
+    - [Using nvm to Install Node.js](#using-nvm-to-install-nodejs)
+- [Local LLM Runtimes](#local-llm-runtimes)
+  - [LM Studio](#lm-studio-installation)
     - [macOS](#macos)
     - [macOS with Homebrew](#macos-with-homebrew)
     - [Linux](#linux)
@@ -13,12 +20,23 @@ Playground for all things Artificial Intelligence
     - [Recommended Models for LM Studio](#recommended-models-for-lm-studio)
     - [Recommended Models from Gemini](#recommended-models-from-gemini-as-of-20206-02-10)
     - [Recommended Models from Claude](#recommended-models-from-claude)
-  - [Node.js Installation](#nodejs-installation)
-    - [Linux and macOS](#linux-and-macos)
-      - [Using curl or wget](#using-curl-or-wget-recommended-for-fresh-installs)
-      - [Using Homebrew](#using-homebrew-if-homebrew-is-already-installed)
-    - [Windows](#windows-1)
-    - [Using nvm to Install Node.js](#using-nvm-to-install-nodejs)
+  - [Ollama](#ollama-installation)
+    - [macOS (Ollama)](#macos-ollama)
+    - [macOS with Homebrew (Ollama)](#macos-with-homebrew-ollama)
+    - [Linux (Ollama)](#linux-ollama)
+    - [Windows (Ollama)](#windows-ollama)
+    - [Docker (Ollama)](#docker-ollama)
+    - [Pulling and Running Models (Ollama)](#pulling-and-running-models-ollama)
+  - [MLX (macOS Only)](#mlx-installation-macos-only)
+    - [pip (MLX)](#pip-mlx)
+    - [Homebrew (MLX)](#homebrew-mlx)
+    - [Running Models (MLX)](#running-models-mlx)
+    - [OpenAI-Compatible Server (MLX)](#openai-compatible-server-mlx)
+  - [EXO](#exo-installation)
+    - [macOS (EXO)](#macos-exo)
+    - [macOS App (EXO)](#macos-app-exo)
+    - [Linux (EXO)](#linux-exo)
+    - [Running Models (EXO)](#running-models-exo)
 - [AI CLI Tools](#ai-cli-tools)
   - [Discovering New AI CLI Tools](#discovering-new-ai-cli-tools)
   - [Aider CLI](#aider-cli)
@@ -64,6 +82,76 @@ Playground for all things Artificial Intelligence
   - [UV CLI](#uv-cli)
 
 ## Prerequisites
+
+### Node.js Installation
+
+To manage Node.js versions, it's recommended to install `nvm` (Node Version Manager).
+
+### Linux and macOS
+
+To install `nvm` on Linux or macOS, you have a couple of options:
+
+#### Using `curl` or `wget` (Recommended for fresh installations)
+
+You can use the following `curl` or `wget` commands:
+
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+```
+or
+```bash
+wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+```
+
+#### Using Homebrew (If Homebrew is already installed)
+
+If you have Homebrew installed on macOS, you can install `nvm` using:
+
+```bash
+brew install nvm
+```
+
+After installing with Homebrew, you'll need to follow the instructions provided by Homebrew to set up `nvm` in your shell. This usually involves adding lines to your shell's profile file (e.g., `~/.bashrc`, `~/.zshrc`).
+
+After installation (using either method), close and reopen your terminal, or source your shell's profile script (e.g., `source ~/.bashrc`, `source ~/.zshrc`).
+
+### Windows
+
+For Windows, it is recommended to use `nvm-windows`. You can download the latest installer from the [nvm-windows GitHub repository](https://github.com/coreybutler/nvm-windows/releases).
+
+Follow the installation instructions provided on the GitHub page. After installation, you can use commands like:
+```bash
+nvm install latest
+nvm use latest
+```
+
+### Using `nvm` to Install Node.js
+
+After `nvm` is installed and configured, you can install Node.js versions.
+
+To install the latest **LTS** (Long Term Support) version of Node.js and set it as default:
+```bash
+nvm install --lts
+nvm alias default 'lts/*'
+```
+
+To install the **latest** available version of Node.js (which might not be LTS) and set it as default:
+```bash
+nvm install node
+nvm alias default node
+```
+
+To use a specific installed version:
+```bash
+nvm use <version>
+```
+
+For example, to use Node.js version 18:
+```bash
+nvm use 18
+```
+
+## Local LLM Runtimes
 
 ### LM Studio Installation
 
@@ -125,33 +213,33 @@ For more information, visit [LM Studio documentation](https://lmstudio.ai/docs/a
 
 #### Recommended Models for LM Studio
 
-The following models are recommended for use with LM Studio and the AI CLI tools in this repository. Models marked with **Vision** include multimodal (image) capabilities via an mmproj projection file.
+The following models are recommended for use with LM Studio and the AI CLI tools in this repository. Models marked with **Vision** include multimodal (image) capabilities via a mmproj projection file.
 
-| Model | Parameters | Quantization | Vision | Hugging Face |
-|-------|-----------|-------------|--------|-------------|
-| [CodeLlama 70B Instruct](https://huggingface.co/TheBloke/CodeLlama-70B-Instruct-GGUF) | 70B | Q5_K_M | No | [TheBloke/CodeLlama-70B-Instruct-GGUF](https://huggingface.co/TheBloke/CodeLlama-70B-Instruct-GGUF) |
-| [DeepSeek R1 0528 Qwen3 8B](https://huggingface.co/lmstudio-community/DeepSeek-R1-0528-Qwen3-8B-GGUF) | 8B | Q4_K_M | No | [lmstudio-community/DeepSeek-R1-0528-Qwen3-8B-GGUF](https://huggingface.co/lmstudio-community/DeepSeek-R1-0528-Qwen3-8B-GGUF) |
-| [Devstral Small 2507](https://huggingface.co/lmstudio-community/Devstral-Small-2507-GGUF) | 24B | Q4_K_M | Yes | [lmstudio-community/Devstral-Small-2507-GGUF](https://huggingface.co/lmstudio-community/Devstral-Small-2507-GGUF) |
-| [Devstral Small 2507 (unsloth)](https://huggingface.co/unsloth/Devstral-Small-2507-GGUF) | 24B | UD-Q8_K_XL | Yes | [unsloth/Devstral-Small-2507-GGUF](https://huggingface.co/unsloth/Devstral-Small-2507-GGUF) |
-| [Gemma 3 12B IT](https://huggingface.co/lmstudio-community/gemma-3-12b-it-GGUF) | 12B | Q4_K_M | Yes | [lmstudio-community/gemma-3-12b-it-GGUF](https://huggingface.co/lmstudio-community/gemma-3-12b-it-GGUF) |
-| [Gemma 3 27B IT QAT](https://huggingface.co/lmstudio-community/gemma-3-27B-it-qat-GGUF) | 27B | QAT-Q4_0 | Yes | [lmstudio-community/gemma-3-27B-it-qat-GGUF](https://huggingface.co/lmstudio-community/gemma-3-27B-it-qat-GGUF) |
-| [GPT-OSS 20B](https://huggingface.co/unsloth/gpt-oss-20b-GGUF) | 20B | F16 | No | [unsloth/gpt-oss-20b-GGUF](https://huggingface.co/unsloth/gpt-oss-20b-GGUF) |
-| [GPT-OSS 120B](https://huggingface.co/lmstudio-community/gpt-oss-120b-GGUF) | 120B | MXFP4 | No | [lmstudio-community/gpt-oss-120b-GGUF](https://huggingface.co/lmstudio-community/gpt-oss-120b-GGUF) |
-| [Llama 3.3 70B Instruct](https://huggingface.co/lmstudio-community/Llama-3.3-70B-Instruct-GGUF) | 70B | Q3_K_L | No | [lmstudio-community/Llama-3.3-70B-Instruct-GGUF](https://huggingface.co/lmstudio-community/Llama-3.3-70B-Instruct-GGUF) |
-| [Llama 4 Scout 17B 16E Instruct](https://huggingface.co/lmstudio-community/Llama-4-Scout-17B-16E-Instruct-GGUF) | 17B (16 experts) | Q3_K_L | Yes | [lmstudio-community/Llama-4-Scout-17B-16E-Instruct-GGUF](https://huggingface.co/lmstudio-community/Llama-4-Scout-17B-16E-Instruct-GGUF) |
-| [Mistral Large Instruct 2411](https://huggingface.co/lmstudio-community/Mistral-Large-Instruct-2411-GGUF) | 123B | Q4_K_M | No | [lmstudio-community/Mistral-Large-Instruct-2411-GGUF](https://huggingface.co/lmstudio-community/Mistral-Large-Instruct-2411-GGUF) |
-| [Mistral Small 3.2 24B Instruct 2506](https://huggingface.co/lmstudio-community/Mistral-Small-3.2-24B-Instruct-2506-GGUF) | 24B | Q4_K_M | Yes | [lmstudio-community/Mistral-Small-3.2-24B-Instruct-2506-GGUF](https://huggingface.co/lmstudio-community/Mistral-Small-3.2-24B-Instruct-2506-GGUF) |
-| [Qwen 2.5 Coder 14B Instruct](https://huggingface.co/lmstudio-community/Qwen2.5-Coder-14B-Instruct-GGUF) | 14B | Q4_K_M | No | [lmstudio-community/Qwen2.5-Coder-14B-Instruct-GGUF](https://huggingface.co/lmstudio-community/Qwen2.5-Coder-14B-Instruct-GGUF) |
-| [Qwen 2.5 Coder 32B](https://huggingface.co/lmstudio-community/Qwen2.5-Coder-32B-GGUF) | 32B | Q4_K_M | No | [lmstudio-community/Qwen2.5-Coder-32B-GGUF](https://huggingface.co/lmstudio-community/Qwen2.5-Coder-32B-GGUF) |
-| [Qwen3 Coder 30B A3B Instruct](https://huggingface.co/unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF) | 30B (3B active) | UD-Q8_K_XL | No | [unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF](https://huggingface.co/unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF) |
-| [QwQ 32B](https://huggingface.co/lmstudio-community/QwQ-32B-GGUF) | 32B | Q4_K_M | No | [lmstudio-community/QwQ-32B-GGUF](https://huggingface.co/lmstudio-community/QwQ-32B-GGUF) |
+| Model                                                                                                                     | Parameters       | Quantization | Vision | Hugging Face                                                                                                                                      |
+|---------------------------------------------------------------------------------------------------------------------------|------------------|--------------|--------|---------------------------------------------------------------------------------------------------------------------------------------------------|
+| [CodeLlama 70B Instruct](https://huggingface.co/TheBloke/CodeLlama-70B-Instruct-GGUF)                                     | 70B              | Q5_K_M       | No     | [TheBloke/CodeLlama-70B-Instruct-GGUF](https://huggingface.co/TheBloke/CodeLlama-70B-Instruct-GGUF)                                               |
+| [DeepSeek R1 0528 Qwen3 8B](https://huggingface.co/lmstudio-community/DeepSeek-R1-0528-Qwen3-8B-GGUF)                     | 8B               | Q4_K_M       | No     | [lmstudio-community/DeepSeek-R1-0528-Qwen3-8B-GGUF](https://huggingface.co/lmstudio-community/DeepSeek-R1-0528-Qwen3-8B-GGUF)                     |
+| [Devstral Small 2507](https://huggingface.co/lmstudio-community/Devstral-Small-2507-GGUF)                                 | 24B              | Q4_K_M       | Yes    | [lmstudio-community/Devstral-Small-2507-GGUF](https://huggingface.co/lmstudio-community/Devstral-Small-2507-GGUF)                                 |
+| [Devstral Small 2507 (unsloth)](https://huggingface.co/unsloth/Devstral-Small-2507-GGUF)                                  | 24B              | UD-Q8_K_XL   | Yes    | [unsloth/Devstral-Small-2507-GGUF](https://huggingface.co/unsloth/Devstral-Small-2507-GGUF)                                                       |
+| [Gemma 3 12B IT](https://huggingface.co/lmstudio-community/gemma-3-12b-it-GGUF)                                           | 12B              | Q4_K_M       | Yes    | [lmstudio-community/gemma-3-12b-it-GGUF](https://huggingface.co/lmstudio-community/gemma-3-12b-it-GGUF)                                           |
+| [Gemma 3 27B IT QAT](https://huggingface.co/lmstudio-community/gemma-3-27B-it-qat-GGUF)                                   | 27B              | QAT-Q4_0     | Yes    | [lmstudio-community/gemma-3-27B-it-qat-GGUF](https://huggingface.co/lmstudio-community/gemma-3-27B-it-qat-GGUF)                                   |
+| [GPT-OSS 20B](https://huggingface.co/unsloth/gpt-oss-20b-GGUF)                                                            | 20B              | F16          | No     | [unsloth/gpt-oss-20b-GGUF](https://huggingface.co/unsloth/gpt-oss-20b-GGUF)                                                                       |
+| [GPT-OSS 120B](https://huggingface.co/lmstudio-community/gpt-oss-120b-GGUF)                                               | 120B             | MXFP4        | No     | [lmstudio-community/gpt-oss-120b-GGUF](https://huggingface.co/lmstudio-community/gpt-oss-120b-GGUF)                                               |
+| [Llama 3.3 70B Instruct](https://huggingface.co/lmstudio-community/Llama-3.3-70B-Instruct-GGUF)                           | 70B              | Q3_K_L       | No     | [lmstudio-community/Llama-3.3-70B-Instruct-GGUF](https://huggingface.co/lmstudio-community/Llama-3.3-70B-Instruct-GGUF)                           |
+| [Llama 4 Scout 17B 16E Instruct](https://huggingface.co/lmstudio-community/Llama-4-Scout-17B-16E-Instruct-GGUF)           | 17B (16 experts) | Q3_K_L       | Yes    | [lmstudio-community/Llama-4-Scout-17B-16E-Instruct-GGUF](https://huggingface.co/lmstudio-community/Llama-4-Scout-17B-16E-Instruct-GGUF)           |
+| [Mistral Large Instruct 2411](https://huggingface.co/lmstudio-community/Mistral-Large-Instruct-2411-GGUF)                 | 123B             | Q4_K_M       | No     | [lmstudio-community/Mistral-Large-Instruct-2411-GGUF](https://huggingface.co/lmstudio-community/Mistral-Large-Instruct-2411-GGUF)                 |
+| [Mistral Small 3.2 24B Instruct 2506](https://huggingface.co/lmstudio-community/Mistral-Small-3.2-24B-Instruct-2506-GGUF) | 24B              | Q4_K_M       | Yes    | [lmstudio-community/Mistral-Small-3.2-24B-Instruct-2506-GGUF](https://huggingface.co/lmstudio-community/Mistral-Small-3.2-24B-Instruct-2506-GGUF) |
+| [Qwen 2.5 Coder 14B Instruct](https://huggingface.co/lmstudio-community/Qwen2.5-Coder-14B-Instruct-GGUF)                  | 14B              | Q4_K_M       | No     | [lmstudio-community/Qwen2.5-Coder-14B-Instruct-GGUF](https://huggingface.co/lmstudio-community/Qwen2.5-Coder-14B-Instruct-GGUF)                   |
+| [Qwen 2.5 Coder 32B](https://huggingface.co/lmstudio-community/Qwen2.5-Coder-32B-GGUF)                                    | 32B              | Q4_K_M       | No     | [lmstudio-community/Qwen2.5-Coder-32B-GGUF](https://huggingface.co/lmstudio-community/Qwen2.5-Coder-32B-GGUF)                                     |
+| [Qwen3 Coder 30B A3B Instruct](https://huggingface.co/unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF)                          | 30B (3B active)  | UD-Q8_K_XL   | No     | [unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF](https://huggingface.co/unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF)                                     |
+| [QwQ 32B](https://huggingface.co/lmstudio-community/QwQ-32B-GGUF)                                                         | 32B              | Q4_K_M       | No     | [lmstudio-community/QwQ-32B-GGUF](https://huggingface.co/lmstudio-community/QwQ-32B-GGUF)                                                         |
 
 **Notes:**
 - Models with **Vision** capability include an `mmproj` projection file for processing images alongside text.
 - **Q4_K_M** and **Q3_K_L** quantizations offer a good balance of quality and memory usage for consumer hardware.
 - **F16** and **UD-Q8_K_XL** quantizations provide higher fidelity but require significantly more VRAM/RAM.
 - **MXFP4** and **QAT** are specialized quantization formats optimized for specific hardware or quality targets.
-- Multi-part GGUF files (GPT-OSS 120B, Llama 4 Scout, Mistral Large) are automatically loaded together by LM Studio.
+- Multipart GGUF files (GPT-OSS 120B, Llama 4 Scout, Mistral Large) are automatically loaded together by LM Studio.
 - The **Qwen3 Coder 30B A3B** is a mixture-of-experts model with only 3B parameters active per inference, making it efficient despite its 30B total size.
 
 ### Recommended Models from Gemini (as of 20206-02-10)
@@ -196,24 +284,24 @@ The following models are recommended by Claude (Opus 4.6) to maximize a **Ryzen 
 
 **New Models**
 
-| Model | Parameters | Quantization | Size | Hugging Face | Why This Model |
-|-------|-----------|-------------|------|-------------|----------------|
-| [Qwen3-Coder-Next](https://huggingface.co/unsloth/Qwen3-Coder-Next-GGUF) | 80B (3B active MoE) | UD-Q8_K_XL | ~85 GB | [unsloth/Qwen3-Coder-Next-GGUF](https://huggingface.co/unsloth/Qwen3-Coder-Next-GGUF) | Purpose-built for coding agents and IDE integration (Claude Code, Qwen Code, Cline). 256K context, excels at long-horizon reasoning, tool use, and failure recovery. Only 3B active params means fast inference despite 80B total. |
-| [DeepSeek R1 Distill Llama 70B](https://huggingface.co/lmstudio-community/DeepSeek-R1-Distill-Llama-70B-GGUF) | 70B | Q8_0 | ~75 GB | [lmstudio-community/DeepSeek-R1-Distill-Llama-70B-GGUF](https://huggingface.co/lmstudio-community/DeepSeek-R1-Distill-Llama-70B-GGUF) | Strongest open reasoning model in the 70B class. Distilled from DeepSeek-R1, competitive with OpenAI o1 on math, code, and reasoning benchmarks. At Q8_0, near-lossless quality. |
-| [Devstral 2 123B Instruct 2512](https://huggingface.co/bartowski/mistralai_Devstral-2-123B-Instruct-2512-GGUF) | 123B | Q4_K_M | ~75 GB | [bartowski/mistralai_Devstral-2-123B-Instruct-2512-GGUF](https://huggingface.co/bartowski/mistralai_Devstral-2-123B-Instruct-2512-GGUF) | Latest Mistral coding model (Dec 2025), successor to Mistral Large 2411. 123B dense params purpose-tuned for code generation. Newer and more capable than the Mistral Large Instruct 2411 already installed. |
-| [Qwen 2.5 72B Instruct](https://huggingface.co/lmstudio-community/Qwen2.5-72B-Instruct-GGUF) | 72B | Q8_0 | ~77 GB | [lmstudio-community/Qwen2.5-72B-Instruct-GGUF](https://huggingface.co/lmstudio-community/Qwen2.5-72B-Instruct-GGUF) | Top general-purpose 70B-class model for research and reasoning tasks. Excels at math word problems and structured code-then-explain workflows. Complements the coding-focused Qwen 2.5 Coder models already installed. |
-| [Qwen3 235B A22B Instruct 2507](https://huggingface.co/unsloth/Qwen3-235B-A22B-Instruct-2507-GGUF) | 235B (22B active MoE) | UD-Q2_K_XL | ~88 GB | [unsloth/Qwen3-235B-A22B-Instruct-2507-GGUF](https://huggingface.co/unsloth/Qwen3-235B-A22B-Instruct-2507-GGUF) | Qwen3 flagship with 235B total params and 22B active per token. State-of-the-art instruction following, reasoning, and tool use. Tight fit at ~88 GB -- usable with shorter context lengths. Unsloth Dynamic 2.0 quantization preserves quality even at 2-bit. |
+| Model                                                                                                          | Parameters            | Quantization | Size   | Hugging Face                                                                                                                            | Why This Model                                                                                                                                                                                                                                                 |
+|----------------------------------------------------------------------------------------------------------------|-----------------------|--------------|--------|-----------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [Qwen3-Coder-Next](https://huggingface.co/unsloth/Qwen3-Coder-Next-GGUF)                                       | 80B (3B active MoE)   | UD-Q8_K_XL   | ~85 GB | [unsloth/Qwen3-Coder-Next-GGUF](https://huggingface.co/unsloth/Qwen3-Coder-Next-GGUF)                                                   | Purpose-built for coding agents and IDE integration (Claude Code, Qwen Code, Cline). 256K context, excels at long-horizon reasoning, tool use, and failure recovery. Only 3B active params means fast inference despite 80B total.                             |
+| [DeepSeek R1 Distill Llama 70B](https://huggingface.co/lmstudio-community/DeepSeek-R1-Distill-Llama-70B-GGUF)  | 70B                   | Q8_0         | ~75 GB | [lmstudio-community/DeepSeek-R1-Distill-Llama-70B-GGUF](https://huggingface.co/lmstudio-community/DeepSeek-R1-Distill-Llama-70B-GGUF)   | Strongest open reasoning model in the 70B class. Distilled from DeepSeek-R1, competitive with OpenAI o1 on math, code, and reasoning benchmarks. At Q8_0, near-lossless quality.                                                                               |
+| [Devstral 2 123B Instruct 2512](https://huggingface.co/bartowski/mistralai_Devstral-2-123B-Instruct-2512-GGUF) | 123B                  | Q4_K_M       | ~75 GB | [bartowski/mistralai_Devstral-2-123B-Instruct-2512-GGUF](https://huggingface.co/bartowski/mistralai_Devstral-2-123B-Instruct-2512-GGUF) | Latest Mistral coding model (Dec 2025), successor to Mistral Large 2411. 123B dense params purpose-tuned for code generation. Newer and more capable than the Mistral Large Instruct 2411 already installed.                                                   |
+| [Qwen 2.5 72B Instruct](https://huggingface.co/lmstudio-community/Qwen2.5-72B-Instruct-GGUF)                   | 72B                   | Q8_0         | ~77 GB | [lmstudio-community/Qwen2.5-72B-Instruct-GGUF](https://huggingface.co/lmstudio-community/Qwen2.5-72B-Instruct-GGUF)                     | Top general-purpose 70B-class model for research and reasoning tasks. Excels at math word problems and structured code-then-explain workflows. Complements the coding-focused Qwen 2.5 Coder models already installed.                                         |
+| [Qwen3 235B A22B Instruct 2507](https://huggingface.co/unsloth/Qwen3-235B-A22B-Instruct-2507-GGUF)             | 235B (22B active MoE) | UD-Q2_K_XL   | ~88 GB | [unsloth/Qwen3-235B-A22B-Instruct-2507-GGUF](https://huggingface.co/unsloth/Qwen3-235B-A22B-Instruct-2507-GGUF)                         | Qwen3 flagship with 235B total params and 22B active per token. State-of-the-art instruction following, reasoning, and tool use. Tight fit at ~88 GB -- usable with shorter context lengths. Unsloth Dynamic 2.0 quantization preserves quality even at 2-bit. |
 
 **Quantization Upgrades to Installed Models**
 
 These models are already installed at lower quantization levels. With 96 GB VRAM, they can be upgraded to significantly higher quality:
 
-| Model | Current Quant | Recommended Quant | New Size | Hugging Face | Why Upgrade |
-|-------|--------------|-------------------|----------|-------------|-------------|
-| [Llama 3.3 70B Instruct](https://huggingface.co/lmstudio-community/Llama-3.3-70B-Instruct-GGUF) | Q3_K_L | **Q8_0** | ~75 GB | [lmstudio-community/Llama-3.3-70B-Instruct-GGUF](https://huggingface.co/lmstudio-community/Llama-3.3-70B-Instruct-GGUF) | Biggest quality jump: 3-bit to 8-bit on a 70B dense model. Comparable to Llama 405B performance at a fraction of the size. Clean formatting and strong instruction following. |
-| [Mistral Large Instruct 2411](https://huggingface.co/lmstudio-community/Mistral-Large-Instruct-2411-GGUF) | Q4_K_M | **Q5_K_M** | ~87 GB | [lmstudio-community/Mistral-Large-Instruct-2411-GGUF](https://huggingface.co/lmstudio-community/Mistral-Large-Instruct-2411-GGUF) | 123B dense model benefits noticeably from the 4-bit to 5-bit bump, especially in nuanced reasoning and instruction adherence. Pushes close to the 96 GB ceiling. |
-| [Qwen 2.5 Coder 32B](https://huggingface.co/lmstudio-community/Qwen2.5-Coder-32B-GGUF) | Q4_K_M | **Q8_0** | ~34 GB | [lmstudio-community/Qwen2.5-Coder-32B-GGUF](https://huggingface.co/lmstudio-community/Qwen2.5-Coder-32B-GGUF) | At 34 GB, easily fits in 96 GB. Q8_0 is near-lossless for a 32B model, maximizing code generation accuracy with no practical trade-off. |
-| [QwQ 32B](https://huggingface.co/lmstudio-community/QwQ-32B-GGUF) | Q4_K_M | **Q8_0** | ~34 GB | [lmstudio-community/QwQ-32B-GGUF](https://huggingface.co/lmstudio-community/QwQ-32B-GGUF) | QwQ is a reasoning-specialized model. Q8_0 preserves its chain-of-thought fidelity at a size that leaves ample room for long context windows. |
+| Model                                                                                                     | Current Quant | Recommended Quant | New Size | Hugging Face                                                                                                                      | Why Upgrade                                                                                                                                                                   |
+|-----------------------------------------------------------------------------------------------------------|---------------|-------------------|----------|-----------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| [Llama 3.3 70B Instruct](https://huggingface.co/lmstudio-community/Llama-3.3-70B-Instruct-GGUF)           | Q3_K_L        | **Q8_0**          | ~75 GB   | [lmstudio-community/Llama-3.3-70B-Instruct-GGUF](https://huggingface.co/lmstudio-community/Llama-3.3-70B-Instruct-GGUF)           | Biggest quality jump: 3-bit to 8-bit on a 70B dense model. Comparable to Llama 405B performance at a fraction of the size. Clean formatting and strong instruction following. |
+| [Mistral Large Instruct 2411](https://huggingface.co/lmstudio-community/Mistral-Large-Instruct-2411-GGUF) | Q4_K_M        | **Q5_K_M**        | ~87 GB   | [lmstudio-community/Mistral-Large-Instruct-2411-GGUF](https://huggingface.co/lmstudio-community/Mistral-Large-Instruct-2411-GGUF) | 123B dense model benefits noticeably from the 4-bit to 5-bit bump, especially in nuanced reasoning and instruction adherence. Pushes close to the 96 GB ceiling.              |
+| [Qwen 2.5 Coder 32B](https://huggingface.co/lmstudio-community/Qwen2.5-Coder-32B-GGUF)                    | Q4_K_M        | **Q8_0**          | ~34 GB   | [lmstudio-community/Qwen2.5-Coder-32B-GGUF](https://huggingface.co/lmstudio-community/Qwen2.5-Coder-32B-GGUF)                     | At 34 GB, easily fits in 96 GB. Q8_0 is near-lossless for a 32B model, maximizing code generation accuracy with no practical trade-off.                                       |
+| [QwQ 32B](https://huggingface.co/lmstudio-community/QwQ-32B-GGUF)                                         | Q4_K_M        | **Q8_0**          | ~34 GB   | [lmstudio-community/QwQ-32B-GGUF](https://huggingface.co/lmstudio-community/QwQ-32B-GGUF)                                         | QwQ is a reasoning-specialized model. Q8_0 preserves its chain-of-thought fidelity at a size that leaves ample room for long context windows.                                 |
 
 **Hardware Context:**
 - **Target hardware:** AMD Ryzen AI MAX 395+ with Radeon 8060S, 96 GB unified GPU memory, ~215 GB/s memory bandwidth (256-bit LPDDR5X-8000).
@@ -229,73 +317,306 @@ These models are already installed at lower quantization levels. With 96 GB VRAM
 - [Unsloth Dynamic 2.0 Quantization](https://unsloth.ai/docs/models/qwen3-how-to-run-and-fine-tune/qwen3-2507) -- how UD quants achieve superior accuracy at low bit rates
 - [Qwen3-Coder-Next: How to Run Locally](https://unsloth.ai/docs/models/qwen3-coder-next) -- model capabilities, memory requirements, and recommended inference settings
 
-### Node.js Installation
+### Ollama Installation
 
-To manage Node.js versions, it's recommended to install `nvm` (Node Version Manager).
+Ollama is a lightweight, open-source (MIT) framework for running LLMs locally. It functions like "Docker for LLMs" — pull a model and interact with it in seconds. Ollama is CLI-first and provides a built-in OpenAI-compatible API on port `11434`, making it ideal for scripting, automation, and integration with AI CLI tools.
 
-### Linux and macOS
+#### macOS (Ollama)
 
-To install `nvm` on Linux or macOS, you have a couple of options:
+Download the latest version from [ollama.com/download](https://ollama.com/download):
+1. Download the `.dmg` file for macOS
+2. Open the downloaded file and install
+3. Ollama runs as a background service automatically
 
-#### Using `curl` or `wget` (Recommended for fresh installs)
+#### macOS with Homebrew (Ollama)
 
-You can use the following `curl` or `wget` commands:
-
+Install using Homebrew:
 ```bash
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
-```
-or
-```bash
-wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+brew install ollama
 ```
 
-#### Using Homebrew (If Homebrew is already installed)
+#### Linux (Ollama)
 
-If you have Homebrew installed on macOS, you can install `nvm` using:
-
+Install using the official install script (recommended):
 ```bash
-brew install nvm
+curl -fsSL https://ollama.com/install.sh | sh
 ```
 
-After installing with Homebrew, you'll need to follow the instructions provided by Homebrew to set up `nvm` in your shell. This usually involves adding lines to your shell's profile file (e.g., `~/.bashrc`, `~/.zshrc`).
+This auto-detects your system architecture, installs the binary, and configures Ollama as a systemd service. Running it again will update Ollama.
 
-After installation (using either method), close and reopen your terminal, or source your shell's profile script (e.g., `source ~/.bashrc`, `source ~/.zshrc`).
-
-### Windows
-
-For Windows, it is recommended to use `nvm-windows`. You can download the latest installer from the [nvm-windows GitHub repository](https://github.com/coreybutler/nvm-windows/releases).
-
-Follow the installation instructions provided on the GitHub page. After installation, you can use commands like:
+Manage the service:
 ```bash
-nvm install latest
-nvm use latest
+sudo systemctl start ollama
+sudo systemctl status ollama
+sudo systemctl enable ollama    # start on boot
 ```
 
-### Using `nvm` to Install Node.js
+#### Windows (Ollama)
 
-After `nvm` is installed and configured, you can install Node.js versions.
+Download `OllamaSetup.exe` from [ollama.com/download/windows](https://ollama.com/download/windows):
+1. Run the installer (no Administrator privileges required)
+2. Ollama is added to the system PATH
+3. The server starts in the background automatically and auto-starts on boot
 
-To install the latest **LTS** (Long Term Support) version of Node.js and set it as default:
+#### Docker (Ollama)
+
+Ollama has an official Docker image at `ollama/ollama` on [Docker Hub](https://hub.docker.com/r/ollama/ollama).
+
+**CPU only:**
 ```bash
-nvm install --lts
-nvm alias default 'lts/*'
+docker run -d -v ollama:/root/.ollama -p 11434:11434 --name ollama ollama/ollama
 ```
 
-To install the **latest** available version of Node.js (which might not be LTS) and set it as default:
+**NVIDIA GPU:**
 ```bash
-nvm install node
-nvm alias default node
+docker run -d --gpus all -v ollama:/root/.ollama -p 11434:11434 --name ollama ollama/ollama
 ```
 
-To use a specific installed version:
+**AMD GPU (ROCm):**
 ```bash
-nvm use <version>
+docker run -d --device /dev/kfd --device /dev/dri \
+  -v ollama:/root/.ollama -p 11434:11434 \
+  --name ollama ollama/ollama:rocm
 ```
 
-For example, to use Node.js version 18:
+Run a model inside the container:
 ```bash
-nvm use 18
+docker exec -it ollama ollama run llama3.2
 ```
+
+#### Pulling and Running Models (Ollama)
+
+```bash
+# Pull a model
+ollama pull llama3.2
+ollama pull qwen3
+ollama pull deepseek-r1
+ollama pull codellama
+
+# Run a model (pulls automatically if not already downloaded)
+ollama run llama3.2
+
+# Run with a specific prompt (non-interactive)
+ollama run llama3.2 "Explain quantum computing in one sentence"
+
+# List locally installed models
+ollama list
+
+# Show currently running models
+ollama ps
+
+# Remove a model
+ollama rm llama3.2
+```
+
+Browse the full model library at [ollama.com/library](https://ollama.com/library).
+
+**OpenAI-Compatible API:**
+
+Ollama provides an OpenAI-compatible API at `http://localhost:11434/v1`:
+
+```bash
+curl -X POST http://localhost:11434/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "llama3.2",
+    "messages": [{"role": "user", "content": "Hello!"}]
+  }'
+```
+
+To use with AI CLI tools, configure them to point to Ollama's endpoint:
+```bash
+export OPENAI_API_BASE=http://localhost:11434/v1
+export OPENAI_API_KEY=ollama   # required by some tools but ignored by Ollama
+```
+
+**Ollama Launch (Quick Tool Integration):**
+
+Ollama provides a `launch` command for setting up integrations with AI CLI tools:
+```bash
+ollama launch    # Interactive setup for Claude Code, OpenCode, Codex, etc.
+```
+
+**Key Differences from LM Studio:**
+- CLI-first vs. GUI-first design
+- Runs as a background service (systemd on Linux, auto-start on macOS/Windows)
+- Uses its own model registry and format instead of GGUF files from Hugging Face
+- Official Docker image available
+- MIT open-source license (LM Studio is proprietary, free for personal use)
+- Better suited for automation, scripting, and server deployments
+
+For more information, visit [Ollama documentation](https://docs.ollama.com/) and [GitHub repository](https://github.com/ollama/ollama).
+
+### MLX Installation (macOS Only)
+
+MLX is an open-source array framework for machine learning on Apple Silicon, created by Apple Machine Learning Research. **mlx-lm** is the companion package for running, serving, and fine-tuning LLMs. MLX is designed specifically for the unified memory architecture of Apple Silicon chips (M1, M2, M3, M4, M5) and provides an OpenAI-compatible API server on port `8080`.
+
+**Requirements:**
+- macOS with Apple Silicon (M1 or later)
+- macOS >= 14.0 (Sonoma)
+- Python >= 3.10 (native ARM, not Rosetta x86)
+
+#### pip (MLX)
+
+```bash
+# Install mlx-lm (includes mlx as a dependency)
+pip install mlx-lm
+```
+
+Or using conda:
+```bash
+conda install -c conda-forge mlx-lm
+```
+
+#### Homebrew (MLX)
+
+```bash
+brew install mlx-lm
+```
+
+#### Running Models (MLX)
+
+```bash
+# Generate text (auto-downloads model from Hugging Face on first use)
+mlx_lm.generate --model mlx-community/Mistral-7B-Instruct-v0.3-4bit \
+    --prompt "Write a Python function to sort a list"
+
+# Interactive chat
+mlx_lm.chat --model mlx-community/Qwen3-8B-4bit
+
+# Convert and quantize a model from Hugging Face
+mlx_lm.convert --hf-path meta-llama/Llama-3.2-3B-Instruct -q --q-bits 4
+```
+
+Models are auto-downloaded from Hugging Face and cached locally. Pre-quantized models are available from the [mlx-community](https://huggingface.co/mlx-community) organization on Hugging Face.
+
+#### OpenAI-Compatible Server (MLX)
+
+mlx-lm provides a built-in OpenAI-compatible API server:
+
+```bash
+# Start the server (default: localhost:8080)
+mlx_lm.server --model mlx-community/Qwen3-8B-4bit
+
+# Custom host, port, and max tokens
+mlx_lm.server --model mlx-community/Qwen3-8B-4bit \
+    --host 0.0.0.0 --port 8080 --max-tokens 128000
+```
+
+Test with curl:
+```bash
+curl http://localhost:8080/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "mlx-community/Qwen3-8B-4bit",
+    "messages": [{"role": "user", "content": "Hello!"}],
+    "max_tokens": 512
+  }'
+```
+
+To use with AI CLI tools, configure them to point to the MLX server:
+```bash
+export OPENAI_API_BASE=http://localhost:8080/v1
+export OPENAI_API_KEY=mlx   # required by some tools but ignored by mlx-lm
+```
+
+**Notes:**
+- The default `max_tokens` is 512, which is too low for coding tasks. Set `--max-tokens 128000` when starting the server.
+- The server is designed for local development use, not production deployment.
+- MLX leverages Apple Silicon's unified memory, allowing models to use the full system RAM without CPU-GPU transfer overhead.
+
+For more information, visit the [MLX GitHub repository](https://github.com/ml-explore/mlx), [mlx-lm GitHub repository](https://github.com/ml-explore/mlx-lm), and [MLX documentation](https://ml-explore.github.io/mlx/).
+
+### EXO Installation
+
+EXO is a distributed AI inference framework from [EXO Labs](https://exolabs.net/) that connects multiple devices into a single AI cluster, enabling you to run models that would not fit on a single device. It uses peer-to-peer discovery — devices on the same network find each other automatically with zero configuration. EXO provides an OpenAI-compatible API on port `52415`.
+
+**Prerequisites (all platforms):**
+- Python >= 3.12.0
+- [uv](https://astral.sh/uv) (Python package/project manager)
+- Node.js v18+ and npm (for building the dashboard)
+- Rust nightly toolchain
+
+#### macOS (EXO)
+
+```bash
+# Install prerequisites via Homebrew
+brew install uv macmon node
+
+# Install Rust nightly
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+rustup toolchain install nightly
+
+# Clone and build
+git clone https://github.com/exo-explore/exo
+cd exo/dashboard && npm install && npm run build && cd ..
+
+# Run
+uv run exo
+```
+
+#### macOS App (EXO)
+
+A pre-built DMG is available for macOS Tahoe 26.2 or later:
+
+Download from: https://assets.exolabs.net/EXO-latest.dmg
+
+#### Linux (EXO)
+
+```bash
+# Install prerequisites (Ubuntu/Debian)
+sudo apt update
+sudo apt install nodejs npm
+curl -LsSf https://astral.sh/uv/install.sh | sh
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+rustup toolchain install nightly
+
+# Clone and build
+git clone https://github.com/exo-explore/exo
+cd exo/dashboard && npm install && npm run build && cd ..
+
+# Run
+uv run exo
+```
+
+**Note:** EXO currently runs on CPU only on Linux. GPU support (CUDA, Vulkan) is under active development.
+
+**Windows:** Not officially supported. See [tracking issue #606](https://github.com/exo-explore/exo/issues/606).
+
+#### Running Models (EXO)
+
+Once started with `uv run exo`, the dashboard is available at `http://localhost:52415` and the OpenAI-compatible API is served on the same port.
+
+```bash
+# List available models
+curl http://localhost:52415/v1/models
+
+# Run inference
+curl -X POST http://localhost:52415/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "llama-3.2-1b",
+    "messages": [{"role": "user", "content": "Hello!"}],
+    "stream": true
+  }'
+```
+
+You can use shorthand model IDs (e.g., `llama-3.2-1b`) or full Hugging Face identifiers (e.g., `mlx-community/Llama-3.2-1B-Instruct-4bit`).
+
+To use with AI CLI tools, configure them to point to the EXO endpoint:
+```bash
+export OPENAI_API_BASE=http://localhost:52415/v1
+export OPENAI_API_KEY=exo   # required by some tools but ignored by EXO
+```
+
+**Key Features:**
+- **Automatic device discovery** — devices on the same network find each other with zero configuration
+- **Topology-aware auto-parallelism** — automatically determines the best way to split a model across devices
+- **RDMA over Thunderbolt 5** — 99% latency reduction between connected devices (macOS Tahoe 26.2+)
+- **Built-in web dashboard** for monitoring and management
+- Supports models too large for a single device (e.g., DeepSeek v3.1 671B, Qwen3-235B)
+
+For more information, visit the [EXO GitHub repository](https://github.com/exo-explore/exo) and [EXO Labs website](https://exolabs.net/).
 
 ## AI CLI Tools
 
@@ -1504,7 +1825,7 @@ Autonomous AI coding agent that can edit files, run commands, and use browser au
 - File creation and editing
 - Terminal command execution
 - Browser automation (via puppeteer)
-- Multi-step workflows
+- Multistep workflows
 - Approval mode for safety
 - Support for Claude, OpenAI, OpenRouter, and OpenAI-compatible APIs
 
@@ -1758,7 +2079,7 @@ If you have the old "Claude Dev" extension:
 **Cursor:**
 - Note: Cursor is a fork of VSCode with built-in AI, not an extension
 - Standalone editor with AI-first design
-- Multi-model support (GPT-4, Claude, local)
+- Multimodel support (GPT-4, Claude, local)
 - Website: [cursor.sh](https://cursor.sh/)
 - **Local LLMs:** Supports custom OpenAI-compatible endpoints in settings
 
@@ -1768,7 +2089,7 @@ For users with GitHub Copilot, Claude API access, and local LLMs:
 
 **Option 1: Comprehensive Setup**
 1. **GitHub Copilot** - For inline completions and chat
-2. **Continue** - For multi-model support (Claude, local LLMs)
+2. **Continue** - For multimodel support (Claude, local LLMs)
 3. **Cline** - For autonomous coding tasks
 
 **Option 2: Minimal Setup**
