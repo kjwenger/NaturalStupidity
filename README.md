@@ -2,46 +2,48 @@
 Playground for all things Artificial Intelligence
 
 ## Table of Contents
+
 - [Prerequisites](#prerequisites)
   - [LM Studio Installation](#lm-studio-installation)
     - [macOS](#macos)
     - [macOS with Homebrew](#macos-with-homebrew)
     - [Linux](#linux)
     - [Linux with AppImage](#linux-with-appimage)
-    - [Windows](#windows-1)
+    - [Windows](#windows)
     - [Recommended Models for LM Studio](#recommended-models-for-lm-studio)
+    - [Recommended Models from Gemini](#recommended-models-from-gemini-as-of-20206-02-10)
   - [Node.js Installation](#nodejs-installation)
     - [Linux and macOS](#linux-and-macos)
-      - [Using `curl` or `wget` (Recommended for fresh installs)](#using-curl-or-wget-recommended-for-fresh-installs)
-      - [Using Homebrew (If Homebrew is already installed)](#using-homebrew-if-homebrew-is-already-installed)
-    - [Windows](#windows)
-    - [Using `nvm` to Install Node.js](#using-nvm-to-install-nodejs)
-  - [AI CLI Tools](#ai-cli-tools)
-    - [Discovering New AI CLI Tools](#discovering-new-ai-cli-tools)
-    - [Aider CLI](#aider-cli)
-      - [Using Aider with Local LLMs via LM Studio](#using-aider-with-local-llms-via-lm-studio)
-    - [Aider-CE CLI](#aider-ce-cli)
-    - [Claude CLI](#claude-cli)
-    - [Codex CLI](#codex-cli)
-      - [Using Codex with Local LLMs via LM Studio](#using-codex-with-local-llms-via-lm-studio)
-    - [Copilot CLI](#copilot-cli)
-    - [DeepSeek CLI](#deepseek-cli)
-    - [Factory CLI](#factory-cli)
-    - [Gemini CLI](#gemini-cli)
-    - [Goose CLI](#goose-cli)
-      - [Using Goose with Local LLMs via LM Studio](#using-goose-with-local-llms-via-lm-studio)
-    - [Grok CLI](#grok-cli)
-    - [OpenHands CLI](#openhands-cli)
-    - [OpenCode CLI](#opencode-cli)
-      - [Using OpenCode with Local LLMs via LM Studio](#using-opencode-with-local-llms-via-lm-studio)
-    - [Qwen CLI](#qwen-cli)
-      - [Using Qwen with Local LLMs via LM Studio](#using-qwen-with-local-llms-via-lm-studio)
-    - [Warp CLI](#warp-cli)
-  - [AI Spec Tools](#ai-spec-tools)
-    - [OpenSpec CLI](#openspec-cli)
-    - [GitHub Spec Kit](#github-spec-kit)
-  - [Developer Tools](#developer-tools)
-    - [UV CLI](#uv-cli)
+      - [Using curl or wget](#using-curl-or-wget-recommended-for-fresh-installs)
+      - [Using Homebrew](#using-homebrew-if-homebrew-is-already-installed)
+    - [Windows](#windows-1)
+    - [Using nvm to Install Node.js](#using-nvm-to-install-nodejs)
+- [AI CLI Tools](#ai-cli-tools)
+  - [Discovering New AI CLI Tools](#discovering-new-ai-cli-tools)
+  - [Aider CLI](#aider-cli)
+    - [Using Aider with Local LLMs via LM Studio](#using-aider-with-local-llms-via-lm-studio)
+  - [Aider-CE CLI](#aider-ce-cli)
+  - [Claude CLI](#claude-cli)
+  - [Codex CLI](#codex-cli)
+    - [Using Codex with Local LLMs via LM Studio](#using-codex-with-local-llms-via-lm-studio)
+  - [Copilot CLI](#copilot-cli)
+  - [DeepSeek CLI](#deepseek-cli)
+  - [Factory CLI](#factory-cli)
+  - [Gemini CLI](#gemini-cli)
+  - [Goose CLI](#goose-cli)
+    - [Using Goose with Local LLMs via LM Studio](#using-goose-with-local-llms-via-lm-studio)
+  - [Grok CLI](#grok-cli)
+  - [OpenHands CLI](#openhands-cli)
+  - [OpenCode CLI](#opencode-cli)
+    - [Using OpenCode with Local LLMs via LM Studio](#using-opencode-with-local-llms-via-lm-studio)
+  - [Qwen CLI](#qwen-cli)
+    - [Using Qwen with Local LLMs via LM Studio](#using-qwen-with-local-llms-via-lm-studio)
+  - [Warp CLI](#warp-cli)
+- [AI Spec Tools](#ai-spec-tools)
+  - [OpenSpec CLI](#openspec-cli)
+  - [GitHub Spec Kit](#github-spec-kit)
+- [Developer Tools](#developer-tools)
+  - [UV CLI](#uv-cli)
 
 ## Prerequisites
 
@@ -138,18 +140,22 @@ The following models are recommended for use with LM Studio and the AI CLI tools
 
 Q: Best local LLM for coders with 96GB GPU memory
 
-With 96GB of GPU memory (such as an 
-
-NVIDIA RTX 6000 Ada/Blackwell or a 96GB Mac Studio M3 Ultra), you are in a high-end, "GPU-rich"  position that allows you to run large, state-of-the-art coding models  with high context lengths, or highly capable models with lower  quantization. 
+With 96GB of GPU memory (such as an NVIDIA RTX 6000 Ada/Blackwell or a 96GB Mac Studio M3 Ultra), you are in a high-end,
+"GPU-rich"  position that allows you to run large, state-of-the-art coding models  with high context lengths,
+or highly capable models with lower quantization. 
 
 Here are the best local LLMs for coding with 96GB VRAM as of late 2025/early 2026:
 
 Top Contenders for 96GB VRAM 
 
-- **Qwen3-Coder-Next (80B - 235B):** Qwen3 models are frequently cited as the best, with the 235B (using 2-3 bit quantization) or the 80B (at high precision) being elite for  coding.
-- **GLM-4-Air/4.7-Flash (100B+):** Considered among the best in the ~100B range for general coding, offering high precision and smart reasoning.
-- **DeepSeek-Coder-V2/R1 (MoE):** Highly regarded for code generation. A mixture-of-experts (MoE)  approach allows these to fit while maintaining high performance.
-- **GPT-OSS-120B:** Often recommended for high-end setups due to its capability, running well with 3-bit or 4-bit quantization. 
+- **Qwen3-Coder-Next (80B - 235B):**   
+  Qwen3 models are frequently cited as the best, with the 235B (using 2-3 bit quantization) or the 80B (at high precision) being elite for  coding.
+- **GLM-4-Air/4.7-Flash (100B+):**   
+  Considered among the best in the ~100B range for general coding, offering high precision and smart reasoning.
+- **DeepSeek-Coder-V2/R1 (MoE):**   
+  Highly regarded for code generation. A mixture-of-experts (MoE)  approach allows these to fit while maintaining high performance.
+- **GPT-OSS-120B:**   
+  Often recommended for high-end setups due to its capability, running well with 3-bit or 4-bit quantization. 
 
 Recommended Configurations for 96GB
 
