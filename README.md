@@ -9,6 +9,7 @@ Playground for all things Artificial Intelligence
     - [Linux](#linux)
     - [Linux with AppImage](#linux-with-appimage)
     - [Windows](#windows-1)
+    - [Recommended Models for LM Studio](#recommended-models-for-lm-studio)
   - [Node.js Installation](#nodejs-installation)
     - [Linux and macOS](#linux-and-macos)
       - [Using `curl` or `wget` (Recommended for fresh installs)](#using-curl-or-wget-recommended-for-fresh-installs)
@@ -101,6 +102,37 @@ Download the latest version from [lmstudio.ai/download](https://lmstudio.ai/down
 4. Launch LM Studio from the Start Menu
 
 For more information, visit [LM Studio documentation](https://lmstudio.ai/docs/app/basics).
+
+#### Recommended Models for LM Studio
+
+The following models are recommended for use with LM Studio and the AI CLI tools in this repository. Models marked with **Vision** include multimodal (image) capabilities via an mmproj projection file.
+
+| Model | Parameters | Quantization | Vision | Hugging Face |
+|-------|-----------|-------------|--------|-------------|
+| [CodeLlama 70B Instruct](https://huggingface.co/TheBloke/CodeLlama-70B-Instruct-GGUF) | 70B | Q5_K_M | No | [TheBloke/CodeLlama-70B-Instruct-GGUF](https://huggingface.co/TheBloke/CodeLlama-70B-Instruct-GGUF) |
+| [DeepSeek R1 0528 Qwen3 8B](https://huggingface.co/lmstudio-community/DeepSeek-R1-0528-Qwen3-8B-GGUF) | 8B | Q4_K_M | No | [lmstudio-community/DeepSeek-R1-0528-Qwen3-8B-GGUF](https://huggingface.co/lmstudio-community/DeepSeek-R1-0528-Qwen3-8B-GGUF) |
+| [Devstral Small 2507](https://huggingface.co/lmstudio-community/Devstral-Small-2507-GGUF) | 24B | Q4_K_M | Yes | [lmstudio-community/Devstral-Small-2507-GGUF](https://huggingface.co/lmstudio-community/Devstral-Small-2507-GGUF) |
+| [Devstral Small 2507 (unsloth)](https://huggingface.co/unsloth/Devstral-Small-2507-GGUF) | 24B | UD-Q8_K_XL | Yes | [unsloth/Devstral-Small-2507-GGUF](https://huggingface.co/unsloth/Devstral-Small-2507-GGUF) |
+| [Gemma 3 12B IT](https://huggingface.co/lmstudio-community/gemma-3-12b-it-GGUF) | 12B | Q4_K_M | Yes | [lmstudio-community/gemma-3-12b-it-GGUF](https://huggingface.co/lmstudio-community/gemma-3-12b-it-GGUF) |
+| [Gemma 3 27B IT QAT](https://huggingface.co/lmstudio-community/gemma-3-27B-it-qat-GGUF) | 27B | QAT-Q4_0 | Yes | [lmstudio-community/gemma-3-27B-it-qat-GGUF](https://huggingface.co/lmstudio-community/gemma-3-27B-it-qat-GGUF) |
+| [GPT-OSS 20B](https://huggingface.co/unsloth/gpt-oss-20b-GGUF) | 20B | F16 | No | [unsloth/gpt-oss-20b-GGUF](https://huggingface.co/unsloth/gpt-oss-20b-GGUF) |
+| [GPT-OSS 120B](https://huggingface.co/lmstudio-community/gpt-oss-120b-GGUF) | 120B | MXFP4 | No | [lmstudio-community/gpt-oss-120b-GGUF](https://huggingface.co/lmstudio-community/gpt-oss-120b-GGUF) |
+| [Llama 3.3 70B Instruct](https://huggingface.co/lmstudio-community/Llama-3.3-70B-Instruct-GGUF) | 70B | Q3_K_L | No | [lmstudio-community/Llama-3.3-70B-Instruct-GGUF](https://huggingface.co/lmstudio-community/Llama-3.3-70B-Instruct-GGUF) |
+| [Llama 4 Scout 17B 16E Instruct](https://huggingface.co/lmstudio-community/Llama-4-Scout-17B-16E-Instruct-GGUF) | 17B (16 experts) | Q3_K_L | Yes | [lmstudio-community/Llama-4-Scout-17B-16E-Instruct-GGUF](https://huggingface.co/lmstudio-community/Llama-4-Scout-17B-16E-Instruct-GGUF) |
+| [Mistral Large Instruct 2411](https://huggingface.co/lmstudio-community/Mistral-Large-Instruct-2411-GGUF) | 123B | Q4_K_M | No | [lmstudio-community/Mistral-Large-Instruct-2411-GGUF](https://huggingface.co/lmstudio-community/Mistral-Large-Instruct-2411-GGUF) |
+| [Mistral Small 3.2 24B Instruct 2506](https://huggingface.co/lmstudio-community/Mistral-Small-3.2-24B-Instruct-2506-GGUF) | 24B | Q4_K_M | Yes | [lmstudio-community/Mistral-Small-3.2-24B-Instruct-2506-GGUF](https://huggingface.co/lmstudio-community/Mistral-Small-3.2-24B-Instruct-2506-GGUF) |
+| [Qwen 2.5 Coder 14B Instruct](https://huggingface.co/lmstudio-community/Qwen2.5-Coder-14B-Instruct-GGUF) | 14B | Q4_K_M | No | [lmstudio-community/Qwen2.5-Coder-14B-Instruct-GGUF](https://huggingface.co/lmstudio-community/Qwen2.5-Coder-14B-Instruct-GGUF) |
+| [Qwen 2.5 Coder 32B](https://huggingface.co/lmstudio-community/Qwen2.5-Coder-32B-GGUF) | 32B | Q4_K_M | No | [lmstudio-community/Qwen2.5-Coder-32B-GGUF](https://huggingface.co/lmstudio-community/Qwen2.5-Coder-32B-GGUF) |
+| [Qwen3 Coder 30B A3B Instruct](https://huggingface.co/unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF) | 30B (3B active) | UD-Q8_K_XL | No | [unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF](https://huggingface.co/unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF) |
+| [QwQ 32B](https://huggingface.co/lmstudio-community/QwQ-32B-GGUF) | 32B | Q4_K_M | No | [lmstudio-community/QwQ-32B-GGUF](https://huggingface.co/lmstudio-community/QwQ-32B-GGUF) |
+
+**Notes:**
+- Models with **Vision** capability include an `mmproj` projection file for processing images alongside text.
+- **Q4_K_M** and **Q3_K_L** quantizations offer a good balance of quality and memory usage for consumer hardware.
+- **F16** and **UD-Q8_K_XL** quantizations provide higher fidelity but require significantly more VRAM/RAM.
+- **MXFP4** and **QAT** are specialized quantization formats optimized for specific hardware or quality targets.
+- Multi-part GGUF files (GPT-OSS 120B, Llama 4 Scout, Mistral Large) are automatically loaded together by LM Studio.
+- The **Qwen3 Coder 30B A3B** is a mixture-of-experts model with only 3B parameters active per inference, making it efficient despite its 30B total size.
 
 ### Node.js Installation
 
