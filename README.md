@@ -12,6 +12,7 @@ Playground for all things Artificial Intelligence
     - [Windows](#windows)
     - [Recommended Models for LM Studio](#recommended-models-for-lm-studio)
     - [Recommended Models from Gemini](#recommended-models-from-gemini-as-of-20206-02-10)
+    - [Recommended Models from Claude](#recommended-models-from-claude)
   - [Node.js Installation](#nodejs-installation)
     - [Linux and macOS](#linux-and-macos)
       - [Using curl or wget](#using-curl-or-wget-recommended-for-fresh-installs)
@@ -187,7 +188,46 @@ Best Tools to Run Them
 - **[Ollama](https://ollama.com/):** Simple interface for quickly testing these high-parameter models.
 - **[LM Studio](https://lmstudio.ai/):** Great for visual management, with 96GB allowing for high-context, high-quantization setups. 
 
-**Summary Recommendation:** Use **Qwen3-Next-80B** with a high-quality (Q6-Q8) quantization for the fastest and most accurate daily coding, or **Qwen3-235B (IQ3/2-bit)** if you require maximum reasoning for complex, multi-file projects. 
+**Summary Recommendation:** Use **Qwen3-Next-80B** with a high-quality (Q6-Q8) quantization for the fastest and most accurate daily coding, or **Qwen3-235B (IQ3/2-bit)** if you require maximum reasoning for complex, multi-file projects.
+
+#### Recommended Models from Claude
+
+The following models are recommended by Claude (Opus 4.6) to maximize a **Ryzen AI MAX 395+ / Radeon 8060S with 96 GB GPU memory**. The focus is on the highest parameter counts and quantization levels that fit within the 96 GB VRAM budget while leaving headroom for KV cache and inference overhead. Models are split into new additions and quantization upgrades to already-installed models.
+
+**New Models**
+
+| Model | Parameters | Quantization | Size | Hugging Face | Why This Model |
+|-------|-----------|-------------|------|-------------|----------------|
+| [Qwen3-Coder-Next](https://huggingface.co/unsloth/Qwen3-Coder-Next-GGUF) | 80B (3B active MoE) | UD-Q8_K_XL | ~85 GB | [unsloth/Qwen3-Coder-Next-GGUF](https://huggingface.co/unsloth/Qwen3-Coder-Next-GGUF) | Purpose-built for coding agents and IDE integration (Claude Code, Qwen Code, Cline). 256K context, excels at long-horizon reasoning, tool use, and failure recovery. Only 3B active params means fast inference despite 80B total. |
+| [DeepSeek R1 Distill Llama 70B](https://huggingface.co/lmstudio-community/DeepSeek-R1-Distill-Llama-70B-GGUF) | 70B | Q8_0 | ~75 GB | [lmstudio-community/DeepSeek-R1-Distill-Llama-70B-GGUF](https://huggingface.co/lmstudio-community/DeepSeek-R1-Distill-Llama-70B-GGUF) | Strongest open reasoning model in the 70B class. Distilled from DeepSeek-R1, competitive with OpenAI o1 on math, code, and reasoning benchmarks. At Q8_0, near-lossless quality. |
+| [Devstral 2 123B Instruct 2512](https://huggingface.co/bartowski/mistralai_Devstral-2-123B-Instruct-2512-GGUF) | 123B | Q4_K_M | ~75 GB | [bartowski/mistralai_Devstral-2-123B-Instruct-2512-GGUF](https://huggingface.co/bartowski/mistralai_Devstral-2-123B-Instruct-2512-GGUF) | Latest Mistral coding model (Dec 2025), successor to Mistral Large 2411. 123B dense params purpose-tuned for code generation. Newer and more capable than the Mistral Large Instruct 2411 already installed. |
+| [Qwen 2.5 72B Instruct](https://huggingface.co/lmstudio-community/Qwen2.5-72B-Instruct-GGUF) | 72B | Q8_0 | ~77 GB | [lmstudio-community/Qwen2.5-72B-Instruct-GGUF](https://huggingface.co/lmstudio-community/Qwen2.5-72B-Instruct-GGUF) | Top general-purpose 70B-class model for research and reasoning tasks. Excels at math word problems and structured code-then-explain workflows. Complements the coding-focused Qwen 2.5 Coder models already installed. |
+| [Qwen3 235B A22B Instruct 2507](https://huggingface.co/unsloth/Qwen3-235B-A22B-Instruct-2507-GGUF) | 235B (22B active MoE) | UD-Q2_K_XL | ~88 GB | [unsloth/Qwen3-235B-A22B-Instruct-2507-GGUF](https://huggingface.co/unsloth/Qwen3-235B-A22B-Instruct-2507-GGUF) | Qwen3 flagship with 235B total params and 22B active per token. State-of-the-art instruction following, reasoning, and tool use. Tight fit at ~88 GB -- usable with shorter context lengths. Unsloth Dynamic 2.0 quantization preserves quality even at 2-bit. |
+
+**Quantization Upgrades to Installed Models**
+
+These models are already installed at lower quantization levels. With 96 GB VRAM, they can be upgraded to significantly higher quality:
+
+| Model | Current Quant | Recommended Quant | New Size | Hugging Face | Why Upgrade |
+|-------|--------------|-------------------|----------|-------------|-------------|
+| [Llama 3.3 70B Instruct](https://huggingface.co/lmstudio-community/Llama-3.3-70B-Instruct-GGUF) | Q3_K_L | **Q8_0** | ~75 GB | [lmstudio-community/Llama-3.3-70B-Instruct-GGUF](https://huggingface.co/lmstudio-community/Llama-3.3-70B-Instruct-GGUF) | Biggest quality jump: 3-bit to 8-bit on a 70B dense model. Comparable to Llama 405B performance at a fraction of the size. Clean formatting and strong instruction following. |
+| [Mistral Large Instruct 2411](https://huggingface.co/lmstudio-community/Mistral-Large-Instruct-2411-GGUF) | Q4_K_M | **Q5_K_M** | ~87 GB | [lmstudio-community/Mistral-Large-Instruct-2411-GGUF](https://huggingface.co/lmstudio-community/Mistral-Large-Instruct-2411-GGUF) | 123B dense model benefits noticeably from the 4-bit to 5-bit bump, especially in nuanced reasoning and instruction adherence. Pushes close to the 96 GB ceiling. |
+| [Qwen 2.5 Coder 32B](https://huggingface.co/lmstudio-community/Qwen2.5-Coder-32B-GGUF) | Q4_K_M | **Q8_0** | ~34 GB | [lmstudio-community/Qwen2.5-Coder-32B-GGUF](https://huggingface.co/lmstudio-community/Qwen2.5-Coder-32B-GGUF) | At 34 GB, easily fits in 96 GB. Q8_0 is near-lossless for a 32B model, maximizing code generation accuracy with no practical trade-off. |
+| [QwQ 32B](https://huggingface.co/lmstudio-community/QwQ-32B-GGUF) | Q4_K_M | **Q8_0** | ~34 GB | [lmstudio-community/QwQ-32B-GGUF](https://huggingface.co/lmstudio-community/QwQ-32B-GGUF) | QwQ is a reasoning-specialized model. Q8_0 preserves its chain-of-thought fidelity at a size that leaves ample room for long context windows. |
+
+**Hardware Context:**
+- **Target hardware:** AMD Ryzen AI MAX 395+ with Radeon 8060S, 96 GB unified GPU memory, ~215 GB/s memory bandwidth (256-bit LPDDR5X-8000).
+- **Expected throughput:** ~10-15 tok/s on 70B Q8 dense models; faster on MoE models since only active parameters are read per token.
+- **Memory budget:** ~80-88 GB for model weights leaves 8-16 GB for KV cache, context, and runtime overhead. Larger context windows consume more KV cache memory.
+
+**Sources:**
+- [AMD: Run up to 128B parameter LLMs on Ryzen AI MAX+ with LM Studio](https://www.amd.com/en/blogs/2025/amd-ryzen-ai-max-upgraded-run-up-to-128-billion-parameter-llms-lm-studio.html) -- hardware capabilities and LM Studio integration for Strix Halo
+- [Strix Halo (Ryzen AI MAX+ 395) LLM Benchmark Results](https://forum.level1techs.com/t/strix-halo-ryzen-ai-max-395-llm-benchmark-results/233796) -- community benchmarks for token throughput on this hardware
+- [AMD Strix Halo GPU LLM Performance Tests (Framework)](https://community.frame.work/t/amd-strix-halo-ryzen-ai-max-395-gpu-llm-performance-tests/72521) -- additional performance data
+- [10 Best Open-Source LLMs (2025)](https://huggingface.co/blog/daya-shankar/open-source-llms) -- model landscape overview for Llama 4, Qwen 3, DeepSeek R1
+- [Best Local LLMs for Coding](https://www.mslinn.com/llm/7900-coding-llms.html) -- comparative analysis of 70B-class coding models (DeepSeek, Qwen, Llama)
+- [Unsloth Dynamic 2.0 Quantization](https://unsloth.ai/docs/models/qwen3-how-to-run-and-fine-tune/qwen3-2507) -- how UD quants achieve superior accuracy at low bit rates
+- [Qwen3-Coder-Next: How to Run Locally](https://unsloth.ai/docs/models/qwen3-coder-next) -- model capabilities, memory requirements, and recommended inference settings
 
 ### Node.js Installation
 
