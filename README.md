@@ -41,6 +41,7 @@ Playground for all things Artificial Intelligence
   - [Discovering New AI CLI Tools](#discovering-new-ai-cli-tools)
   - [Aider CLI](#aider-cli)
     - [Using Aider with Local LLMs via LM Studio](#using-aider-with-local-llms-via-lm-studio)
+    - [Aider Config Gists (LM Studio)](#aider-config-gists-lm-studio)
   - [Aider-CE CLI](#aider-ce-cli)
   - [Claude CLI](#claude-cli)
   - [Codex CLI](#codex-cli)
@@ -55,8 +56,10 @@ Playground for all things Artificial Intelligence
   - [OpenHands CLI](#openhands-cli)
   - [OpenCode CLI](#opencode-cli)
     - [Using OpenCode with Local LLMs via LM Studio](#using-opencode-with-local-llms-via-lm-studio)
+    - [OpenCode Config Gist (LM Studio)](#opencode-config-gist-lm-studio)
   - [Qwen CLI](#qwen-cli)
     - [Using Qwen with Local LLMs via LM Studio](#using-qwen-with-local-llms-via-lm-studio)
+    - [Qwen Config Gist (LM Studio)](#qwen-config-gist-lm-studio)
   - [Warp CLI](#warp-cli)
 - [AI Spec Tools](#ai-spec-tools)
   - [OpenSpec CLI](#openspec-cli)
@@ -693,6 +696,21 @@ Replace the model identifier with your actual model from LM Studio (e.g., `opena
 
 For more information, visit [Aider's installation documentation](https://aider.chat/docs/install.html).
 
+##### Aider Config Gists (LM Studio)
+
+Pre-built Aider configuration files for all LM Studio local models are available as public Gists.
+
+| File                                                                                           | Destination                   | Description                                         |
+|------------------------------------------------------------------------------------------------|-------------------------------|-----------------------------------------------------|
+| [.aider.conf.yml](https://gist.github.com/kjwenger/32b131b72c5193e32ae2c5d72f893d3e)           | `~/.aider.conf.yml`           | Global config: default model, API base URL, aliases |
+| [.aider.model.settings.yml](https://gist.github.com/kjwenger/500fdc480080a0f74f3c34e57836dbad) | `~/.aider.model.settings.yml` | Model settings: edit format, repo map, max tokens   |
+
+**Download and install both configs:**
+```bash
+gh gist view 32b131b72c5193e32ae2c5d72f893d3e --raw > ~/.aider.conf.yml
+gh gist view 500fdc480080a0f74f3c34e57836dbad --raw > ~/.aider.model.settings.yml
+```
+
 #### Aider-CE CLI
 
 Aider-CE (cecli) is a community-driven fork of Aider, providing bleeding-edge features and rapid development in the AI pair programming space.
@@ -1178,6 +1196,20 @@ You can use OpenCode with local LLMs served by LM Studio's OpenAI-compatible API
 
 Replace the model identifiers with your actual models from LM Studio.
 
+##### OpenCode Config Gist (LM Studio)
+
+A pre-built OpenCode configuration with all LM Studio local models is available as a public Gist.
+
+| File                                                                               | Destination                        | Description                               |
+|------------------------------------------------------------------------------------|------------------------------------|-------------------------------------------|
+| [opencode.json](https://gist.github.com/kjwenger/24249c61cc3904e4bcff90f14e012fb1) | `~/.config/opencode/opencode.json` | Provider config with all LM Studio models |
+
+**Download and install:**
+```bash
+mkdir -p ~/.config/opencode
+gh gist view 24249c61cc3904e4bcff90f14e012fb1 --raw > ~/.config/opencode/opencode.json
+```
+
 **Using Ollama:**
 
 You can also use OpenCode with Ollama:
@@ -1263,6 +1295,20 @@ export OPENAI_MODEL=openai/qwen3-coder-30b-a3b-instruct
 ```
 
 Replace the model identifier with your actual model from LM Studio.
+
+##### Qwen Config Gist (LM Studio)
+
+A pre-built Qwen settings file with all LM Studio local models is available as a public Gist.
+
+| File                                                                               | Destination             | Description                                         |
+|------------------------------------------------------------------------------------|-------------------------|-----------------------------------------------------|
+| [settings.json](https://gist.github.com/kjwenger/36062285c744156ac253aa26d9063255) | `~/.qwen/settings.json` | API base URL, model providers, all LM Studio models |
+
+**Download and install:**
+```bash
+mkdir -p ~/.qwen
+gh gist view 36062285c744156ac253aa26d9063255 --raw > ~/.qwen/settings.json
+```
 
 #### Warp CLI
 
