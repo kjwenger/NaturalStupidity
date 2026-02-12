@@ -42,6 +42,7 @@ Playground for all things Artificial Intelligence
   - [Aider CLI](#aider-cli)
     - [Using Aider with Local LLMs via LM Studio](#using-aider-with-local-llms-via-lm-studio)
     - [Aider Config Gists (LM Studio)](#aider-config-gists-lm-studio)
+    - [Bash Completion on Linux (Aider)](#bash-completion-on-linux-aider)
   - [Aider-CE CLI](#aider-ce-cli)
   - [Claude CLI](#claude-cli)
   - [Codex CLI](#codex-cli)
@@ -57,9 +58,11 @@ Playground for all things Artificial Intelligence
   - [OpenCode CLI](#opencode-cli)
     - [Using OpenCode with Local LLMs via LM Studio](#using-opencode-with-local-llms-via-lm-studio)
     - [OpenCode Config Gist (LM Studio)](#opencode-config-gist-lm-studio)
+    - [Bash Completion on Linux (OpenCode)](#bash-completion-on-linux-opencode)
   - [Qwen CLI](#qwen-cli)
     - [Using Qwen with Local LLMs via LM Studio](#using-qwen-with-local-llms-via-lm-studio)
     - [Qwen Config Gist (LM Studio)](#qwen-config-gist-lm-studio)
+    - [Bash Completion on Linux (Qwen)](#bash-completion-on-linux-qwen)
   - [Warp CLI](#warp-cli)
 - [AI Spec Tools](#ai-spec-tools)
   - [OpenSpec CLI](#openspec-cli)
@@ -711,6 +714,31 @@ gh gist view 32b131b72c5193e32ae2c5d72f893d3e --raw > ~/.aider.conf.yml
 gh gist view 500fdc480080a0f74f3c34e57836dbad --raw > ~/.aider.model.settings.yml
 ```
 
+##### Bash Completion on Linux (Aider)
+
+Aider has built-in shell completion support via the `--shell-completions` flag (added in v0.77.0, powered by the [shtab](https://github.com/iterative/shtab) library). Supported shells: bash, zsh, tcsh.
+
+**Option A: Install to user bash-completion directory (recommended):**
+```bash
+mkdir -p ~/.local/share/bash-completion/completions
+aider --shell-completions bash > ~/.local/share/bash-completion/completions/aider
+```
+
+This integrates with the standard `bash-completion` framework and loads lazily. Ensure `bash-completion` is installed (`sudo apt install bash-completion` on Debian/Ubuntu).
+
+**Option B: Install system-wide:**
+```bash
+sudo bash -c 'aider --shell-completions bash > /usr/share/bash-completion/completions/aider'
+```
+
+**Option C: Source dynamically in `~/.bashrc`:**
+```bash
+echo 'eval "$(aider --shell-completions bash)"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+This regenerates the completion script on every new shell, staying in sync after upgrades at the cost of a small startup delay.
+
 #### Aider-CE CLI
 
 Aider-CE (cecli) is a community-driven fork of Aider, providing bleeding-edge features and rapid development in the AI pair programming space.
@@ -1255,6 +1283,32 @@ This configures OpenCode to work with your local Ollama models without manual co
 
 For more information, see [OpenCode Providers documentation](https://opencode.ai/docs/providers/) and [Ollama OpenCode integration](https://docs.ollama.com/integrations/opencode).
 
+##### Bash Completion on Linux (OpenCode)
+
+OpenCode has built-in bash completion support via the `opencode completion` subcommand (powered by [yargs](https://yargs.js.org/)).
+
+**Option A: Install to user bash-completion directory (recommended):**
+```bash
+mkdir -p ~/.local/share/bash-completion/completions
+opencode completion > ~/.local/share/bash-completion/completions/opencode
+```
+
+This integrates with the standard `bash-completion` framework and loads lazily. Ensure `bash-completion` is installed (`sudo apt install bash-completion` on Debian/Ubuntu).
+
+**Option B: Append to `~/.bashrc`:**
+```bash
+opencode completion >> ~/.bashrc
+source ~/.bashrc
+```
+
+**Option C: Source dynamically in `~/.bashrc`:**
+```bash
+echo 'eval "$(opencode completion)"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+This regenerates the completion script on every new shell, staying in sync after upgrades at the cost of a small startup delay.
+
 #### Qwen CLI
 
 Qwen Code is Alibaba Cloud's AI-powered coding assistant CLI.
@@ -1308,6 +1362,65 @@ A pre-built Qwen settings file with all LM Studio local models is available as a
 ```bash
 mkdir -p ~/.qwen
 gh gist view 36062285c744156ac253aa26d9063255 --raw > ~/.qwen/settings.json
+```
+
+##### Bash Completion on Linux (Qwen)
+
+Qwen Code does not ship with a built-in `completion` subcommand, but it uses [yargs](https://yargs.js.org/) internally which exposes the `--get-yargs-completions` mechanism. You can create a completion script manually.
+
+**Option A: Install to user bash-completion directory (recommended):**
+```bash
+mkdir -p ~/.local/share/bash-completion/completions
+cat > ~/.local/share/bash-completion/completions/qwen << 'EOF'
+# Bash completion for Qwen Code CLI (@qwen-code/qwen-code)
+_qwen_yargs_completions()
+{
+    local cur_word args type_list
+
+    cur_word="${COMP_WORDS[COMP_CWORD]}"
+    args=("${COMP_WORDS[@]}")
+
+    type_list=$(qwen --get-yargs-completions "${args[@]}" 2>/dev/null)
+    COMPREPLY=($(compgen -W "${type_list}" -- "${cur_word}"))
+
+    if [ ${#COMPREPLY[@]} -eq 0 ]; then
+        COMPREPLY=()
+    fi
+
+    return 0
+}
+complete -o bashdefault -o default -F _qwen_yargs_completions qwen
+EOF
+```
+
+This integrates with the standard `bash-completion` framework and loads lazily. Ensure `bash-completion` is installed (`sudo apt install bash-completion` on Debian/Ubuntu).
+
+**Option B: Add directly to `~/.bashrc`:**
+
+Append the same completion function to your `~/.bashrc`:
+```bash
+cat >> ~/.bashrc << 'EOF'
+
+# Qwen Code CLI bash completion (yargs-based)
+_qwen_yargs_completions()
+{
+    local cur_word args type_list
+
+    cur_word="${COMP_WORDS[COMP_CWORD]}"
+    args=("${COMP_WORDS[@]}")
+
+    type_list=$(qwen --get-yargs-completions "${args[@]}" 2>/dev/null)
+    COMPREPLY=($(compgen -W "${type_list}" -- "${cur_word}"))
+
+    if [ ${#COMPREPLY[@]} -eq 0 ]; then
+        COMPREPLY=()
+    fi
+
+    return 0
+}
+complete -o bashdefault -o default -F _qwen_yargs_completions qwen
+EOF
+source ~/.bashrc
 ```
 
 #### Warp CLI
