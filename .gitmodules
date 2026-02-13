@@ -1,3 +1,4 @@
 [submodule "MultiLingua"]
 	path = MultiLingua
 	url = git@github.com:kjwenger/MultiLingua.git
+	branch = main
