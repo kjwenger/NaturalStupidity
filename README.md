@@ -47,24 +47,32 @@ Playground for all things Artificial Intelligence
     - [Bash Completion on Linux (Aider)](#bash-completion-on-linux-aider)
   - [Aider-CE CLI](#aider-ce-cli)
     - [Bash Completion on Linux (Aider-CE)](#bash-completion-on-linux-aider-ce)
+    - [Using Aider-CE with Local LLMs via LM Studio](#using-aider-ce-with-local-llms-via-lm-studio)
   - [Claude CLI](#claude-cli)
     - [Bash Completion on Linux (Claude)](#bash-completion-on-linux-claude)
+    - [Using Claude with Local LLMs via LM Studio](#using-claude-with-local-llms-via-lm-studio)
   - [Codex CLI](#codex-cli)
     - [Using Codex with Local LLMs via LM Studio](#using-codex-with-local-llms-via-lm-studio)
     - [Bash Completion on Linux (Codex)](#bash-completion-on-linux-codex)
   - [Copilot CLI](#copilot-cli)
     - [Bash Completion on Linux (Copilot)](#bash-completion-on-linux-copilot)
+    - [Using Copilot with Local LLMs via LM Studio](#using-copilot-with-local-llms-via-lm-studio)
   - [DeepSeek CLI](#deepseek-cli)
     - [Bash Completion on Linux (DeepSeek)](#bash-completion-on-linux-deepseek)
+    - [Using DeepSeek with Local LLMs via LM Studio](#using-deepseek-with-local-llms-via-lm-studio)
   - [Factory CLI](#factory-cli)
+    - [Using Factory with Local LLMs via LM Studio](#using-factory-with-local-llms-via-lm-studio)
   - [Gemini CLI](#gemini-cli)
     - [Bash Completion on Linux (Gemini)](#bash-completion-on-linux-gemini)
+    - [Using Gemini with Local LLMs via LM Studio](#using-gemini-with-local-llms-via-lm-studio)
   - [Goose CLI](#goose-cli)
     - [Using Goose with Local LLMs via LM Studio](#using-goose-with-local-llms-via-lm-studio)
     - [Bash Completion on Linux (Goose)](#bash-completion-on-linux-goose)
   - [Grok CLI](#grok-cli)
+    - [Using Grok with Local LLMs via LM Studio](#using-grok-with-local-llms-via-lm-studio)
   - [OpenHands CLI](#openhands-cli)
     - [Bash Completion on Linux (OpenHands)](#bash-completion-on-linux-openhands)
+    - [Using OpenHands with Local LLMs via LM Studio](#using-openhands-with-local-llms-via-lm-studio)
   - [OpenCode CLI](#opencode-cli)
     - [Using OpenCode with Local LLMs via LM Studio](#using-opencode-with-local-llms-via-lm-studio)
     - [OpenCode Config Gist (LM Studio)](#opencode-config-gist-lm-studio)
@@ -74,6 +82,7 @@ Playground for all things Artificial Intelligence
     - [Qwen Config Gist (LM Studio)](#qwen-config-gist-lm-studio)
     - [Bash Completion on Linux (Qwen)](#bash-completion-on-linux-qwen)
   - [Warp CLI](#warp-cli)
+    - [Using Warp with Local LLMs via LM Studio](#using-warp-with-local-llms-via-lm-studio)
 - [AI Spec Tools](#ai-spec-tools)
   - [OpenSpec CLI](#openspec-cli)
   - [GitHub Spec Kit](#github-spec-kit)
@@ -920,6 +929,30 @@ source ~/.bashrc
 
 This regenerates the completion script on every new shell, staying in sync after upgrades at the cost of a small startup delay.
 
+##### Using Aider-CE with Local LLMs via LM Studio
+
+You can use Aider-CE (cecli) with local LLMs served by LM Studio's OpenAI-compatible API. Aider-CE is a fork of Aider and supports the same configuration methods:
+
+1. Start LM Studio and load your preferred model
+2. Enable the Local Server feature in LM Studio (default port: 1234)
+3. Configure environment variables:
+
+**Method 1: Using generic OpenAI environment variables:**
+```bash
+export OPENAI_API_BASE=http://localhost:1234/v1
+export OPENAI_API_KEY=lm-studio
+export OPENAI_MODEL=openai/qwen3-coder-30b-a3b-instruct
+```
+
+**Method 2: Using Aider-specific environment variables (also recognized by cecli):**
+```bash
+export AIDER_OPENAI_API_BASE=http://localhost:1234/v1
+export AIDER_OPENAI_API_KEY=lm-studio
+export AIDER_MODEL=openai/qwen3-coder-30b-a3b-instruct
+```
+
+Replace the model identifier with your actual model from LM Studio (e.g., `openai/qwen3-coder-30b-a3b-instruct` or `openai/openai/gpt-oss-120b`).
+
 #### Claude CLI
 
 Claude CLI provides command-line access to Anthropic's Claude AI.
@@ -960,6 +993,23 @@ git clone https://github.com/cldotdev/claude-bash-completion.git ~/.local/share/
 echo 'source ~/.local/share/claude-bash-completion/claude-completion.bash' >> ~/.bashrc
 source ~/.bashrc
 ```
+
+##### Using Claude with Local LLMs via LM Studio
+
+LM Studio 0.4.1+ exposes an Anthropic-compatible `/v1/messages` endpoint, allowing Claude CLI (Claude Code) to connect directly to local models:
+
+1. Start LM Studio (version 0.4.1 or later) and load your preferred model
+2. Enable the Local Server feature in LM Studio (default port: 1234)
+3. Configure environment variables:
+
+```bash
+export ANTHROPIC_BASE_URL=http://localhost:1234
+export ANTHROPIC_API_KEY=lm-studio
+```
+
+**Note:** This requires LM Studio 0.4.1 or later, which added native Anthropic API compatibility. Earlier versions only expose the OpenAI-compatible endpoint and will not work with Claude CLI directly.
+
+For more information, see [LM Studio + Claude Code integration guide](https://lmstudio.ai/blog/claudecode).
 
 #### Codex CLI
 
@@ -1095,6 +1145,20 @@ source ~/.bashrc
 
 This regenerates the completion script on every new shell, staying in sync after upgrades at the cost of a small startup delay.
 
+##### Using Copilot with Local LLMs via LM Studio
+
+The `gh copilot` command is locked to GitHub's hosted backend and does not support custom API endpoints. However, for the broader GitHub Copilot SDK ecosystem, custom providers with OpenAI-compatible base URLs are supported via BYOK (Bring Your Own Key) configuration.
+
+For LM Studio integration, a proxy like LiteLLM can bridge the connection between GitHub Copilot and your local LM Studio instance:
+
+1. Start LM Studio and load your preferred model
+2. Enable the Local Server feature in LM Studio (default port: 1234)
+3. Set up LiteLLM as a proxy layer between Copilot and LM Studio
+
+For a detailed walkthrough of this advanced/experimental setup, see [Using LiteLLM with GitHub Copilot](https://parsiya.net/blog/litellm-ghc-aad/).
+
+**Note:** This is an advanced configuration that relies on third-party proxy software and is not officially supported by GitHub.
+
 #### DeepSeek CLI
 
 DeepSeek CLI is an AI coding assistant leveraging DeepSeek Coder models for code generation, refactoring, and development workflows.
@@ -1156,6 +1220,22 @@ For more information, visit [DeepSeek CLI GitHub repository](https://github.com/
 
 DeepSeek CLI does not currently provide built-in bash completion support, and no community-maintained completion scripts are available at this time.
 
+##### Using DeepSeek with Local LLMs via LM Studio
+
+DeepSeek CLI already supports local models via Ollama (documented above). LM Studio's OpenAI-compatible API serves on the same `/v1/chat/completions` endpoint format and can be used as an alternative local backend:
+
+1. Start LM Studio and load a DeepSeek model (or any compatible model)
+2. Enable the Local Server feature in LM Studio (default port: 1234)
+3. Configure environment variables:
+
+```bash
+export DEEPSEEK_USE_LOCAL=true
+```
+
+Point DeepSeek CLI to LM Studio at `http://localhost:1234/v1` instead of Ollama's default `http://localhost:11434`.
+
+**Note:** Compatibility depends on the DeepSeek CLI version and may require loading a DeepSeek-family model in LM Studio (e.g., `deepseek-r1-0528-qwen3-8b` or `deepseek-coder`). Check the [DeepSeek CLI GitHub repository](https://github.com/holasoymalva/deepseek-cli) for the latest supported configurations.
+
 #### Factory CLI
 
 Factory CLI enables AI-powered automation across the software development lifecycle, from CI/CD to code migrations and maintenance.
@@ -1195,6 +1275,20 @@ For CI/CD integration and advanced features, see the [Factory CLI documentation]
 
 For more information, visit [Factory.ai](https://factory.ai/).
 
+##### Using Factory with Local LLMs via LM Studio
+
+Factory supports BYOK (Bring Your Own Key) with custom providers. You can use the `/model` command or configuration to add a custom provider pointing to LM Studio:
+
+1. Start LM Studio and load your preferred model
+2. Enable the Local Server feature in LM Studio (default port: 1234)
+3. Configure a custom provider in Factory:
+
+- **Provider type:** `generic-chat-completion-api`
+- **Base URL:** `http://localhost:1234/v1`
+- **API Key:** `lm-studio`
+
+For more information on BYOK configuration, see [Factory BYOK documentation](https://docs.factory.ai/cli/byok/overview).
+
 #### Gemini CLI
 
 Google's Gemini AI CLI tool.
@@ -1221,6 +1315,14 @@ For more information, visit [Gemini CLI's GitHub repository](https://github.com/
 ##### Bash Completion on Linux (Gemini)
 
 Gemini CLI does not yet have built-in bash completion support. There is an open [feature request (#1855)](https://github.com/google-gemini/gemini-cli/issues/1855) with a draft PR. Gemini CLI is built on [oclif](https://oclif.io/), which supports completions via plugin, so native support is expected in a future release.
+
+##### Using Gemini with Local LLMs via LM Studio
+
+Gemini CLI does not natively support custom OpenAI-compatible endpoints. It is designed to work exclusively with Google's Gemini API.
+
+**Feature request:** [#16504](https://github.com/google-gemini/gemini-cli/issues/16504) — Add support for custom/local model endpoints.
+
+Third-party proxy solutions exist (e.g., [geminicli2api](https://github.com/search?q=geminicli2api), [gemini-openai-proxy](https://github.com/search?q=gemini-openai-proxy)) that translate between the Gemini API protocol and OpenAI-compatible APIs, but these are not officially supported by Google.
 
 #### Grok CLI
 
@@ -1258,6 +1360,29 @@ grok --api-key your_api_key_here
 ```
 
 For more information, visit [Grok CLI's GitHub repository](https://github.com/superagent-ai/grok-cli).
+
+##### Using Grok with Local LLMs via LM Studio
+
+Grok CLI supports custom API endpoints via its configuration file or CLI flags, allowing you to point it at LM Studio's OpenAI-compatible API:
+
+1. Start LM Studio and load your preferred model
+2. Enable the Local Server feature in LM Studio (default port: 1234)
+3. Configure using one of the following methods:
+
+**Method 1: Edit `~/.grok/user-settings.json`:**
+```json
+{
+  "baseURL": "http://localhost:1234/v1",
+  "apiKey": "lm-studio"
+}
+```
+
+**Method 2: Use the `--base-url` CLI flag:**
+```bash
+grok --base-url http://localhost:1234/v1
+```
+
+The default `baseURL` is `https://api.x.ai/v1`. Replace the model identifier with your actual model from LM Studio.
 
 #### Goose CLI
 
@@ -1379,6 +1504,26 @@ openhands --install-completion
 ```
 
 If the flag is available, it will automatically install completion for your current shell. If it is not recognized, bash completion is not yet supported. Check the [OpenHands documentation](https://openhands.dev/) for updates.
+
+##### Using OpenHands with Local LLMs via LM Studio
+
+OpenHands has documented support for local LLMs. You can connect it to LM Studio's OpenAI-compatible API:
+
+1. Start LM Studio and load your preferred model
+2. Enable the Local Server feature in LM Studio (default port: 1234)
+3. Configure environment variables:
+
+```bash
+export LLM_BASE_URL=http://localhost:1234/v1
+export LLM_API_KEY=lm-studio
+export LLM_MODEL=openai/qwen3-coder-30b-a3b-instruct
+```
+
+Replace the model identifier with your actual model from LM Studio.
+
+**Docker note:** If running OpenHands in Docker, use `http://host.docker.internal:1234/v1` instead of `http://localhost:1234/v1` to reach LM Studio on the host machine.
+
+For more information, see [OpenHands Local LLMs documentation](https://docs.openhands.dev/openhands/usage/llms/local-llms).
 
 #### OpenCode CLI
 
@@ -1684,6 +1829,12 @@ Download the appropriate package from [Warp's website](https://www.warp.dev/).
 Download the installer from [Warp's website](https://www.warp.dev/).
 
 After installation, launch Warp and sign in to access AI features.
+
+##### Using Warp with Local LLMs via LM Studio
+
+Warp's AI features use built-in cloud providers (Anthropic, OpenAI, Google). Custom LLM endpoints (BYO LLM) are only available on Enterprise plans and are not configurable in the free or Pro tiers.
+
+Local model support is the [#1 feature request (#4339)](https://github.com/warpdotdev/Warp/issues/4339) on Warp's public issue tracker.
 
 ## AI Spec Tools
 
