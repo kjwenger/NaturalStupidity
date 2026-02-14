@@ -48,6 +48,7 @@ Playground for all things Artificial Intelligence
     - [Bash Completion on Linux (Claude)](#bash-completion-on-linux-claude)
   - [Codex CLI](#codex-cli)
     - [Using Codex with Local LLMs via LM Studio](#using-codex-with-local-llms-via-lm-studio)
+    - [Bash Completion on Linux (Codex)](#bash-completion-on-linux-codex)
   - [Copilot CLI](#copilot-cli)
   - [DeepSeek CLI](#deepseek-cli)
   - [Factory CLI](#factory-cli)
@@ -903,6 +904,31 @@ codex --profile qwen3-coder
 ```
 
 For more information, see [Codex CLI with Local Models](https://dev.to/shashikant86/codex-cli-running-gpt-oss-and-local-coding-models-with-ollama-lm-studio-and-mlx-403g).
+
+##### Bash Completion on Linux (Codex)
+
+Codex CLI has built-in shell completion support via the `codex completion` subcommand. Supported shells: bash, zsh, fish, PowerShell, elvish. Always specify the shell explicitly.
+
+**Option A: Install to user bash-completion directory (recommended):**
+```bash
+mkdir -p ~/.local/share/bash-completion/completions
+codex completion bash > ~/.local/share/bash-completion/completions/codex
+```
+
+This integrates with the standard `bash-completion` framework and loads lazily. Ensure `bash-completion` is installed (`sudo apt install bash-completion` on Debian/Ubuntu).
+
+**Option B: Install system-wide:**
+```bash
+sudo bash -c 'codex completion bash > /usr/share/bash-completion/completions/codex'
+```
+
+**Option C: Source dynamically in `~/.bashrc`:**
+```bash
+echo 'eval "$(codex completion bash)"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+This regenerates the completion script on every new shell, staying in sync after upgrades at the cost of a small startup delay.
 
 #### Copilot CLI
 
