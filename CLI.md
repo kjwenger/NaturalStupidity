@@ -5,6 +5,7 @@
   * [Discovering New AI CLI Tools](#discovering-new-ai-cli-tools)
   * [Installing All AI CLI Tools](#installing-all-ai-cli-tools)
   * [Installing Bash Completion for All CLI Tools](#installing-bash-completion-for-all-cli-tools)
+  * [Enabling Bash Completion for Zsh](#enabling-bash-completion-for-zsh)
   * [Aider CLI](#aider-cli)
     * [Using Aider with Local LLMs via LM Studio](#using-aider-with-local-llms-via-lm-studio)
     * [Aider Config Gists (LM Studio)](#aider-config-gists-lm-studio)
@@ -162,6 +163,57 @@ _qwen_yargs_completions()
 }
 complete -o bashdefault -o default -F _qwen_yargs_completions qwen
 EOF
+```
+
+## Enabling Bash Completion for Zsh
+
+If you use **zsh** (the default shell on macOS) instead of bash, you can still use bash completion scripts by enabling zsh's built-in bash compatibility layer. Add the following to your `~/.zshrc`:
+
+```bash
+# Enable bash completion compatibility in zsh
+autoload -Uz bashcompinit && bashcompinit
+autoload -Uz compinit && compinit
+```
+
+After adding those lines, source your profile:
+
+```bash
+source ~/.zshrc
+```
+
+With this enabled, zsh will load bash completion scripts from the standard `~/.local/share/bash-completion/completions/` directory. All the completion scripts installed in the previous section will work in zsh without modification.
+
+**Tool-native zsh completions:**
+
+Some tools generate zsh-native completions directly, which may provide a better experience than the bash compatibility layer:
+
+```bash
+# Create the zsh completions directory
+mkdir -p ~/.local/share/zsh/site-functions
+
+# Codex CLI
+codex completion zsh > ~/.local/share/zsh/site-functions/_codex
+
+# Goose CLI
+goose completion zsh > ~/.local/share/zsh/site-functions/_goose
+
+# gh CLI (covers gh copilot and all gh subcommands)
+gh completion -s zsh > ~/.local/share/zsh/site-functions/_gh
+```
+
+Ensure the directory is on your `fpath` by adding this to `~/.zshrc` (before `compinit`):
+
+```bash
+fpath=(~/.local/share/zsh/site-functions $fpath)
+autoload -Uz compinit && compinit
+```
+
+**Note:** If you use both `bashcompinit` and native zsh completions, place `bashcompinit` *after* `compinit` in your `~/.zshrc`:
+
+```bash
+fpath=(~/.local/share/zsh/site-functions $fpath)
+autoload -Uz compinit && compinit
+autoload -Uz bashcompinit && bashcompinit
 ```
 
 ## Aider CLI
