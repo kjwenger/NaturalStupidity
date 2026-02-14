@@ -46,6 +46,7 @@ Playground for all things Artificial Intelligence
     - [Aider Config Gists (LM Studio)](#aider-config-gists-lm-studio)
     - [Bash Completion on Linux (Aider)](#bash-completion-on-linux-aider)
   - [Aider-CE CLI](#aider-ce-cli)
+    - [Bash Completion on Linux (Aider-CE)](#bash-completion-on-linux-aider-ce)
   - [Claude CLI](#claude-cli)
     - [Bash Completion on Linux (Claude)](#bash-completion-on-linux-claude)
   - [Codex CLI](#codex-cli)
@@ -54,12 +55,16 @@ Playground for all things Artificial Intelligence
   - [Copilot CLI](#copilot-cli)
     - [Bash Completion on Linux (Copilot)](#bash-completion-on-linux-copilot)
   - [DeepSeek CLI](#deepseek-cli)
+    - [Bash Completion on Linux (DeepSeek)](#bash-completion-on-linux-deepseek)
   - [Factory CLI](#factory-cli)
   - [Gemini CLI](#gemini-cli)
+    - [Bash Completion on Linux (Gemini)](#bash-completion-on-linux-gemini)
   - [Goose CLI](#goose-cli)
     - [Using Goose with Local LLMs via LM Studio](#using-goose-with-local-llms-via-lm-studio)
+    - [Bash Completion on Linux (Goose)](#bash-completion-on-linux-goose)
   - [Grok CLI](#grok-cli)
   - [OpenHands CLI](#openhands-cli)
+    - [Bash Completion on Linux (OpenHands)](#bash-completion-on-linux-openhands)
   - [OpenCode CLI](#opencode-cli)
     - [Using OpenCode with Local LLMs via LM Studio](#using-opencode-with-local-llms-via-lm-studio)
     - [OpenCode Config Gist (LM Studio)](#opencode-config-gist-lm-studio)
@@ -704,6 +709,9 @@ mkdir -p ~/.local/share/bash-completion/completions
 # Aider (built-in --shell-completions flag)
 aider --shell-completions bash > ~/.local/share/bash-completion/completions/aider
 
+# Aider-CE (built-in --shell-completions flag, same as Aider)
+cecli --shell-completions bash > ~/.local/share/bash-completion/completions/cecli
+
 # Claude CLI (community script — requires git clone first)
 git clone https://github.com/cldotdev/claude-bash-completion.git ~/.local/share/claude-bash-completion
 ln -s ~/.local/share/claude-bash-completion/claude-completion.bash ~/.local/share/bash-completion/completions/claude
@@ -713,6 +721,9 @@ codex completion bash > ~/.local/share/bash-completion/completions/codex
 
 # gh CLI (covers gh copilot and all gh subcommands)
 gh completion -s bash > ~/.local/share/bash-completion/completions/gh
+
+# Goose CLI (built-in completion subcommand)
+goose completion bash > ~/.local/share/bash-completion/completions/goose
 
 # OpenCode CLI (built-in completion subcommand)
 opencode completion > ~/.local/share/bash-completion/completions/opencode
@@ -883,6 +894,31 @@ docker run -it --user $(id -u):$(id -g) \
 ```
 
 For more information, visit [Aider-CE GitHub repository](https://github.com/dwash96/cecli) and join the [Discord community](https://discord.gg/AX9ZEA7nJn).
+
+##### Bash Completion on Linux (Aider-CE)
+
+Aider-CE (cecli) is built on the same Click framework as Aider and likely inherits the `--shell-completions` flag (powered by [shtab](https://github.com/iterative/shtab)). Supported shells: bash, zsh, tcsh.
+
+**Option A: Install to user bash-completion directory (recommended):**
+```bash
+mkdir -p ~/.local/share/bash-completion/completions
+cecli --shell-completions bash > ~/.local/share/bash-completion/completions/cecli
+```
+
+This integrates with the standard `bash-completion` framework and loads lazily. Ensure `bash-completion` is installed (`sudo apt install bash-completion` on Debian/Ubuntu).
+
+**Option B: Install system-wide:**
+```bash
+sudo bash -c 'cecli --shell-completions bash > /usr/share/bash-completion/completions/cecli'
+```
+
+**Option C: Source dynamically in `~/.bashrc`:**
+```bash
+echo 'eval "$(cecli --shell-completions bash)"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+This regenerates the completion script on every new shell, staying in sync after upgrades at the cost of a small startup delay.
 
 #### Claude CLI
 
@@ -1116,6 +1152,10 @@ deepseek
 
 For more information, visit [DeepSeek CLI GitHub repository](https://github.com/holasoymalva/deepseek-cli).
 
+##### Bash Completion on Linux (DeepSeek)
+
+DeepSeek CLI does not currently provide built-in bash completion support, and no community-maintained completion scripts are available at this time.
+
 #### Factory CLI
 
 Factory CLI enables AI-powered automation across the software development lifecycle, from CI/CD to code migrations and maintenance.
@@ -1177,6 +1217,10 @@ brew install gemini-cli
 After installation, you'll be prompted to authenticate with your Google account on first use.
 
 For more information, visit [Gemini CLI's GitHub repository](https://github.com/google-gemini/gemini-cli).
+
+##### Bash Completion on Linux (Gemini)
+
+Gemini CLI does not yet have built-in bash completion support. There is an open [feature request (#1855)](https://github.com/google-gemini/gemini-cli/issues/1855) with a draft PR. Gemini CLI is built on [oclif](https://oclif.io/), which supports completions via plugin, so native support is expected in a future release.
 
 #### Grok CLI
 
@@ -1267,6 +1311,31 @@ export GOOSE_MODEL=openai/gpt-oss-120b
 
 Replace the model identifier with your actual model from LM Studio. The commented-out line shows an alternative model example.
 
+##### Bash Completion on Linux (Goose)
+
+Goose has built-in shell completion support via the `goose completion` subcommand. Supported shells: bash, zsh, fish, elvish, PowerShell.
+
+**Option A: Install to user bash-completion directory (recommended):**
+```bash
+mkdir -p ~/.local/share/bash-completion/completions
+goose completion bash > ~/.local/share/bash-completion/completions/goose
+```
+
+This integrates with the standard `bash-completion` framework and loads lazily. Ensure `bash-completion` is installed (`sudo apt install bash-completion` on Debian/Ubuntu).
+
+**Option B: Install system-wide:**
+```bash
+sudo bash -c 'goose completion bash > /usr/share/bash-completion/completions/goose'
+```
+
+**Option C: Source dynamically in `~/.bashrc`:**
+```bash
+echo 'eval "$(goose completion bash)"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+This regenerates the completion script on every new shell, staying in sync after upgrades at the cost of a small startup delay.
+
 #### OpenHands CLI
 
 OpenHands CLI brings AI-powered development assistance directly to your terminal, enabling autonomous coding, debugging, and task execution.
@@ -1300,6 +1369,16 @@ openhands "your task description"
 ```
 
 For more information, visit [OpenHands CLI blog post](https://openhands.dev/blog/the-openhands-cli-ai-powered-development-in-your-terminal) and [OpenHands documentation](https://openhands.dev/).
+
+##### Bash Completion on Linux (OpenHands)
+
+OpenHands CLI may support bash completion via the `--install-completion` flag if built with [Typer](https://typer.tiangolo.com/) or [Click](https://click.palletsprojects.com/). Try running:
+
+```bash
+openhands --install-completion
+```
+
+If the flag is available, it will automatically install completion for your current shell. If it is not recognized, bash completion is not yet supported. Check the [OpenHands documentation](https://openhands.dev/) for updates.
 
 #### OpenCode CLI
 
