@@ -40,6 +40,7 @@ Playground for all things Artificial Intelligence
 - [AI CLI Tools](#ai-cli-tools)
   - [Discovering New AI CLI Tools](#discovering-new-ai-cli-tools)
   - [Installing All AI CLI Tools](#installing-all-ai-cli-tools)
+  - [Installing Bash Completion for All CLI Tools](#installing-bash-completion-for-all-cli-tools)
   - [Aider CLI](#aider-cli)
     - [Using Aider with Local LLMs via LM Studio](#using-aider-with-local-llms-via-lm-studio)
     - [Aider Config Gists (LM Studio)](#aider-config-gists-lm-studio)
@@ -689,6 +690,50 @@ curl -fsSL https://factory.ai/install.sh | sh
 
 # Goose CLI (macOS/Linux)
 curl -fsSL https://github.com/block/goose/releases/latest/download/download_cli.sh | sh
+```
+
+#### Installing Bash Completion for All CLI Tools
+
+The following commands set up bash tab-completion for every AI CLI tool that supports it. All scripts are installed into the user-level `~/.local/share/bash-completion/completions/` directory, which integrates with the standard `bash-completion` framework and loads lazily. Ensure `bash-completion` is installed on your system (`sudo apt install bash-completion` on Debian/Ubuntu). See each tool's individual section for alternative installation methods (system-wide, dynamic sourcing in `~/.bashrc`).
+
+```bash
+# Create the user completions directory
+mkdir -p ~/.local/share/bash-completion/completions
+
+# Aider (built-in --shell-completions flag)
+aider --shell-completions bash > ~/.local/share/bash-completion/completions/aider
+
+# Claude CLI (community script — requires git clone first)
+git clone https://github.com/cldotdev/claude-bash-completion.git ~/.local/share/claude-bash-completion
+ln -s ~/.local/share/claude-bash-completion/claude-completion.bash ~/.local/share/bash-completion/completions/claude
+
+# Codex CLI (built-in completion subcommand)
+codex completion bash > ~/.local/share/bash-completion/completions/codex
+
+# OpenCode CLI (built-in completion subcommand)
+opencode completion > ~/.local/share/bash-completion/completions/opencode
+
+# Qwen CLI (manual yargs-based completion script)
+cat > ~/.local/share/bash-completion/completions/qwen << 'EOF'
+# Bash completion for Qwen Code CLI (@qwen-code/qwen-code)
+_qwen_yargs_completions()
+{
+    local cur_word args type_list
+
+    cur_word="${COMP_WORDS[COMP_CWORD]}"
+    args=("${COMP_WORDS[@]}")
+
+    type_list=$(qwen --get-yargs-completions "${args[@]}" 2>/dev/null)
+    COMPREPLY=($(compgen -W "${type_list}" -- "${cur_word}"))
+
+    if [ ${#COMPREPLY[@]} -eq 0 ]; then
+        COMPREPLY=()
+    fi
+
+    return 0
+}
+complete -o bashdefault -o default -F _qwen_yargs_completions qwen
+EOF
 ```
 
 #### Aider CLI
