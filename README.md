@@ -39,6 +39,7 @@ Playground for all things Artificial Intelligence
     - [Running Models (EXO)](#running-models-exo)
 - [AI CLI Tools](#ai-cli-tools)
   - [Discovering New AI CLI Tools](#discovering-new-ai-cli-tools)
+  - [Installing All AI CLI Tools](#installing-all-ai-cli-tools)
   - [Aider CLI](#aider-cli)
     - [Using Aider with Local LLMs via LM Studio](#using-aider-with-local-llms-via-lm-studio)
     - [Aider Config Gists (LM Studio)](#aider-config-gists-lm-studio)
@@ -653,6 +654,42 @@ When considering a new AI CLI tool, check for:
 - License and cost model
 - Local vs. cloud options
 - Integration capabilities
+
+#### Installing All AI CLI Tools
+
+The following commands install all the AI CLI tools covered in this guide in one go. Pick and choose the ones you need, or run them all for a complete setup. Tools are grouped by package manager. Some tools require additional configuration (API keys, authentication) after installation — see each tool's section for details.
+
+```bash
+# --- npm-based tools ---
+npm install -g @anthropic-ai/claude-cli        # Claude CLI
+npm install -g @openai/codex                    # Codex CLI
+npm install -g @githubnext/github-copilot-cli   # Copilot CLI
+npm install -g run-deepseek-cli                 # DeepSeek CLI
+npm install -g @google/gemini-cli               # Gemini CLI
+npm install -g @vibe-kit/grok-cli               # Grok CLI
+npm install -g openhands-cli                    # OpenHands CLI
+npm install -g opencode-ai                      # OpenCode CLI
+npm install -g @qwen-code/qwen-code@latest      # Qwen CLI
+
+# --- pip / uv-based tools ---
+pip install aider-install                       # Aider CLI
+pip install cecli-dev                           # Aider-CE CLI
+# or with uv (recommended for isolation):
+# uv tool install --native-tls --python python3.12 cecli-dev
+
+# --- Homebrew-based tools (macOS / Linux) ---
+brew install gemini-cli                         # Gemini CLI (alternative)
+brew install opencode-ai/tap/opencode           # OpenCode CLI (alternative)
+brew install qwen-code                          # Qwen CLI (alternative)
+brew install --cask warp                        # Warp terminal
+
+# --- Installation script-based tools ---
+# Factory CLI (macOS/Linux)
+curl -fsSL https://factory.ai/install.sh | sh
+
+# Goose CLI (macOS/Linux)
+curl -fsSL https://github.com/block/goose/releases/latest/download/download_cli.sh | sh
+```
 
 #### Aider CLI
 
