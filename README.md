@@ -52,6 +52,7 @@ Playground for all things Artificial Intelligence
     - [Using Codex with Local LLMs via LM Studio](#using-codex-with-local-llms-via-lm-studio)
     - [Bash Completion on Linux (Codex)](#bash-completion-on-linux-codex)
   - [Copilot CLI](#copilot-cli)
+    - [Bash Completion on Linux (Copilot)](#bash-completion-on-linux-copilot)
   - [DeepSeek CLI](#deepseek-cli)
   - [Factory CLI](#factory-cli)
   - [Gemini CLI](#gemini-cli)
@@ -662,7 +663,7 @@ The following commands install all the AI CLI tools covered in this guide in one
 
 ```bash
 # --- npm-based tools ---
-npm install -g @anthropic-ai/claude-cli        # Claude CLI
+npm install -g @anthropic-ai/claude-cli         # Claude CLI
 npm install -g @openai/codex                    # Codex CLI
 npm install -g @githubnext/github-copilot-cli   # Copilot CLI
 npm install -g run-deepseek-cli                 # DeepSeek CLI
@@ -709,6 +710,9 @@ ln -s ~/.local/share/claude-bash-completion/claude-completion.bash ~/.local/shar
 
 # Codex CLI (built-in completion subcommand)
 codex completion bash > ~/.local/share/bash-completion/completions/codex
+
+# gh CLI (covers gh copilot and all gh subcommands)
+gh completion -s bash > ~/.local/share/bash-completion/completions/gh
 
 # OpenCode CLI (built-in completion subcommand)
 opencode completion > ~/.local/share/bash-completion/completions/opencode
@@ -1027,6 +1031,33 @@ github-copilot-cli auth
 ```
 
 For more information, visit [GitHub Copilot CLI documentation](https://docs.github.com/en/copilot/concepts/agents/about-copilot-cli).
+
+##### Bash Completion on Linux (Copilot)
+
+The current Copilot CLI (`copilot` command from `@github/copilot`) does not ship with a built-in completion subcommand. The previous `gh copilot alias` mechanism was [removed in v0.0.389](https://github.com/github/copilot-cli/issues/1063) and no replacement has been added yet. Since the CLI is primarily an interactive REPL with slash commands inside the session, traditional shell completion is of limited value.
+
+If you also use the `gh` CLI (which previously hosted the Copilot extension), you can enable completion for all `gh` subcommands:
+
+**Option A: Install to user bash-completion directory (recommended):**
+```bash
+mkdir -p ~/.local/share/bash-completion/completions
+gh completion -s bash > ~/.local/share/bash-completion/completions/gh
+```
+
+This integrates with the standard `bash-completion` framework and loads lazily. Ensure `bash-completion` is installed (`sudo apt install bash-completion` on Debian/Ubuntu).
+
+**Option B: Install system-wide:**
+```bash
+sudo bash -c 'gh completion -s bash > /usr/share/bash-completion/completions/gh'
+```
+
+**Option C: Source dynamically in `~/.bashrc`:**
+```bash
+echo 'eval "$(gh completion -s bash)"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+This regenerates the completion script on every new shell, staying in sync after upgrades at the cost of a small startup delay.
 
 #### DeepSeek CLI
 
