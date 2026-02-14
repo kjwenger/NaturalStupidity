@@ -45,6 +45,7 @@ Playground for all things Artificial Intelligence
     - [Bash Completion on Linux (Aider)](#bash-completion-on-linux-aider)
   - [Aider-CE CLI](#aider-ce-cli)
   - [Claude CLI](#claude-cli)
+    - [Bash Completion on Linux (Claude)](#bash-completion-on-linux-claude)
   - [Codex CLI](#codex-cli)
     - [Using Codex with Local LLMs via LM Studio](#using-codex-with-local-llms-via-lm-studio)
   - [Copilot CLI](#copilot-cli)
@@ -811,6 +812,31 @@ export ANTHROPIC_API_KEY=your-api-key-here
 ```
 
 For more information, visit [Anthropic's documentation](https://www.anthropic.com/).
+
+##### Bash Completion on Linux (Claude)
+
+Claude CLI does not ship with a built-in completion subcommand ([feature request #7738](https://github.com/anthropics/claude-code/issues/7738)). A community-maintained bash completion script is available at [cldotdev/claude-bash-completion](https://github.com/cldotdev/claude-bash-completion). It provides tab completion for all built-in slash commands (e.g. `/help`, `/model`, `/config`) and auto-discovers custom commands and skills from `~/.claude/commands/` and project-level `.claude/commands/` directories.
+
+**Option A: Install to user bash-completion directory (recommended):**
+```bash
+git clone https://github.com/cldotdev/claude-bash-completion.git ~/.local/share/claude-bash-completion
+ln -s ~/.local/share/claude-bash-completion/claude-completion.bash ~/.local/share/bash-completion/completions/claude
+```
+
+This integrates with the standard `bash-completion` framework and loads lazily. Ensure `bash-completion` is installed (`sudo apt install bash-completion` on Debian/Ubuntu).
+
+**Option B: Install system-wide:**
+```bash
+git clone https://github.com/cldotdev/claude-bash-completion.git /tmp/claude-bash-completion
+sudo cp /tmp/claude-bash-completion/claude-completion.bash /etc/bash_completion.d/claude
+```
+
+**Option C: Source directly in `~/.bashrc`:**
+```bash
+git clone https://github.com/cldotdev/claude-bash-completion.git ~/.local/share/claude-bash-completion
+echo 'source ~/.local/share/claude-bash-completion/claude-completion.bash' >> ~/.bashrc
+source ~/.bashrc
+```
 
 #### Codex CLI
 
