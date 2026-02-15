@@ -425,7 +425,7 @@ export ANTHROPIC_API_KEY=your-api-key-here
 
 For more information, visit [Anthropic's documentation](https://www.anthropic.com/).
 
-# Bash Completion on Linux (Claude)
+### Bash Completion on Linux (Claude)
 
 Claude CLI does not ship with a built-in completion subcommand ([feature request #7738](https://github.com/anthropics/claude-code/issues/7738)). A community-maintained bash completion script is available at [cldotdev/claude-bash-completion](https://github.com/cldotdev/claude-bash-completion). It provides tab completion for all built-in slash commands (e.g. `/help`, `/model`, `/config`) and auto-discovers custom commands and skills from `~/.claude/commands/` and project-level `.claude/commands/` directories.
 
