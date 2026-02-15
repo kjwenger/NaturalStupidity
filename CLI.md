@@ -14,7 +14,7 @@
     * [Bash Completion on Linux (Aider-CE)](#bash-completion-on-linux-aider-ce)
     * [Using Aider-CE with Local LLMs via LM Studio](#using-aider-ce-with-local-llms-via-lm-studio)
   * [Claude CLI](#claude-cli)
-* [Bash Completion on Linux (Claude)](#bash-completion-on-linux-claude)
+    * [Bash Completion on Linux (Claude)](#bash-completion-on-linux-claude)
     * [Using Claude with Local LLMs via LM Studio](#using-claude-with-local-llms-via-lm-studio)
   * [Codex CLI](#codex-cli)
     * [Using Codex with Local LLMs via LM Studio](#using-codex-with-local-llms-via-lm-studio)
@@ -452,16 +452,68 @@ source ~/.bashrc
 
 ### Using Claude with Local LLMs via LM Studio
 
-LM Studio 0.4.1+ exposes an Anthropic-compatible `/v1/messages` endpoint, allowing Claude CLI (Claude Code) to connect directly to local models:
+*Based on [Claude Code + LM Studio: Local Models with Cloud Code](https://www.youtube.com/watch?v=Cyn_Dm05_eU).*
 
-1. Start LM Studio (version 0.4.1 or later) and load your preferred model
-2. Enable the Local Server feature in LM Studio (default port: 1234)
-3. Configure environment variables:
+LM Studio 0.4.1+ exposes an Anthropic-compatible `/v1/messages` endpoint, allowing Claude CLI (Claude Code) to connect directly to local models. This means you can run an LLM on your own machine and have Claude Code talk to it instead of the Anthropic cloud API.
+
+**Prerequisites:**
+
+- LM Studio 0.4.1 or later (download from [lmstudio.ai](https://lmstudio.ai/) — available for macOS, Windows, and Linux)
+- A downloaded model in LM Studio (MLX format for Apple Silicon, GGUF for cross-platform portability)
+- Claude CLI installed (`npm install -g @anthropic-ai/claude-cli` or `curl -fsSL https://docs.anthropic.com/claude-code/install.sh | sh`)
+
+**Step 1: Load a model in LM Studio's Developer tab**
+
+Open LM Studio and navigate to the **Developer** tab (not the Chat tab). This serves the model as an API endpoint accessible by other applications like Claude Code.
+
+- Select your model and load it
+- Increase the context length to maximum (e.g., 131,072 tokens) so Claude Code can pass files and full conversation context to the model
+- The server will be reachable at `http://localhost:1234` by default
+
+**Step 2: Create a settings file for Claude Code**
+
+Create a JSON settings file at `~/.claude/lmstudio-settings.json`:
+
+```json
+{
+  "env": {
+    "ANTHROPIC_BASE_URL": "http://localhost:1234",
+    "ANTHROPIC_AUTH_TOKEN": "",
+    "ANTHROPIC_MODEL": "default-model"
+  }
+}
+```
+
+- **`ANTHROPIC_BASE_URL`**: Points to LM Studio's local server (default port `1234`, visible on the Developer tab)
+- **`ANTHROPIC_AUTH_TOKEN`**: Leave empty (no authentication needed for local models, unless you configured an auth token in LM Studio)
+- **`ANTHROPIC_MODEL`**: Use `"default-model"` to automatically use whatever model is loaded in LM Studio, avoiding the need to edit this file when swapping models
+
+**Step 3: Launch Claude Code with the LM Studio settings**
+
+```bash
+claude --settings ~/.claude/lmstudio-settings.json
+```
+
+Claude Code will now connect to your local LM Studio instance instead of the Anthropic cloud API. You can verify the active model by opening the model selector inside Claude Code — it will show `default-model` (or your configured model name).
+
+**Alternative: Using environment variables directly**
+
+Instead of a settings file, you can export the variables in your shell:
 
 ```bash
 export ANTHROPIC_BASE_URL=http://localhost:1234
 export ANTHROPIC_API_KEY=lm-studio
+claude
 ```
+
+**Model size and performance considerations:**
+
+- **Larger models produce better results** for agentic coding tasks. In testing, a 20B parameter model failed to properly update project dependencies, while a 120B parameter model succeeded.
+- **Context length matters**: Claude Code sends large prompts (files, conversation history, tool context). Set the context length as high as your hardware allows.
+- **Prompt processing time** can be significant with large contexts. Hardware with fast prompt processing (e.g., DGX Spark) helps. Apple Silicon Macs are faster at token generation but slower at prompt processing.
+- **Memory requirements**: The model size on disk is smaller than the runtime memory footprint. Adding a large context window significantly increases memory usage. Use an LLM memory calculator to estimate your needs.
+- **Model format**: On Apple Silicon, prefer MLX models for better performance. GGUF models are cross-platform (Mac, Windows, Linux) and portable.
+- **Start small**: Try a smaller model first to understand the workflow before committing to large downloads.
 
 **Note:** This requires LM Studio 0.4.1 or later, which added native Anthropic API compatibility. Earlier versions only expose the OpenAI-compatible endpoint and will not work with Claude CLI directly.
 
