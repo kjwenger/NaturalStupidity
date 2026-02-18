@@ -45,6 +45,7 @@
   * [Qwen CLI](#qwen-cli)
     * [Using Qwen with Local LLMs via LM Studio](#using-qwen-with-local-llms-via-lm-studio)
     * [Qwen Config Gist (LM Studio)](#qwen-config-gist-lm-studio)
+    * [Switching from Local LLMs to Qwen Cloud LLMs](#switching-from-local-llms-to-qwen-cloud-llms)
     * [Bash Completion on Linux (Qwen)](#bash-completion-on-linux-qwen)
   * [Warp CLI](#warp-cli)
     * [Using Warp with Local LLMs via LM Studio](#using-warp-with-local-llms-via-lm-studio)
@@ -1260,6 +1261,66 @@ A pre-built Qwen settings file with all LM Studio local models is available as a
 mkdir -p ~/.qwen
 gh gist view 36062285c744156ac253aa26d9063255 --raw > ~/.qwen/settings.json
 ```
+
+### Switching from Local LLMs to Qwen Cloud LLMs
+
+If you have previously configured Qwen to use a local LM Studio backend (via `OPENAI_*` environment variables or `~/.qwen/settings.json`), you need to clear those settings before connecting to Qwen's cloud models.
+
+**Step 1: Unset local environment variables (if set)**
+
+If you exported LM Studio variables in your current shell session, unset them:
+```bash
+unset OPENAI_HOST
+unset OPENAI_BASE_PATH
+unset OPENAI_BASE_URL
+unset OPENAI_API_KEY
+unset OPENAI_MODEL
+```
+
+**Step 2: Remove or suspend the local settings file (if present)**
+
+If you installed the LM Studio settings file, move it aside rather than deleting it so you can restore it later:
+```bash
+mv ~/.qwen/settings.json ~/.qwen/settings.json.lmstudio
+```
+
+**Step 3: Authenticate with Qwen's cloud**
+
+Start Qwen and run the `/auth` slash command inside the session:
+```bash
+qwen
+```
+```
+/auth
+```
+
+Select **Qwen OAuth (recommended & free)** to sign in with your `qwen.ai` account via browser. This grants access to Qwen's hosted cloud models at no cost and stores a token locally so you do not need to repeat this step.
+
+**Alternative: DashScope API key**
+
+If you have a [DashScope API key](https://dashscope.aliyuncs.com/), set it in the environment instead of going through OAuth:
+```bash
+export DASHSCOPE_API_KEY="sk-your-key-here"
+qwen
+```
+
+Or add it permanently to `~/.qwen/settings.json`:
+```json
+{
+  "env": {
+    "DASHSCOPE_API_KEY": "sk-your-key-here"
+  }
+}
+```
+
+**Switching back to local LLMs**
+
+Restore the LM Studio settings file and re-export the variables:
+```bash
+mv ~/.qwen/settings.json.lmstudio ~/.qwen/settings.json
+```
+
+> **Note:** Shell environment variables take priority over `~/.qwen/settings.json`. If `OPENAI_BASE_URL` is still exported in your shell, Qwen will continue routing to the local backend even after OAuth authentication.
 
 ### Bash Completion on Linux (Qwen)
 
