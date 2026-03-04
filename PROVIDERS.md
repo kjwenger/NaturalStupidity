@@ -44,6 +44,13 @@
     * [Available Claude Models (Bedrock)](#available-claude-models-bedrock)
     * [Quick API Test (Bedrock)](#quick-api-test-bedrock)
     * [Using AWS Bedrock with AI CLI Tools](#using-aws-bedrock-with-ai-cli-tools)
+  * [Google Gemini API](#google-gemini-api)
+    * [Account Setup (Gemini API)](#account-setup-gemini-api)
+    * [Getting an API Key (Gemini API)](#getting-an-api-key-gemini-api)
+    * [API Endpoint (Gemini API)](#api-endpoint-gemini-api)
+    * [Available Gemini Models (Gemini API)](#available-gemini-models-gemini-api)
+    * [Quick API Test (Gemini API)](#quick-api-test-gemini-api)
+    * [Using Google Gemini API with AI CLI Tools](#using-google-gemini-api-with-ai-cli-tools)
   * [Google Vertex AI](#google-vertex-ai)
     * [Account Setup (Vertex AI)](#account-setup-vertex-ai)
     * [Authentication (Vertex AI)](#authentication-vertex-ai)
@@ -64,16 +71,17 @@ This document covers cloud-hosted LLM API providers that can be used with the AI
 
 ## Provider Comparison
 
-| Provider | Type | Claude models | OpenAI-compatible | Pricing model | Best for |
-|---|---|---|---|---|---|
-| [Anthropic API](#anthropic-api) | Direct | Full catalog, latest first | Limited (testing only) | Pay-per-token | Full API features, lowest latency |
-| [Mammouth AI](#mammouth-ai) | Aggregator | Sonnet 4.6, Opus 4.6 | Yes | Flat subscription + credits | Budget-conscious, multi-model access |
-| [OpenRouter](#openrouter) | Aggregator | Full catalog + older versions | Yes | Pay-per-token, no markup | Model variety, provider fallback |
-| [Portkey](#portkey) | Gateway | Full catalog | Yes | Pass-through + gateway fee | Observability, caching, routing |
-| [LiteLLM](#litellm) | Proxy | Full catalog | Yes (translates) | Free OSS / cloud plan | Self-hosted, multi-provider abstraction |
-| [AWS Bedrock](#aws-bedrock) | Cloud platform | Full catalog | Yes (via Bedrock endpoint) | AWS pay-per-token | AWS integration, compliance (FedRAMP) |
-| [Google Vertex AI](#google-vertex-ai) | Cloud platform | Full catalog | No | GCP pay-per-token | GCP integration, data residency |
-| [Microsoft Azure AI Foundry](#microsoft-azure-ai-foundry) | Cloud platform | Full catalog | No | Azure Marketplace pricing | Azure / Entra ID integration |
+| Provider                                                  | Type           | Claude models                 | OpenAI-compatible          | Pricing model               | Best for                                |
+|-----------------------------------------------------------|----------------|-------------------------------|----------------------------|-----------------------------|-----------------------------------------|
+| [Anthropic API](#anthropic-api)                           | Direct         | Full catalog, latest first    | Limited (testing only)     | Pay-per-token               | Full API features, lowest latency       |
+| [Mammouth AI](#mammouth-ai)                               | Aggregator     | Sonnet 4.6, Opus 4.6          | Yes                        | Flat subscription + credits | Budget-conscious, multi-model access    |
+| [OpenRouter](#openrouter)                                 | Aggregator     | Full catalog + older versions | Yes                        | Pay-per-token, no markup    | Model variety, provider fallback        |
+| [Portkey](#portkey)                                       | Gateway        | Full catalog                  | Yes                        | Pass-through + gateway fee  | Observability, caching, routing         |
+| [LiteLLM](#litellm)                                       | Proxy          | Full catalog                  | Yes (translates)           | Free OSS / cloud plan       | Self-hosted, multi-provider abstraction |
+| [AWS Bedrock](#aws-bedrock)                               | Cloud platform | Full catalog                  | Yes (via Bedrock endpoint) | AWS pay-per-token           | AWS integration, compliance (FedRAMP)   |
+| [Google Gemini API](#google-gemini-api)                   | Direct         | —                             | Yes                        | Free tier + pay-per-token   | Gemini models, simplest Google setup    |
+| [Google Vertex AI](#google-vertex-ai)                     | Cloud platform | Full catalog                  | Yes (via Vertex endpoint)  | GCP pay-per-token           | GCP integration, data residency         |
+| [Microsoft Azure AI Foundry](#microsoft-azure-ai-foundry) | Cloud platform | Full catalog                  | No                         | Azure Marketplace pricing   | Azure / Entra ID integration            |
 
 ---
 
@@ -110,12 +118,12 @@ export ANTHROPIC_API_KEY=sk-ant-your-key-here
 
 ### API Endpoint (Anthropic)
 
-| Property | Value |
-|---|---|
-| Base URL | `https://api.anthropic.com/v1` |
-| Auth header | `x-api-key: <key>` |
-| Version header | `anthropic-version: 2023-06-01` (required) |
-| Protocol | Native Anthropic (`/messages`) |
+| Property               | Value                                                  |
+|------------------------|--------------------------------------------------------|
+| Base URL               | `https://api.anthropic.com/v1`                         |
+| Auth header            | `x-api-key: <key>`                                     |
+| Version header         | `anthropic-version: 2023-06-01` (required)             |
+| Protocol               | Native Anthropic (`/messages`)                         |
 | OpenAI-compatible shim | `https://api.anthropic.com/v1` (limited, testing only) |
 
 ### Available Claude Models (Anthropic)
@@ -127,13 +135,13 @@ curl -s https://api.anthropic.com/v1/models \
   -H "anthropic-version: 2023-06-01" | jq '.data[].id'
 ```
 
-| Model ID | Class | Notes |
-|---|---|---|
-| `claude-opus-4-6` | Opus | Most capable, best for complex reasoning |
-| `claude-sonnet-4-6` | Sonnet | Balanced speed and capability |
-| `claude-haiku-4-5` | Haiku | Fastest and most compact |
-| `claude-opus-4-5` | Opus | Previous Opus generation |
-| `claude-sonnet-4-5` | Sonnet | Previous Sonnet generation |
+| Model ID            | Class  | Notes                                    |
+|---------------------|--------|------------------------------------------|
+| `claude-opus-4-6`   | Opus   | Most capable, best for complex reasoning |
+| `claude-sonnet-4-6` | Sonnet | Balanced speed and capability            |
+| `claude-haiku-4-5`  | Haiku  | Fastest and most compact                 |
+| `claude-opus-4-5`   | Opus   | Previous Opus generation                 |
+| `claude-sonnet-4-5` | Sonnet | Previous Sonnet generation               |
 
 For the full list including older versions, see the [Anthropic models documentation](https://platform.claude.com/docs/en/models/overview).
 
@@ -188,11 +196,11 @@ For more information, visit the [Anthropic API documentation](https://platform.c
 1. Visit [mammouth.ai](https://mammouth.ai/) and sign up for an account.
 2. Choose a subscription plan:
 
-| Plan | Monthly Price | Included Credits |
-|---|---|---|
-| Starter | ~€4 | ~$2 |
-| Standard | ~€8 | ~$4 |
-| Expert | ~€19 | ~$10 |
+| Plan     | Monthly Price | Included Credits |
+|----------|---------------|------------------|
+| Starter  | ~€4           | ~$2              |
+| Standard | ~€8           | ~$4              |
+| Expert   | ~€19          | ~$10             |
 
 Credits are consumed per request based on the model used. Unused credits do not roll over. Check [mammouth.ai](https://mammouth.ai/) for current pricing, as plans and rates may change.
 
@@ -211,11 +219,11 @@ export MAMMOUTH_API_KEY=your-api-key-here
 
 ### API Endpoint (Mammouth)
 
-| Property | Value |
-|---|---|
-| Base URL | `https://api.mammouth.ai/v1` |
-| Auth header | `Authorization: Bearer <key>` |
-| Protocol | OpenAI-compatible (`/chat/completions`, `/models`) |
+| Property    | Value                                              |
+|-------------|----------------------------------------------------|
+| Base URL    | `https://api.mammouth.ai/v1`                       |
+| Auth header | `Authorization: Bearer <key>`                      |
+| Protocol    | OpenAI-compatible (`/chat/completions`, `/models`) |
 
 ### Available Models (Mammouth)
 
@@ -225,27 +233,27 @@ curl -s https://api.mammouth.ai/v1/models \
   -H "Authorization: Bearer $MAMMOUTH_API_KEY" | jq '.data[].id'
 ```
 
-| Family | Model ID | Notes |
-|---|---|---|
-| OpenAI | `gpt-4.1` | Latest GPT-4 class model |
-| OpenAI | `gpt-4.1-mini` | Faster, cheaper GPT-4 variant |
-| OpenAI | `gpt-5.2` | GPT-5 class model |
-| OpenAI | `gpt-5.2-thinking` | GPT-5 with extended reasoning |
-| Anthropic | `claude-sonnet-4-6` | Claude Sonnet 4.6 |
-| Anthropic | `claude-opus-4-6` | Claude Opus 4.6 (most capable Claude) |
-| Google | `gemini-2.5-flash` | Fast Gemini 2.5 |
-| Google | `gemini-2.5-pro` | Full Gemini 2.5 |
-| Mistral | `mistral` | Alias for latest Mistral medium |
-| Mistral | `mistral-large-3` | Mistral Large 3 |
-| Mistral | `magistral` | Mistral reasoning model |
-| Meta | `llama-4-maverick` | Llama 4 Maverick |
-| xAI | `grok-4.1` | Grok 4.1 |
-| DeepSeek | `deepseek-v3` | DeepSeek V3 |
-| DeepSeek | `deepseek-v3-reasoning` | DeepSeek V3 with chain-of-thought |
-| Alibaba | `qwen3-coder` | Qwen 3 Coder (coding-specialist) |
-| Moonshot | `kimi-k2` | Kimi K2 |
-| Perplexity | `sonar-pro` | Perplexity Sonar Pro (web-grounded) |
-| Codestral | `codestral` | Mistral code-specialist model |
+| Family     | Model ID                | Notes                                 |
+|------------|-------------------------|---------------------------------------|
+| OpenAI     | `gpt-4.1`               | Latest GPT-4 class model              |
+| OpenAI     | `gpt-4.1-mini`          | Faster, cheaper GPT-4 variant         |
+| OpenAI     | `gpt-5.2`               | GPT-5 class model                     |
+| OpenAI     | `gpt-5.2-thinking`      | GPT-5 with extended reasoning         |
+| Anthropic  | `claude-sonnet-4-6`     | Claude Sonnet 4.6                     |
+| Anthropic  | `claude-opus-4-6`       | Claude Opus 4.6 (most capable Claude) |
+| Google     | `gemini-2.5-flash`      | Fast Gemini 2.5                       |
+| Google     | `gemini-2.5-pro`        | Full Gemini 2.5                       |
+| Mistral    | `mistral`               | Alias for latest Mistral medium       |
+| Mistral    | `mistral-large-3`       | Mistral Large 3                       |
+| Mistral    | `magistral`             | Mistral reasoning model               |
+| Meta       | `llama-4-maverick`      | Llama 4 Maverick                      |
+| xAI        | `grok-4.1`              | Grok 4.1                              |
+| DeepSeek   | `deepseek-v3`           | DeepSeek V3                           |
+| DeepSeek   | `deepseek-v3-reasoning` | DeepSeek V3 with chain-of-thought     |
+| Alibaba    | `qwen3-coder`           | Qwen 3 Coder (coding-specialist)      |
+| Moonshot   | `kimi-k2`               | Kimi K2                               |
+| Perplexity | `sonar-pro`             | Perplexity Sonar Pro (web-grounded)   |
+| Codestral  | `codestral`             | Mistral code-specialist model         |
 
 **Notes:**
 - Model IDs that are plain names (e.g., `mistral`) are aliases Mammouth maintains; they always resolve to the current recommended version of that model family.
@@ -310,12 +318,12 @@ export OPENROUTER_API_KEY=sk-or-your-key-here
 
 ### API Endpoint (OpenRouter)
 
-| Property | Value |
-|---|---|
-| Base URL (OpenAI-compatible) | `https://openrouter.ai/api/v1` |
-| Base URL (Anthropic-compatible, Claude Code) | `https://openrouter.ai/api` |
-| Auth header | `Authorization: Bearer <key>` |
-| Protocol | OpenAI-compatible + Anthropic "skin" |
+| Property                                     | Value                                |
+|----------------------------------------------|--------------------------------------|
+| Base URL (OpenAI-compatible)                 | `https://openrouter.ai/api/v1`       |
+| Base URL (Anthropic-compatible, Claude Code) | `https://openrouter.ai/api`          |
+| Auth header                                  | `Authorization: Bearer <key>`        |
+| Protocol                                     | OpenAI-compatible + Anthropic "skin" |
 
 OpenRouter exposes two modes for Anthropic models:
 - **OpenAI-compatible** (`/v1/chat/completions`) — for tools that use `OPENAI_API_BASE`
@@ -332,13 +340,13 @@ curl -s https://openrouter.ai/api/v1/models \
   | jq '[.data[] | select(.id | startswith("anthropic/")) | .id]'
 ```
 
-| Model ID | Notes |
-|---|---|
-| `anthropic/claude-opus-4-6` | Claude Opus 4.6 |
-| `anthropic/claude-sonnet-4-6` | Claude Sonnet 4.6 |
-| `anthropic/claude-haiku-4-5` | Claude Haiku 4.5 |
+| Model ID                      | Notes                      |
+|-------------------------------|----------------------------|
+| `anthropic/claude-opus-4-6`   | Claude Opus 4.6            |
+| `anthropic/claude-sonnet-4-6` | Claude Sonnet 4.6          |
+| `anthropic/claude-haiku-4-5`  | Claude Haiku 4.5           |
 | `anthropic/claude-sonnet-4-5` | Previous Sonnet generation |
-| `anthropic/claude-opus-4-5` | Previous Opus generation |
+| `anthropic/claude-opus-4-5`   | Previous Opus generation   |
 
 Older model versions are also available. See the [OpenRouter Anthropic provider page](https://openrouter.ai/provider/anthropic) for the full list.
 
@@ -418,23 +426,23 @@ You will also need the virtual key ID created when you added your Anthropic key.
 
 ### API Endpoint (Portkey)
 
-| Property | Value |
-|---|---|
-| Base URL | `https://api.portkey.ai/v1` |
-| Auth header | `x-portkey-api-key: <portkey-key>` |
-| Provider header | `x-portkey-provider: anthropic` |
+| Property           | Value                                                                      |
+|--------------------|----------------------------------------------------------------------------|
+| Base URL           | `https://api.portkey.ai/v1`                                                |
+| Auth header        | `x-portkey-api-key: <portkey-key>`                                         |
+| Provider header    | `x-portkey-provider: anthropic`                                            |
 | Virtual key header | `x-portkey-virtual-key: <virtual-key-id>` (alternative to provider header) |
-| Protocol | OpenAI-compatible (`/chat/completions`) |
+| Protocol           | OpenAI-compatible (`/chat/completions`)                                    |
 
 ### Available Claude Models (Portkey)
 
 Portkey routes to whichever models your connected provider keys support. Claude model IDs are specified using the provider-prefixed format:
 
-| Model ID | Notes |
-|---|---|
-| `claude-opus-4-6` | Claude Opus 4.6 (via your Anthropic virtual key) |
-| `claude-sonnet-4-6` | Claude Sonnet 4.6 |
-| `claude-haiku-4-5` | Claude Haiku 4.5 |
+| Model ID            | Notes                                            |
+|---------------------|--------------------------------------------------|
+| `claude-opus-4-6`   | Claude Opus 4.6 (via your Anthropic virtual key) |
+| `claude-sonnet-4-6` | Claude Sonnet 4.6                                |
+| `claude-haiku-4-5`  | Claude Haiku 4.5                                 |
 
 For the full list, see the [Portkey Anthropic integration docs](https://portkey.ai/docs/integrations/llms/anthropic).
 
@@ -523,11 +531,11 @@ litellm --config ~/litellm-config.yaml --port 4000
 
 ### API Endpoint (LiteLLM)
 
-| Property | Value |
-|---|---|
-| Base URL | `http://localhost:4000/v1` (default local port) |
+| Property    | Value                                                |
+|-------------|------------------------------------------------------|
+| Base URL    | `http://localhost:4000/v1` (default local port)      |
 | Auth header | `Authorization: Bearer <master-key>` (if configured) |
-| Protocol | OpenAI-compatible |
+| Protocol    | OpenAI-compatible                                    |
 
 ### Quick API Test (LiteLLM)
 
@@ -596,12 +604,12 @@ export AWS_BEDROCK_API_KEY=your-bedrock-api-key
 
 ### API Endpoint (Bedrock)
 
-| Property | Value |
-|---|---|
-| OpenAI-compatible base URL | `https://bedrock-mantle.<region>.api.aws/v1` |
-| Auth (API key) | `Authorization: Bearer <bedrock-api-key>` |
-| Auth (IAM) | AWS SigV4 signing (handled by AWS SDKs) |
-| Protocol | OpenAI-compatible + native Bedrock Converse API |
+| Property                   | Value                                           |
+|----------------------------|-------------------------------------------------|
+| OpenAI-compatible base URL | `https://bedrock-mantle.<region>.api.aws/v1`    |
+| Auth (API key)             | `Authorization: Bearer <bedrock-api-key>`       |
+| Auth (IAM)                 | AWS SigV4 signing (handled by AWS SDKs)         |
+| Protocol                   | OpenAI-compatible + native Bedrock Converse API |
 
 Replace `<region>` with your AWS region (e.g., `us-east-1`, `eu-west-1`).
 
@@ -616,13 +624,13 @@ aws bedrock list-foundation-models \
   --query 'modelSummaries[].modelId' --output table
 ```
 
-| Model ID | Notes |
-|---|---|
-| `us.anthropic.claude-opus-4-6` | Claude Opus 4.6 (US regions) |
-| `us.anthropic.claude-sonnet-4-6` | Claude Sonnet 4.6 (US regions) |
-| `us.anthropic.claude-haiku-4-5-20251001-v1:0` | Claude Haiku 4.5 (US regions) |
-| `eu.anthropic.claude-sonnet-4-6` | Claude Sonnet 4.6 (EU regions) |
-| `global.anthropic.claude-sonnet-4-6` | Global endpoint (auto-routes to lowest-latency region) |
+| Model ID                                      | Notes                                                  |
+|-----------------------------------------------|--------------------------------------------------------|
+| `us.anthropic.claude-opus-4-6`                | Claude Opus 4.6 (US regions)                           |
+| `us.anthropic.claude-sonnet-4-6`              | Claude Sonnet 4.6 (US regions)                         |
+| `us.anthropic.claude-haiku-4-5-20251001-v1:0` | Claude Haiku 4.5 (US regions)                          |
+| `eu.anthropic.claude-sonnet-4-6`              | Claude Sonnet 4.6 (EU regions)                         |
+| `global.anthropic.claude-sonnet-4-6`          | Global endpoint (auto-routes to lowest-latency region) |
 
 For the full list, see the [Bedrock Claude models documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/claude-messages-supported-models.html).
 
@@ -676,6 +684,112 @@ For more information, visit the [Amazon Bedrock documentation](https://docs.aws.
 
 ---
 
+## Google Gemini API
+
+The [Google Gemini API](https://ai.google.dev/gemini-api/docs) (accessed via [Google AI Studio](https://aistudio.google.com/)) is the direct, developer-friendly way to use Google's Gemini model family. It has a generous free tier, requires only a single API key, and exposes a full OpenAI-compatible endpoint — making it the simplest Google entry point compared to the enterprise [Vertex AI](#google-vertex-ai) platform.
+
+**Key characteristics:**
+- **OpenAI-compatible endpoint** — drop-in replacement for `api.openai.com/v1` via `generativelanguage.googleapis.com/v1beta/openai/`
+- **Free tier** — rate-limited free access to Gemini models; no payment method required to get started
+- **Single API key** — obtained from Google AI Studio in seconds, no GCP project required
+- **Gemini-native models** — Gemini 2.5 Pro/Flash, Gemini 3 series, Imagen, Veo, and more
+
+### Account Setup (Gemini API)
+
+1. Visit [aistudio.google.com](https://aistudio.google.com/) and sign in with a Google account.
+2. No payment method or GCP project is required to use the free tier. For paid access beyond the free-tier rate limits, add a billing account in Google AI Studio settings.
+
+### Getting an API Key (Gemini API)
+
+1. In [Google AI Studio](https://aistudio.google.com/), click **Get API key** in the left sidebar.
+2. Click **Create API key** and copy it immediately.
+3. Store it securely:
+
+```bash
+export GEMINI_API_KEY=your-api-key-here
+```
+
+**Security note:** Never commit your API key to version control. Add `.env` to your `.gitignore`.
+
+### API Endpoint (Gemini API)
+
+| Property | Value |
+|---|---|
+| Native base URL | `https://generativelanguage.googleapis.com/v1beta` |
+| OpenAI-compatible base URL | `https://generativelanguage.googleapis.com/v1beta/openai/` |
+| Auth (native) | `x-goog-api-key: <key>` header, or `?key=<key>` query parameter |
+| Auth (OpenAI-compatible) | `Authorization: Bearer <key>` |
+| Protocol | Native Gemini + OpenAI-compatible (`/chat/completions`, `/embeddings`, `/models`) |
+
+The OpenAI-compatible endpoint supports chat completions (including streaming, function calling, vision, structured outputs, and reasoning/thinking modes), embeddings, image generation (Imagen), and model listing.
+
+### Available Gemini Models (Gemini API)
+
+```bash
+# List all available models
+curl -s "https://generativelanguage.googleapis.com/v1beta/openai/models" \
+  -H "Authorization: Bearer $GEMINI_API_KEY" | jq '.data[].id'
+```
+
+| Model ID | Series | Notes |
+|---|---|---|
+| `gemini-3.1-pro-preview` | Gemini 3 | Advanced intelligence, complex reasoning, agentic tasks |
+| `gemini-3-flash-preview` | Gemini 3 | Frontier performance at lower cost |
+| `gemini-3.1-flash-lite-preview` | Gemini 3 | High performance, most cost-efficient |
+| `gemini-2.5-pro` | Gemini 2.5 | Most capable 2.5 model, deep reasoning |
+| `gemini-2.5-flash` | Gemini 2.5 | Best price-performance, low latency |
+| `gemini-2.5-flash-lite` | Gemini 2.5 | Fastest and most budget-friendly |
+
+**Notes:**
+- Preview models may be renamed or deprecated; verify with the `/models` endpoint.
+- Gemini 2.5 Pro and Flash are generally available; Gemini 3 series models are in preview as of early 2026.
+- For the full model catalog including image generation (Imagen 4), video (Veo 3), and audio models, see the [Gemini models documentation](https://ai.google.dev/gemini-api/docs/models).
+
+### Quick API Test (Gemini API)
+
+**Via the OpenAI-compatible endpoint:**
+```bash
+curl -s https://generativelanguage.googleapis.com/v1beta/openai/chat/completions \
+  -H "Authorization: Bearer $GEMINI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gemini-2.5-flash",
+    "messages": [{"role": "user", "content": "Say hello in one sentence."}],
+    "max_tokens": 32
+  }' | jq '.choices[0].message.content'
+```
+
+**Via the native endpoint:**
+```bash
+curl -s "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$GEMINI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "contents": [{"parts": [{"text": "Say hello in one sentence."}]}]
+  }' | jq '.candidates[0].content.parts[0].text'
+```
+
+### Using Google Gemini API with AI CLI Tools
+
+Because the Gemini API exposes a full OpenAI-compatible endpoint, the general pattern for wiring it into any supporting tool is:
+
+```bash
+export OPENAI_API_BASE=https://generativelanguage.googleapis.com/v1beta/openai/
+export OPENAI_API_KEY=$GEMINI_API_KEY
+export OPENAI_MODEL=gemini-2.5-flash
+```
+
+**For Gemini CLI** — the native Gemini CLI tool authenticates directly via Google account (OAuth) or via `GEMINI_API_KEY` and does not need any base URL override:
+```bash
+export GEMINI_API_KEY=your-api-key-here
+gemini
+```
+
+For other CLI tools that support OpenAI-compatible endpoints (Aider, OpenCode, Goose, Grok, etc.), the `OPENAI_API_BASE` pattern above applies. See [CLI.md](./CLI.md) for tool-specific instructions.
+
+For more information, visit the [Gemini API documentation](https://ai.google.dev/gemini-api/docs) and [OpenAI compatibility guide](https://ai.google.dev/gemini-api/docs/openai).
+
+---
+
 ## Google Vertex AI
 
 [Google Vertex AI](https://cloud.google.com/vertex-ai) is Google Cloud's managed ML platform, which includes access to Claude models under a partnership with Anthropic. It is the natural choice for teams already on GCP, needing data residency controls, or wanting to use Claude alongside Google Cloud services (BigQuery, GCS, etc.).
@@ -715,12 +829,12 @@ export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json
 
 Vertex AI does not have a single fixed base URL — it is project- and region-scoped:
 
-| Property | Value |
-|---|---|
+| Property          | Value                                                                                                                                      |
+|-------------------|--------------------------------------------------------------------------------------------------------------------------------------------|
 | Regional endpoint | `https://<region>-aiplatform.googleapis.com/v1/projects/<project>/locations/<region>/publishers/anthropic/models/<model>:streamRawPredict` |
-| Global endpoint | `https://aiplatform.googleapis.com/v1/projects/<project>/locations/global/publishers/anthropic/models/<model>:streamRawPredict` |
-| Auth | Google OAuth2 Bearer token (from `gcloud auth print-access-token`) |
-| Protocol | Native Anthropic Messages API format |
+| Global endpoint   | `https://aiplatform.googleapis.com/v1/projects/<project>/locations/global/publishers/anthropic/models/<model>:streamRawPredict`            |
+| Auth              | Google OAuth2 Bearer token (from `gcloud auth print-access-token`)                                                                         |
+| Protocol          | Native Anthropic Messages API format                                                                                                       |
 
 The Anthropic Python SDK handles endpoint construction automatically when `ANTHROPIC_VERTEX_PROJECT_ID` is set.
 
@@ -731,12 +845,12 @@ The Anthropic Python SDK handles endpoint construction automatically when `ANTHR
 gcloud ai models list --region=us-east5 --filter="displayName:claude"
 ```
 
-| Model ID | Notes |
-|---|---|
-| `claude-opus-4-6` | Claude Opus 4.6 |
-| `claude-sonnet-4-6` | Claude Sonnet 4.6 |
-| `claude-haiku-4-5` | Claude Haiku 4.5 |
-| `claude-opus-4-5` | Previous Opus generation |
+| Model ID            | Notes                      |
+|---------------------|----------------------------|
+| `claude-opus-4-6`   | Claude Opus 4.6            |
+| `claude-sonnet-4-6` | Claude Sonnet 4.6          |
+| `claude-haiku-4-5`  | Claude Haiku 4.5           |
+| `claude-opus-4-5`   | Previous Opus generation   |
 | `claude-sonnet-4-5` | Previous Sonnet generation |
 
 For the full list and regional availability, see the [Vertex AI Claude documentation](https://cloud.google.com/vertex-ai/generative-ai/docs/partner-models/use-claude).
@@ -818,23 +932,23 @@ ACCESS_TOKEN=$(az account get-access-token --resource https://cognitiveservices.
 
 ### API Endpoint (Azure)
 
-| Property | Value |
-|---|---|
-| Base URL | `https://<resource-name>.services.ai.azure.com/anthropic/v1` |
-| Auth (API key) | `x-api-key: <azure-api-key>` or `api-key: <azure-api-key>` |
-| Auth (Entra ID) | `Authorization: Bearer <access-token>` |
-| Protocol | Native Anthropic Messages API format |
+| Property        | Value                                                        |
+|-----------------|--------------------------------------------------------------|
+| Base URL        | `https://<resource-name>.services.ai.azure.com/anthropic/v1` |
+| Auth (API key)  | `x-api-key: <azure-api-key>` or `api-key: <azure-api-key>`   |
+| Auth (Entra ID) | `Authorization: Bearer <access-token>`                       |
+| Protocol        | Native Anthropic Messages API format                         |
 
 Replace `<resource-name>` with your Azure AI Foundry resource name.
 
 ### Available Claude Models (Azure)
 
-| Model ID | Notes |
-|---|---|
-| `claude-opus-4-6` | Claude Opus 4.6 |
-| `claude-sonnet-4-6` | Claude Sonnet 4.6 |
-| `claude-haiku-4-5` | Claude Haiku 4.5 |
-| `claude-opus-4-5` | Previous Opus generation |
+| Model ID            | Notes                      |
+|---------------------|----------------------------|
+| `claude-opus-4-6`   | Claude Opus 4.6            |
+| `claude-sonnet-4-6` | Claude Sonnet 4.6          |
+| `claude-haiku-4-5`  | Claude Haiku 4.5           |
+| `claude-opus-4-5`   | Previous Opus generation   |
 | `claude-sonnet-4-5` | Previous Sonnet generation |
 
 For the current list, see the [Azure AI Foundry Claude documentation](https://platform.claude.com/docs/en/build-with-claude/claude-in-microsoft-foundry).

@@ -1018,7 +1018,7 @@ Third-party proxy solutions exist (e.g., [geminicli2api](https://github.com/sear
 
 Gemini CLI is designed to work exclusively with Google's Gemini API and does not natively support custom OpenAI-compatible endpoints. Direct connection to [Mammouth AI](https://mammouth.ai/) is not supported.
 
-**Note:** Mammouth AI offers Gemini models (e.g., `gemini-2.5-flash`, `gemini-2.5-pro`) through its OpenAI-compatible API. To use them, choose a CLI tool that supports custom base URLs (e.g., Aider, OpenCode, Goose) and select a Gemini model ID from [PROVIDERS.md — Available Models](./PROVIDERS.md#available-models).
+**Note:** Mammouth AI offers Gemini models (e.g., `gemini-2.5-flash`, `gemini-2.5-pro`) through its OpenAI-compatible API. To use them, choose a CLI tool that supports custom base URLs (e.g., Aider, OpenCode, Goose) and select a Gemini model ID from [PROVIDERS.md — Available Gemini Models](./PROVIDERS.md#available-gemini-models-gemini-api).
 
 ## Grok CLI
 
