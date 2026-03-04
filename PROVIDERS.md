@@ -713,13 +713,13 @@ export GEMINI_API_KEY=your-api-key-here
 
 ### API Endpoint (Gemini API)
 
-| Property | Value |
-|---|---|
-| Native base URL | `https://generativelanguage.googleapis.com/v1beta` |
-| OpenAI-compatible base URL | `https://generativelanguage.googleapis.com/v1beta/openai/` |
-| Auth (native) | `x-goog-api-key: <key>` header, or `?key=<key>` query parameter |
-| Auth (OpenAI-compatible) | `Authorization: Bearer <key>` |
-| Protocol | Native Gemini + OpenAI-compatible (`/chat/completions`, `/embeddings`, `/models`) |
+| Property                   | Value                                                                             |
+|----------------------------|-----------------------------------------------------------------------------------|
+| Native base URL            | `https://generativelanguage.googleapis.com/v1beta`                                |
+| OpenAI-compatible base URL | `https://generativelanguage.googleapis.com/v1beta/openai/`                        |
+| Auth (native)              | `x-goog-api-key: <key>` header, or `?key=<key>` query parameter                   |
+| Auth (OpenAI-compatible)   | `Authorization: Bearer <key>`                                                     |
+| Protocol                   | Native Gemini + OpenAI-compatible (`/chat/completions`, `/embeddings`, `/models`) |
 
 The OpenAI-compatible endpoint supports chat completions (including streaming, function calling, vision, structured outputs, and reasoning/thinking modes), embeddings, image generation (Imagen), and model listing.
 
@@ -731,14 +731,14 @@ curl -s "https://generativelanguage.googleapis.com/v1beta/openai/models" \
   -H "Authorization: Bearer $GEMINI_API_KEY" | jq '.data[].id'
 ```
 
-| Model ID | Series | Notes |
-|---|---|---|
-| `gemini-3.1-pro-preview` | Gemini 3 | Advanced intelligence, complex reasoning, agentic tasks |
-| `gemini-3-flash-preview` | Gemini 3 | Frontier performance at lower cost |
-| `gemini-3.1-flash-lite-preview` | Gemini 3 | High performance, most cost-efficient |
-| `gemini-2.5-pro` | Gemini 2.5 | Most capable 2.5 model, deep reasoning |
-| `gemini-2.5-flash` | Gemini 2.5 | Best price-performance, low latency |
-| `gemini-2.5-flash-lite` | Gemini 2.5 | Fastest and most budget-friendly |
+| Model ID                        | Series     | Notes                                                   |
+|---------------------------------|------------|---------------------------------------------------------|
+| `gemini-3.1-pro-preview`        | Gemini 3   | Advanced intelligence, complex reasoning, agentic tasks |
+| `gemini-3-flash-preview`        | Gemini 3   | Frontier performance at lower cost                      |
+| `gemini-3.1-flash-lite-preview` | Gemini 3   | High performance, most cost-efficient                   |
+| `gemini-2.5-pro`                | Gemini 2.5 | Most capable 2.5 model, deep reasoning                  |
+| `gemini-2.5-flash`              | Gemini 2.5 | Best price-performance, low latency                     |
+| `gemini-2.5-flash-lite`         | Gemini 2.5 | Fastest and most budget-friendly                        |
 
 **Notes:**
 - Preview models may be renamed or deprecated; verify with the `/models` endpoint.
