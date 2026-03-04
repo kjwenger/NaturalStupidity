@@ -10,45 +10,59 @@
     * [Using Aider with Local LLMs via LM Studio](#using-aider-with-local-llms-via-lm-studio)
     * [Aider Config Gists (LM Studio)](#aider-config-gists-lm-studio)
     * [Bash Completion on Linux (Aider)](#bash-completion-on-linux-aider)
+    * [Using Aider with Mammouth AI](#using-aider-with-mammouth-ai)
   * [Aider-CE CLI](#aider-ce-cli)
     * [Bash Completion on Linux (Aider-CE)](#bash-completion-on-linux-aider-ce)
     * [Using Aider-CE with Local LLMs via LM Studio](#using-aider-ce-with-local-llms-via-lm-studio)
+    * [Using Aider-CE with Mammouth AI](#using-aider-ce-with-mammouth-ai)
   * [Claude CLI](#claude-cli)
     * [Bash Completion on Linux (Claude)](#bash-completion-on-linux-claude)
     * [Using Claude with Local LLMs via LM Studio](#using-claude-with-local-llms-via-lm-studio)
+    * [Using Claude with Mammouth AI](#using-claude-with-mammouth-ai)
   * [Codex CLI](#codex-cli)
     * [Using Codex with Local LLMs via LM Studio](#using-codex-with-local-llms-via-lm-studio)
     * [Bash Completion on Linux (Codex)](#bash-completion-on-linux-codex)
+    * [Using Codex with Mammouth AI](#using-codex-with-mammouth-ai)
   * [Copilot CLI](#copilot-cli)
     * [Bash Completion on Linux (Copilot)](#bash-completion-on-linux-copilot)
     * [Using Copilot with Local LLMs via LM Studio](#using-copilot-with-local-llms-via-lm-studio)
+    * [Using Copilot with Mammouth AI](#using-copilot-with-mammouth-ai)
   * [DeepSeek CLI](#deepseek-cli)
     * [Bash Completion on Linux (DeepSeek)](#bash-completion-on-linux-deepseek)
     * [Using DeepSeek with Local LLMs via LM Studio](#using-deepseek-with-local-llms-via-lm-studio)
+    * [Using DeepSeek with Mammouth AI](#using-deepseek-with-mammouth-ai)
   * [Factory CLI](#factory-cli)
     * [Using Factory with Local LLMs via LM Studio](#using-factory-with-local-llms-via-lm-studio)
+    * [Using Factory with Mammouth AI](#using-factory-with-mammouth-ai)
   * [Gemini CLI](#gemini-cli)
     * [Bash Completion on Linux (Gemini)](#bash-completion-on-linux-gemini)
     * [Using Gemini with Local LLMs via LM Studio](#using-gemini-with-local-llms-via-lm-studio)
+    * [Using Gemini with Mammouth AI](#using-gemini-with-mammouth-ai)
   * [Grok CLI](#grok-cli)
     * [Using Grok with Local LLMs via LM Studio](#using-grok-with-local-llms-via-lm-studio)
+    * [Using Grok with Mammouth AI](#using-grok-with-mammouth-ai)
   * [Goose CLI](#goose-cli)
     * [Using Goose with Local LLMs via LM Studio](#using-goose-with-local-llms-via-lm-studio)
     * [Bash Completion on Linux (Goose)](#bash-completion-on-linux-goose)
+    * [Using Goose with Mammouth AI](#using-goose-with-mammouth-ai)
   * [OpenHands CLI](#openhands-cli)
     * [Bash Completion on Linux (OpenHands)](#bash-completion-on-linux-openhands)
     * [Using OpenHands with Local LLMs via LM Studio](#using-openhands-with-local-llms-via-lm-studio)
+    * [Using OpenHands with Mammouth AI](#using-openhands-with-mammouth-ai)
   * [OpenCode CLI](#opencode-cli)
     * [Using OpenCode with Local LLMs via LM Studio](#using-opencode-with-local-llms-via-lm-studio)
     * [OpenCode Config Gist (LM Studio)](#opencode-config-gist-lm-studio)
     * [Bash Completion on Linux (OpenCode)](#bash-completion-on-linux-opencode)
+    * [Using OpenCode with Mammouth AI](#using-opencode-with-mammouth-ai)
   * [Qwen CLI](#qwen-cli)
     * [Using Qwen with Local LLMs via LM Studio](#using-qwen-with-local-llms-via-lm-studio)
     * [Qwen Config Gist (LM Studio)](#qwen-config-gist-lm-studio)
     * [Switching from Local LLMs to Qwen Cloud LLMs](#switching-from-local-llms-to-qwen-cloud-llms)
     * [Bash Completion on Linux (Qwen)](#bash-completion-on-linux-qwen)
+    * [Using Qwen with Mammouth AI](#using-qwen-with-mammouth-ai)
   * [Warp CLI](#warp-cli)
     * [Using Warp with Local LLMs via LM Studio](#using-warp-with-local-llms-via-lm-studio)
+    * [Using Warp with Mammouth AI](#using-warp-with-mammouth-ai)
 <!-- TOC -->
 
 ## Discovering New AI CLI Tools
@@ -304,6 +318,26 @@ source ~/.bashrc
 
 This regenerates the completion script on every new shell, staying in sync after upgrades at the cost of a small startup delay.
 
+### Using Aider with Mammouth AI
+
+[Mammouth AI](https://mammouth.ai/) is an OpenAI-compatible cloud provider giving access to GPT, Claude, Gemini, Mistral, DeepSeek, and more under a single API key. For account setup and API key instructions, see [PROVIDERS.md — Mammouth AI](./PROVIDERS.md#mammouth-ai).
+
+**Method 1: Using generic OpenAI environment variables:**
+```bash
+export OPENAI_API_BASE=https://api.mammouth.ai/v1
+export OPENAI_API_KEY=your-mammouth-api-key
+export OPENAI_MODEL=openai/gpt-4.1
+```
+
+**Method 2: Using Aider-specific environment variables:**
+```bash
+export AIDER_OPENAI_API_BASE=https://api.mammouth.ai/v1
+export AIDER_OPENAI_API_KEY=your-mammouth-api-key
+export AIDER_MODEL=openai/gpt-4.1
+```
+
+Replace `gpt-4.1` with your preferred model. Mammouth AI supports models from multiple providers — for example `openai/claude-sonnet-4-6`, `openai/mistral`, or `openai/deepseek-v3`. Use the `openai/` prefix to tell Aider to route the call through the OpenAI-compatible API. To see all available models, call `https://api.mammouth.ai/v1/models` with your API key or visit the [Mammouth AI API documentation](https://info.mammouth.ai/docs/api-quick-start/).
+
 ## Aider-CE CLI
 
 Aider-CE (cecli) is a community-driven fork of Aider, providing bleeding-edge features and rapid development in the AI pair programming space.
@@ -409,6 +443,26 @@ export AIDER_MODEL=openai/qwen3-coder-30b-a3b-instruct
 ```
 
 Replace the model identifier with your actual model from LM Studio (e.g., `openai/qwen3-coder-30b-a3b-instruct` or `openai/openai/gpt-oss-120b`).
+
+### Using Aider-CE with Mammouth AI
+
+Aider-CE (cecli) is a fork of Aider and supports the same OpenAI-compatible configuration. For account setup and API key instructions, see [PROVIDERS.md — Mammouth AI](./PROVIDERS.md#mammouth-ai).
+
+**Method 1: Using generic OpenAI environment variables:**
+```bash
+export OPENAI_API_BASE=https://api.mammouth.ai/v1
+export OPENAI_API_KEY=your-mammouth-api-key
+export OPENAI_MODEL=openai/gpt-4.1
+```
+
+**Method 2: Using Aider-specific environment variables (also recognized by cecli):**
+```bash
+export AIDER_OPENAI_API_BASE=https://api.mammouth.ai/v1
+export AIDER_OPENAI_API_KEY=your-mammouth-api-key
+export AIDER_MODEL=openai/gpt-4.1
+```
+
+Replace `gpt-4.1` with your preferred Mammouth AI model (e.g., `openai/claude-sonnet-4-6`, `openai/mistral`, `openai/deepseek-v3`). For the full list of available model IDs, visit [Mammouth AI API documentation](https://info.mammouth.ai/docs/api-quick-start/).
 
 ## Claude CLI
 
@@ -520,6 +574,52 @@ claude
 
 For more information, see [LM Studio + Claude Code integration guide](https://lmstudio.ai/blog/claudecode).
 
+### Using Claude with Mammouth AI
+
+[Mammouth AI](https://mammouth.ai/) exposes an OpenAI-compatible API, whereas Claude CLI (Claude Code) expects an **Anthropic-compatible** `/v1/messages` endpoint. Direct connection is therefore not supported without a translation layer. For account setup and API key instructions, see [PROVIDERS.md — Mammouth AI](./PROVIDERS.md#mammouth-ai).
+
+**Option: LiteLLM proxy**
+
+[LiteLLM](https://github.com/BerriAI/litellm) can act as a local proxy that translates Claude Code's Anthropic API calls to Mammouth AI's OpenAI-compatible format:
+
+1. Install LiteLLM:
+```bash
+pip install litellm[proxy]
+```
+
+2. Create a LiteLLM config (`~/litellm-mammouth.yaml`):
+```yaml
+model_list:
+  - model_name: claude-sonnet-4-6
+    litellm_params:
+      model: openai/claude-sonnet-4-6
+      api_base: https://api.mammouth.ai/v1
+      api_key: your-mammouth-api-key
+```
+
+3. Start the proxy:
+```bash
+litellm --config ~/litellm-mammouth.yaml --port 4000
+```
+
+4. Point Claude Code at the proxy via a settings file (`~/.claude/mammouth-settings.json`):
+```json
+{
+  "env": {
+    "ANTHROPIC_BASE_URL": "http://localhost:4000",
+    "ANTHROPIC_AUTH_TOKEN": "litellm",
+    "ANTHROPIC_MODEL": "claude-sonnet-4-6"
+  }
+}
+```
+
+5. Launch Claude Code:
+```bash
+claude --settings ~/.claude/mammouth-settings.json
+```
+
+**Note:** This is an advanced configuration that relies on a third-party proxy. For Mammouth AI model IDs (e.g., `gpt-4.1`, `claude-sonnet-4-6`, `mistral`), see the [Mammouth AI API documentation](https://info.mammouth.ai/docs/api-quick-start/).
+
 ## Codex CLI
 
 OpenAI Codex CLI for code generation and completion.
@@ -611,6 +711,47 @@ source ~/.bashrc
 
 This regenerates the completion script on every new shell, staying in sync after upgrades at the cost of a small startup delay.
 
+### Using Codex with Mammouth AI
+
+[Mammouth AI](https://mammouth.ai/) is a drop-in replacement for the OpenAI endpoint in Codex CLI. For account setup and API key instructions, see [PROVIDERS.md — Mammouth AI](./PROVIDERS.md#mammouth-ai).
+
+**Method 1: Using environment variables:**
+```bash
+export OPENAI_API_BASE=https://api.mammouth.ai/v1
+export OPENAI_API_KEY=your-mammouth-api-key
+export OPENAI_MODEL=gpt-4.1
+```
+
+**Method 2: Using configuration file (`~/.codex/config.toml`):**
+
+Create or edit `~/.codex/config.toml`:
+```toml
+# Codex CLI Configuration for Mammouth AI
+
+[model_providers.mammouth]
+name = "Mammouth AI"
+base_url = "https://api.mammouth.ai/v1"
+env_key = "MAMMOUTH_API_KEY"
+
+[profiles.mammouth-gpt]
+model_provider = "mammouth"
+model = "gpt-4.1"
+
+[profiles.mammouth-claude]
+model_provider = "mammouth"
+model = "claude-sonnet-4-6"
+```
+
+Export your key and use the profile:
+```bash
+export MAMMOUTH_API_KEY=your-mammouth-api-key
+codex --profile mammouth-gpt
+# or
+codex --profile mammouth-claude
+```
+
+For a full list of available Mammouth AI model IDs, visit the [Mammouth AI API documentation](https://info.mammouth.ai/docs/api-quick-start/).
+
 ## Copilot CLI
 
 GitHub Copilot CLI brings GitHub Copilot to the command line.
@@ -667,6 +808,22 @@ For LM Studio integration, a proxy like LiteLLM can bridge the connection betwee
 For a detailed walkthrough of this advanced/experimental setup, see [Using LiteLLM with GitHub Copilot](https://parsiya.net/blog/litellm-ghc-aad/).
 
 **Note:** This is an advanced configuration that relies on third-party proxy software and is not officially supported by GitHub.
+
+### Using Copilot with Mammouth AI
+
+The `gh copilot` command is locked to GitHub's hosted backend and does not support custom API endpoints. As with LM Studio, a [LiteLLM](https://github.com/BerriAI/litellm) proxy can bridge GitHub Copilot to Mammouth AI's OpenAI-compatible endpoint. For account setup and API key instructions, see [PROVIDERS.md — Mammouth AI](./PROVIDERS.md#mammouth-ai).
+
+1. Install LiteLLM and start a proxy pointed at Mammouth AI:
+```bash
+pip install litellm[proxy]
+litellm --model openai/gpt-4.1 --api_base https://api.mammouth.ai/v1 --api_key your-mammouth-api-key --port 4000
+```
+
+2. Configure GitHub Copilot or your IDE's Copilot extension to use `http://localhost:4000` as its custom endpoint.
+
+For a detailed walkthrough of this pattern, see [Using LiteLLM with GitHub Copilot](https://parsiya.net/blog/litellm-ghc-aad/).
+
+**Note:** This is an advanced configuration that relies on third-party proxy software and is not officially supported by GitHub. For Mammouth AI model IDs, see the [Mammouth AI API documentation](https://info.mammouth.ai/docs/api-quick-start/).
 
 ## DeepSeek CLI
 
@@ -745,6 +902,19 @@ Point DeepSeek CLI to LM Studio at `http://localhost:1234/v1` instead of Ollama'
 
 **Note:** Compatibility depends on the DeepSeek CLI version and may require loading a DeepSeek-family model in LM Studio (e.g., `deepseek-r1-0528-qwen3-8b` or `deepseek-coder`). Check the [DeepSeek CLI GitHub repository](https://github.com/holasoymalva/deepseek-cli) for the latest supported configurations.
 
+### Using DeepSeek with Mammouth AI
+
+[Mammouth AI](https://mammouth.ai/) includes DeepSeek models (e.g., `deepseek-v3`, `deepseek-v3-reasoning`) through its OpenAI-compatible API. For account setup and API key instructions, see [PROVIDERS.md — Mammouth AI](./PROVIDERS.md#mammouth-ai).
+
+**Configuration:**
+```bash
+export DEEPSEEK_USE_LOCAL=false
+export OPENAI_API_BASE=https://api.mammouth.ai/v1
+export OPENAI_API_KEY=your-mammouth-api-key
+```
+
+**Note:** Exact environment variable support varies by DeepSeek CLI version. If the above does not work, check the [DeepSeek CLI GitHub repository](https://github.com/holasoymalva/deepseek-cli) for the current configuration options for custom base URLs.
+
 ## Factory CLI
 
 Factory CLI enables AI-powered automation across the software development lifecycle, from CI/CD to code migrations and maintenance.
@@ -798,6 +968,17 @@ Factory supports BYOK (Bring Your Own Key) with custom providers. You can use th
 
 For more information on BYOK configuration, see [Factory BYOK documentation](https://docs.factory.ai/cli/byok/overview).
 
+### Using Factory with Mammouth AI
+
+Factory's BYOK (Bring Your Own Key) feature supports any OpenAI-compatible provider. Configure [Mammouth AI](https://mammouth.ai/) as a custom provider using the `/model` command or Factory's configuration UI. For account setup and API key instructions, see [PROVIDERS.md — Mammouth AI](./PROVIDERS.md#mammouth-ai).
+
+**Custom provider settings:**
+- **Provider type:** `generic-chat-completion-api`
+- **Base URL:** `https://api.mammouth.ai/v1`
+- **API Key:** `your-mammouth-api-key`
+
+This gives Factory access to all models available on Mammouth AI (GPT-4, Claude, Gemini, Mistral, DeepSeek, and more) under your subscription. For more information on BYOK configuration, see [Factory BYOK documentation](https://docs.factory.ai/cli/byok/overview).
+
 ## Gemini CLI
 
 Google's Gemini AI CLI tool.
@@ -832,6 +1013,12 @@ Gemini CLI does not natively support custom OpenAI-compatible endpoints. It is d
 **Feature request:** [#16504](https://github.com/google-gemini/gemini-cli/issues/16504) — Add support for custom/local model endpoints.
 
 Third-party proxy solutions exist (e.g., [geminicli2api](https://github.com/search?q=geminicli2api), [gemini-openai-proxy](https://github.com/search?q=gemini-openai-proxy)) that translate between the Gemini API protocol and OpenAI-compatible APIs, but these are not officially supported by Google.
+
+### Using Gemini with Mammouth AI
+
+Gemini CLI is designed to work exclusively with Google's Gemini API and does not natively support custom OpenAI-compatible endpoints. Direct connection to [Mammouth AI](https://mammouth.ai/) is not supported.
+
+**Note:** Mammouth AI offers Gemini models (e.g., `gemini-2.5-flash`, `gemini-2.5-pro`) through its OpenAI-compatible API. To use them, choose a CLI tool that supports custom base URLs (e.g., Aider, OpenCode, Goose) and select a Gemini model ID from [PROVIDERS.md — Available Models](./PROVIDERS.md#available-models).
 
 ## Grok CLI
 
@@ -892,6 +1079,25 @@ grok --base-url http://localhost:1234/v1
 ```
 
 The default `baseURL` is `https://api.x.ai/v1`. Replace the model identifier with your actual model from LM Studio.
+
+### Using Grok with Mammouth AI
+
+Grok CLI supports custom API endpoints via its configuration file or `--base-url` flag. You can point it at [Mammouth AI](https://mammouth.ai/)'s OpenAI-compatible endpoint to access its full model catalog. For account setup and API key instructions, see [PROVIDERS.md — Mammouth AI](./PROVIDERS.md#mammouth-ai).
+
+**Method 1: Edit `~/.grok/user-settings.json`:**
+```json
+{
+  "baseURL": "https://api.mammouth.ai/v1",
+  "apiKey": "your-mammouth-api-key"
+}
+```
+
+**Method 2: Use the `--base-url` CLI flag:**
+```bash
+grok --base-url https://api.mammouth.ai/v1 --api-key your-mammouth-api-key
+```
+
+For available Mammouth AI model IDs, visit the [Mammouth AI API documentation](https://info.mammouth.ai/docs/api-quick-start/).
 
 ## Goose CLI
 
@@ -970,6 +1176,20 @@ source ~/.bashrc
 
 This regenerates the completion script on every new shell, staying in sync after upgrades at the cost of a small startup delay.
 
+### Using Goose with Mammouth AI
+
+Goose supports OpenAI-compatible providers via the `openai` provider type and a custom base URL. For account setup and API key instructions, see [PROVIDERS.md — Mammouth AI](./PROVIDERS.md#mammouth-ai).
+
+**Configuration:**
+```bash
+export GOOSE_PROVIDER=openai
+export OPENAI_API_BASE=https://api.mammouth.ai/v1
+export OPENAI_API_KEY=your-mammouth-api-key
+export GOOSE_MODEL=gpt-4.1
+```
+
+Replace `gpt-4.1` with your preferred model. Mammouth AI supports models from multiple providers — for example `claude-sonnet-4-6`, `mistral`, or `deepseek-v3`. For the full model list, visit the [Mammouth AI API documentation](https://info.mammouth.ai/docs/api-quick-start/).
+
 ## OpenHands CLI
 
 OpenHands CLI brings AI-powered development assistance directly to your terminal, enabling autonomous coding, debugging, and task execution.
@@ -1033,6 +1253,19 @@ Replace the model identifier with your actual model from LM Studio.
 **Docker note:** If running OpenHands in Docker, use `http://host.docker.internal:1234/v1` instead of `http://localhost:1234/v1` to reach LM Studio on the host machine.
 
 For more information, see [OpenHands Local LLMs documentation](https://docs.openhands.dev/openhands/usage/llms/local-llms).
+
+### Using OpenHands with Mammouth AI
+
+[Mammouth AI](https://mammouth.ai/) is an OpenAI-compatible cloud provider and works with OpenHands via the same `LLM_BASE_URL` environment variables used for local LLMs. For account setup and API key instructions, see [PROVIDERS.md — Mammouth AI](./PROVIDERS.md#mammouth-ai).
+
+**Configuration:**
+```bash
+export LLM_BASE_URL=https://api.mammouth.ai/v1
+export LLM_API_KEY=your-mammouth-api-key
+export LLM_MODEL=openai/gpt-4.1
+```
+
+Replace `gpt-4.1` with your preferred Mammouth AI model (e.g., `openai/claude-sonnet-4-6`, `openai/mistral`, `openai/deepseek-v3`). For all available model IDs, visit the [Mammouth AI API documentation](https://info.mammouth.ai/docs/api-quick-start/).
 
 ## OpenCode CLI
 
@@ -1206,6 +1439,43 @@ source ~/.bashrc
 ```
 
 This regenerates the completion script on every new shell, staying in sync after upgrades at the cost of a small startup delay.
+
+### Using OpenCode with Mammouth AI
+
+OpenCode supports custom providers via its `~/.config/opencode/opencode.json` configuration file using the `@ai-sdk/openai-compatible` package. For account setup and API key instructions, see [PROVIDERS.md — Mammouth AI](./PROVIDERS.md#mammouth-ai).
+
+Create or edit `~/.config/opencode/opencode.json`:
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "mammouth": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Mammouth AI",
+      "options": {
+        "baseURL": "https://api.mammouth.ai/v1",
+        "apiKey": "your-mammouth-api-key"
+      },
+      "models": {
+        "gpt-4.1": {
+          "name": "gpt-4.1"
+        },
+        "claude-sonnet-4-6": {
+          "name": "claude-sonnet-4-6"
+        },
+        "mistral": {
+          "name": "mistral"
+        },
+        "deepseek-v3": {
+          "name": "deepseek-v3"
+        }
+      }
+    }
+  }
+}
+```
+
+Add or remove models from the `models` block to match your preferences. For the full list of available Mammouth AI model IDs, visit the [Mammouth AI API documentation](https://info.mammouth.ai/docs/api-quick-start/).
 
 ## Qwen CLI
 
@@ -1381,6 +1651,23 @@ EOF
 source ~/.bashrc
 ```
 
+### Using Qwen with Mammouth AI
+
+[Mammouth AI](https://mammouth.ai/) is a straightforward replacement for any OpenAI-compatible backend, and Qwen CLI's `OPENAI_*` environment variables can be pointed at it directly. For account setup and API key instructions, see [PROVIDERS.md — Mammouth AI](./PROVIDERS.md#mammouth-ai).
+
+**Configuration:**
+```bash
+export OPENAI_HOST=https://api.mammouth.ai
+export OPENAI_BASE_PATH=v1
+export OPENAI_BASE_URL=https://api.mammouth.ai/v1
+export OPENAI_API_KEY=your-mammouth-api-key
+export OPENAI_MODEL=gpt-4.1
+```
+
+Replace `gpt-4.1` with your preferred Mammouth AI model (e.g., `claude-sonnet-4-6`, `mistral`, `deepseek-v3`). For the full model list, visit the [Mammouth AI API documentation](https://info.mammouth.ai/docs/api-quick-start/).
+
+**Note:** To switch back to Qwen's cloud models, unset these variables and run `/auth` inside a Qwen session (see *Switching from Local LLMs to Qwen Cloud LLMs* above for details).
+
 ## Warp CLI
 
 Warp is a modern terminal with AI-powered command suggestions.
@@ -1404,4 +1691,10 @@ After installation, launch Warp and sign in to access AI features.
 Warp's AI features use built-in cloud providers (Anthropic, OpenAI, Google). Custom LLM endpoints (BYO LLM) are only available on Enterprise plans and are not configurable in the free or Pro tiers.
 
 Local model support is the [#1 feature request (#4339)](https://github.com/warpdotdev/Warp/issues/4339) on Warp's public issue tracker.
+
+### Using Warp with Mammouth AI
+
+Warp's BYO LLM (custom endpoint) feature is restricted to Enterprise plans and is not available on free or Pro tiers. Direct integration with [Mammouth AI](https://mammouth.ai/) is therefore not configurable in standard Warp installations.
+
+**Note:** Mammouth AI provides access to many of the same frontier models (GPT-4, Claude, Gemini) that Warp already uses natively through its built-in providers. For a fully configurable alternative with custom LLM provider support, consider tools like Aider, OpenCode, or Goose configured with Mammouth AI (see [PROVIDERS.md — Mammouth AI](./PROVIDERS.md#mammouth-ai)).
 

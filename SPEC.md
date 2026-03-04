@@ -3,7 +3,9 @@
 <!-- TOC -->
 * [AI Spec Tools](#ai-spec-tools)
   * [OpenSpec CLI](#openspec-cli)
+    * [Using OpenSpec with Mammouth AI](#using-openspec-with-mammouth-ai)
   * [GitHub Spec Kit](#github-spec-kit)
+    * [Using GitHub Spec Kit with Mammouth AI](#using-github-spec-kit-with-mammouth-ai)
 <!-- TOC -->
 
 ## OpenSpec CLI
@@ -86,6 +88,22 @@ Configuration is stored in `openspec/config.yaml`.
 
 For more information, visit [OpenSpec GitHub repository](https://github.com/Fission-AI/OpenSpec) and the [GitHub Blog on spec-driven development](https://github.blog/ai-and-ml/generative-ai/spec-driven-development-with-ai-get-started-with-a-new-open-source-toolkit/).
 
+### Using OpenSpec with Mammouth AI
+
+OpenSpec does not make direct LLM calls — it generates structured specification documents that your chosen AI coding assistant reads and follows. To use OpenSpec with [Mammouth AI](https://mammouth.ai/):
+
+1. Set up a Mammouth AI account and API key (see [PROVIDERS.md — Mammouth AI](./PROVIDERS.md#mammouth-ai)), then configure your AI coding assistant (e.g., Aider, OpenCode, Goose) to use it (see the corresponding tool's *Using [Tool] with Mammouth AI* section in [CLI.md](./CLI.md)).
+2. Initialize OpenSpec in your project as usual:
+```bash
+openspec init --tools claude  # or whichever AI tool you configured with Mammouth AI
+```
+3. Create a specification and let your Mammouth AI-backed assistant implement it:
+```bash
+openspec proposal create "feature-name"
+```
+
+OpenSpec will automatically work through whichever AI tool you have configured. No additional Mammouth AI-specific configuration is needed in OpenSpec itself.
+
 ## GitHub Spec Kit
 
 GitHub Spec Kit is a fork of OpenSpec, designed for spec-driven development (SDD) in AI-powered workflows. It helps structure project requirements, motivations, and technical details before AI agents build the software. It includes the `specify` CLI for bootstrapping projects with SDD scaffolding and a set of templates and helper scripts.
@@ -117,3 +135,14 @@ For a one-time run without persistent installation, use `uvx`:
 ```bash
 uvx --from git+https://github.com/github/spec-kit.git specify init <PROJECT_NAME>
 ```
+
+### Using GitHub Spec Kit with Mammouth AI
+
+GitHub Spec Kit (the `specify` CLI) generates specification scaffolding and relies on an external AI coding agent to implement the generated specs. It does not make direct LLM calls. To use it with [Mammouth AI](https://mammouth.ai/):
+
+1. Set up a Mammouth AI account and API key (see [PROVIDERS.md — Mammouth AI](./PROVIDERS.md#mammouth-ai)), then configure your AI coding agent to use it — see the corresponding tool's *Using [Tool] with Mammouth AI* section in [CLI.md](./CLI.md) (e.g., *Using Claude with Mammouth AI* or *Using OpenCode with Mammouth AI*).
+2. Initialize the Spec Kit in your project, passing the AI tool you have configured:
+```bash
+specify init . --ai claude   # or whichever agent is configured with Mammouth AI
+```
+3. Let your Mammouth AI-backed agent implement the generated specification. No additional Mammouth AI-specific configuration is required in the Spec Kit itself.
