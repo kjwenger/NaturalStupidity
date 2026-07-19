@@ -2,3 +2,6 @@
 	path = MultiLingua
 	url = git@github.com:kjwenger/MultiLingua.git
 	branch = main
+[submodule "Arduino/ConfigurableFirmata"]
+	path = Arduino/ConfigurableFirmata
+	url = git@github.com:firmata/ConfigurableFirmata.git
