@@ -10,6 +10,13 @@
     * [Available Claude Models (Anthropic)](#available-claude-models-anthropic)
     * [Quick API Test (Anthropic)](#quick-api-test-anthropic)
     * [Using Anthropic API with AI CLI Tools](#using-anthropic-api-with-ai-cli-tools)
+  * [OpenAI API](#openai-api)
+    * [Account Setup (OpenAI)](#account-setup-openai)
+    * [Getting an API Key (OpenAI)](#getting-an-api-key-openai)
+    * [API Endpoint (OpenAI)](#api-endpoint-openai)
+    * [Available Models (OpenAI)](#available-models-openai)
+    * [Quick API Test (OpenAI)](#quick-api-test-openai)
+    * [Using OpenAI API with AI CLI Tools](#using-openai-api-with-ai-cli-tools)
   * [Mammouth AI](#mammouth-ai)
     * [Account Setup (Mammouth)](#account-setup-mammouth)
     * [Getting an API Key (Mammouth)](#getting-an-api-key-mammouth)
@@ -74,6 +81,7 @@ This document covers cloud-hosted LLM API providers that can be used with the AI
 | Provider                                                  | Type           | Claude models                 | OpenAI-compatible          | Pricing model               | Best for                                |
 |-----------------------------------------------------------|----------------|-------------------------------|----------------------------|-----------------------------|-----------------------------------------|
 | [Anthropic API](#anthropic-api)                           | Direct         | Full catalog, latest first    | Limited (testing only)     | Pay-per-token               | Full API features, lowest latency       |
+| [OpenAI API](#openai-api)                                 | Direct         | —                              | Native                     | Pay-per-token               | GPT/reasoning models, the de facto default `OPENAI_API_*` target |
 | [Mammouth AI](#mammouth-ai)                               | Aggregator     | Sonnet 4.6, Opus 4.6          | Yes                        | Flat subscription + credits | Budget-conscious, multi-model access    |
 | [OpenRouter](#openrouter)                                 | Aggregator     | Full catalog + older versions | Yes                        | Pay-per-token, no markup    | Model variety, provider fallback        |
 | [Portkey](#portkey)                                       | Gateway        | Full catalog                  | Yes                        | Pass-through + gateway fee  | Observability, caching, routing         |
@@ -178,6 +186,87 @@ export OPENAI_MODEL=claude-sonnet-4-6
 **Note:** The OpenAI-compatibility shim is not recommended for production. For tool-specific setup see [CLI.md](./CLI.md).
 
 For more information, visit the [Anthropic API documentation](https://platform.claude.com/docs/en/api/getting-started).
+
+---
+
+## OpenAI API
+
+The [OpenAI API](https://platform.openai.com/) is the direct, canonical source for GPT and OpenAI's reasoning-model lines, and — because so many tools in this repository default to `OPENAI_API_KEY`/`OPENAI_API_BASE` as their generic "OpenAI-compatible" configuration pattern — it's also the de facto reference protocol nearly every other provider and local runtime in this document (and in [RUNTIMES.md](./RUNTIMES.md)) imitates. Despite that, it had no dedicated section here until now.
+
+**Key characteristics:**
+- **Native OpenAI format** — `/v1/chat/completions` (and the newer `/v1/responses`), the shape every "OpenAI-compatible" server or gateway elsewhere in this repo is emulating
+- **Pay-per-token** — billed per input/output token, with cached-input discounts and Batch (lower cost, async) and Priority (higher cost, lower latency) tiers alongside the Standard tier
+- **Free trial credit** — new accounts typically get a small amount of free credit that expires after a few months; verify current terms on your dashboard
+- **Broadest tool support** — virtually every CLI harness in [CLI.md](./CLI.md) supports OpenAI natively, since it's usually the first (sometimes only) provider a tool is built against
+
+### Account Setup (OpenAI)
+
+1. Visit [platform.openai.com](https://platform.openai.com/) and create an account (this is separate from a consumer ChatGPT Plus/Pro subscription, same as Anthropic's console vs. claude.ai split above).
+2. Add a payment method under **Billing** — required once any free trial credit is used up.
+3. Optionally set a monthly spending limit under **Billing → Limits**.
+
+### Getting an API Key (OpenAI)
+
+1. Log in to [platform.openai.com](https://platform.openai.com/).
+2. Navigate to **Dashboard → API keys**.
+3. Click **Create new secret key**, give it a name/project, and copy it immediately — it is only shown once.
+4. Store it securely:
+
+```bash
+export OPENAI_API_KEY=sk-your-key-here
+```
+
+**Security note:** Never commit your API key to version control. Add `.env` to your `.gitignore`.
+
+### API Endpoint (OpenAI)
+
+| Property    | Value                                              |
+|-------------|-----------------------------------------------------|
+| Base URL    | `https://api.openai.com/v1`                        |
+| Auth header | `Authorization: Bearer <key>`                      |
+| Protocol    | Native OpenAI (`/chat/completions`, `/responses`, `/models`) |
+
+### Available Models (OpenAI)
+
+```bash
+# List all available models
+curl -s https://api.openai.com/v1/models \
+  -H "Authorization: Bearer $OPENAI_API_KEY" | jq '.data[].id'
+```
+
+Model naming and the lineup itself change frequently — always confirm current IDs against the `/models` endpoint or the [models documentation](https://platform.openai.com/docs/models) rather than trusting a hardcoded list. As a rough guide, OpenAI's current lineup is generally organized into a flagship GPT line (general-purpose, multimodal), a lighter/cheaper mini or nano tier of the same line, and a reasoning-focused line for harder multi-step tasks — the exact version numbers and tier names are what shift over time.
+
+### Quick API Test (OpenAI)
+
+```bash
+curl -s https://api.openai.com/v1/chat/completions \
+  -H "Authorization: Bearer $OPENAI_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-4.1-mini",
+    "messages": [{"role": "user", "content": "Say hello in one sentence."}],
+    "max_tokens": 32
+  }' | jq '.choices[0].message.content'
+```
+Swap `gpt-4.1-mini` for whatever current model ID you confirmed above.
+
+### Using OpenAI API with AI CLI Tools
+
+This is the pattern nearly every tool in [CLI.md](./CLI.md) supports as its default or first-class provider:
+
+```bash
+export OPENAI_API_KEY=sk-your-key-here
+```
+
+Some tools also expect (or accept) an explicit base URL and model, even for OpenAI itself:
+```bash
+export OPENAI_API_BASE=https://api.openai.com/v1
+export OPENAI_MODEL=gpt-4.1
+```
+
+Because this `OPENAI_API_BASE` + `OPENAI_API_KEY` pair is the lingua franca for "point this tool at an OpenAI-compatible endpoint," every local runtime in [RUNTIMES.md](./RUNTIMES.md) (LM Studio, Ollama, MLX, EXO, Lemonade, Unsloth Studio, llama.cpp, vLLM) and every gateway in this document (Mammouth AI, OpenRouter, Portkey, LiteLLM) exposes the *same* two variables, just with a different base URL — swapping between OpenAI itself, a gateway, and a local model is usually just a matter of changing `OPENAI_API_BASE`. For tool-specific setup, see [CLI.md](./CLI.md).
+
+For more information, visit the [OpenAI API documentation](https://platform.openai.com/docs/api-reference/introduction) and [pricing](https://platform.openai.com/docs/pricing).
 
 ---
 

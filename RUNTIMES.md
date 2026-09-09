@@ -39,6 +39,15 @@
     * [Unsloth Studio (Web UI / Server)](#unsloth-studio-web-ui--server)
     * [Unsloth Core (Python Library, for Fine-Tuning)](#unsloth-core-python-library-for-fine-tuning)
     * [Running Models / OpenAI-Compatible API (Unsloth)](#running-models--openai-compatible-api-unsloth)
+  * [llama.cpp Installation](#llamacpp-installation)
+    * [macOS (llama.cpp)](#macos-llamacpp)
+    * [Linux (llama.cpp)](#linux-llamacpp)
+    * [Windows (llama.cpp)](#windows-llamacpp)
+    * [Running a Model with llama-server](#running-a-model-with-llama-server)
+  * [vLLM Installation](#vllm-installation)
+    * [pip (vLLM)](#pip-vllm)
+    * [Docker (vLLM)](#docker-vllm)
+    * [Running Models / OpenAI-Compatible API (vLLM)](#running-models--openai-compatible-api-vllm)
 <!-- TOC -->
 
 ## LM Studio Installation
@@ -169,6 +178,8 @@ Best Tools to Run Them
 ### Recommended Models from Claude
 
 The following models are recommended by Claude (Opus 4.6) to maximize a **Ryzen AI MAX 395+ / Radeon 8060S with 96 GB GPU memory**. The focus is on the highest parameter counts and quantization levels that fit within the 96 GB VRAM budget while leaving headroom for KV cache and inference overhead. Models are split into new additions and quantization upgrades to already-installed models.
+
+**For the ROCm/Linux setup itself** (BIOS, GRUB/GTT sizing, ROCm install, building llama.cpp for gfx1151, and the KV-cache math behind the "leaving headroom" guidance below), see [STRIX-HALO.md](./STRIX-HALO.md).
 
 **New Models**
 
@@ -667,3 +678,121 @@ export OPENAI_API_KEY=sk-unsloth-xxxxxxxxxxxx
 ```
 
 For more information, visit the [Unsloth GitHub repository](https://github.com/unslothai/unsloth) and [Unsloth documentation](https://unsloth.ai/docs).
+
+## llama.cpp Installation
+
+[llama.cpp](https://github.com/ggml-org/llama.cpp) is the C/C++ LLM inference engine that most of the GGUF-based tooling in this document is actually built on — LM Studio's local server, Ollama's engine, and the `llama.cpp` backend several harnesses in [CLI.md](./CLI.md) call out by name (Hermes Agent's Mac guide, Pi Agent's built-in `/login llama.cpp` support, Oh My Pi's and Hermes Agent's lists of supported local servers) are all running it, or something derived from it, under the hood. Running it directly gives you the least abstraction and the widest hardware support (CPU, CUDA, Metal, Vulkan, ROCm, SYCL) of anything in this document.
+
+### macOS (llama.cpp)
+
+```bash
+brew install llama.cpp
+```
+This installs `llama-cli` (interactive REPL / one-shot generation) and `llama-server` (the OpenAI-compatible HTTP server) as separate binaries.
+
+### Linux (llama.cpp)
+
+Pre-built binaries aren't packaged as widely as on macOS; build from source (CMake, with your accelerator's flags):
+```bash
+git clone https://github.com/ggml-org/llama.cpp
+cd llama.cpp
+
+# CPU-only
+cmake -B build
+cmake --build build --config Release -j
+
+# NVIDIA CUDA
+cmake -B build -DGGML_CUDA=ON
+cmake --build build --config Release -j
+
+# AMD ROCm
+cmake -B build -DGGML_HIP=ON
+cmake --build build --config Release -j
+```
+Binaries land under `build/bin/` (`llama-cli`, `llama-server`, and others).
+
+### Windows (llama.cpp)
+
+Download a pre-built release `.zip` from the [releases page](https://github.com/ggml-org/llama.cpp/releases) (CPU, CUDA, and Vulkan builds are all provided), extract it, and run `llama-server.exe` / `llama-cli.exe` directly — no installer needed.
+
+### Running a Model with llama-server
+
+`llama-server` can pull a model straight from Hugging Face by repo/quant, or load a local `.gguf` file:
+```bash
+# Pull and serve directly from Hugging Face (downloads once, caches locally)
+llama-server -hf ggml-org/gpt-oss-20b-GGUF --ctx-size 0 --jinja -ngl 99 -fa
+
+# Serve a local GGUF file, bound to all interfaces
+llama-server -m ~/models/Qwen3.5-9B-Q4_K_M.gguf \
+  --host 0.0.0.0 --port 8080 -ngl 99 -c 131072 -fa on
+```
+`-ngl 99` offloads all layers to GPU (drop it, or lower it, for CPU-only or partial offload); `--jinja` enables the model's own chat template (needed for reliable tool-calling); `-fa` / `-fa on` enables flash attention.
+
+The server exposes an OpenAI-compatible API at `http://localhost:8080/v1`, plus a built-in web chat UI at `http://localhost:8080/`:
+```bash
+curl http://localhost:8080/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-oss-20b",
+    "messages": [{"role": "user", "content": "Hello!"}]
+  }'
+```
+
+To use with AI CLI tools, configure them to point to llama-server's endpoint:
+```bash
+export OPENAI_API_BASE=http://localhost:8080/v1
+export OPENAI_API_KEY=llama-cpp   # required by some tools but ignored by llama.cpp
+```
+
+For more information, visit the [llama.cpp GitHub repository](https://github.com/ggml-org/llama.cpp).
+
+## vLLM Installation
+
+[vLLM](https://github.com/vllm-project/vllm) is a high-throughput, production-grade inference and serving engine for NVIDIA (and increasingly AMD/TPU) GPUs, built around PagedAttention for efficient KV-cache memory use under concurrent load. It shows up by name across this document's own recommendations (the [Gemini-suggested 96GB-VRAM setup](#recommended-models-from-gemini-as-of-20206-02-10) above calls it out for "maximum speed, especially in a Docker environment") and in [CLI.md](./CLI.md) (Hermes Agent's troubleshooting notes tool-calling requires `--enable-auto-tool-choice --tool-call-parser hermes`; Oh My Pi lists it among its supported local backends) — it's the natural next step up from Ollama/LM Studio once you're serving concurrent requests rather than a single interactive session.
+
+### pip (vLLM)
+
+```bash
+pip install vllm
+```
+Requires an NVIDIA GPU with CUDA (or AMD ROCm / Intel / TPU builds — see the [installation guide](https://docs.vllm.ai/en/stable/getting_started/installation/) for non-NVIDIA hardware); CPU-only is possible but slow.
+
+### Docker (vLLM)
+
+The official image bundles every GPU dependency, so it's the path of least friction:
+```bash
+docker pull vllm/vllm-openai:latest
+
+docker run -d --gpus all --ipc=host \
+  -v ~/.cache/huggingface:/root/.cache/huggingface \
+  -p 8000:8000 \
+  vllm/vllm-openai:latest \
+  --model meta-llama/Llama-3.1-8B-Instruct \
+  --host 0.0.0.0 --port 8000
+```
+`--ipc=host` (or `--shm-size` as an alternative) is required — vLLM uses PyTorch shared memory for tensor-parallel inference. Swap the `--model` argument for any Hugging Face repo id; it downloads (and caches) on first run.
+
+### Running Models / OpenAI-Compatible API (vLLM)
+
+However it's started, vLLM serves an OpenAI-compatible API on port `8000` by default:
+```bash
+curl http://localhost:8000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "meta-llama/Llama-3.1-8B-Instruct",
+    "messages": [{"role": "user", "content": "Hello!"}]
+  }'
+```
+
+To use with AI CLI tools, configure them to point to vLLM's endpoint:
+```bash
+export OPENAI_API_BASE=http://localhost:8000/v1
+export OPENAI_API_KEY=vllm   # required by some tools but ignored by vLLM
+```
+
+For tool-calling / agentic use (Hermes Agent and similar harnesses), enable auto tool-choice with a parser matching your model family:
+```bash
+--enable-auto-tool-choice --tool-call-parser hermes
+```
+
+For more information, visit the [vLLM GitHub repository](https://github.com/vllm-project/vllm) and [documentation](https://docs.vllm.ai/).
