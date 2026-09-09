@@ -205,6 +205,20 @@ For more information, visit [CodeGPT Plugin](https://plugins.jetbrains.com/plugi
 - Website: [jetbrains.com/ai](https://www.jetbrains.com/ai/)
 - **Local LLMs:** May support custom endpoints in enterprise plans (check documentation)
 
+**Kilo Code (Free/Open Source):**
+- Installation: Settings → Plugins → "Kilo Code"
+- Same agent, config, and sessions as [Kilo Code CLI](./CLI.md#kilo-code-cli) — meets you in the IDE and the terminal
+- Architect / Coder / Debugger modes, 500+ models
+- Website: [kilo.ai](https://kilo.ai/)
+- **Local LLMs:** Supported via custom provider entries in `~/.config/kilo/kilo.json[c]` — see [CLI.md — Using Kilo Code with Local LLMs via LM Studio and Ollama](./CLI.md#using-kilo-code-with-local-llms-via-lm-studio-and-ollama)
+
+**Amp (Paid, Sourcegraph):**
+- Installation: Settings → Plugins → "Amp"
+- Shares threads/sessions with [Amp CLI](./CLI.md#amp-cli) and Amp's VS Code, Neovim, and Zed extensions
+- Runs Sourcegraph-selected frontier models (Claude, GPT-5) rather than bring-your-own
+- Website: [ampcode.com](https://ampcode.com/)
+- **Local LLMs:** Not supported — locked to Sourcegraph's hosted model selection, same as the CLI
+
 **Recommended Setup:**
 
 For users with GitHub Copilot, Claude API access, and local LLMs:
@@ -518,6 +532,8 @@ Open Cline sidebar → Settings icon → Configure providers:
 
 For more information, visit [Cline GitHub](https://github.com/cline/cline).
 
+**Terminal counterpart:** Cline also ships a standalone, fully-scriptable CLI (`npm install -g cline`) — same account/provider keys, headless/CI-friendly. See [CLI.md — Cline CLI](./CLI.md#cline-cli) for install and local-LLM setup.
+
 ### Roo Code Extension
 
 AI coding assistant focused on codebase understanding and multi-file editing.
@@ -704,6 +720,26 @@ If you have the old "Claude Dev" extension:
 - Multimodel support (GPT-4, Claude, local)
 - Website: [cursor.sh](https://cursor.sh/)
 - **Local LLMs:** Supports custom OpenAI-compatible endpoints in settings
+- Also ships a terminal-native headless CLI (binary `agent`) — see [CLI.md — Cursor CLI](./CLI.md#cursor-cli)
+
+**Antigravity IDE:**
+- Note: like Cursor, Antigravity is a standalone agentic IDE (Google), not a VSCode extension — it also ships IDE extensions for broader integration and a terminal-first CLI (`agy`)
+- Gemini-family models; replaces the retired Gemini CLI
+- Website: [antigravity.google](https://antigravity.google/)
+- **Local LLMs:** Not supported — its endpoint override only accepts a Gemini-protocol-compatible URL, not OpenAI-compatible servers like LM Studio/Ollama
+- See [CLI.md — Antigravity CLI](./CLI.md#antigravity-cli) for install, auth, and the Gemini CLI migration notes
+
+**Kilo Code:**
+- Extension ID: search "Kilo Code" in Marketplace / Open VSX
+- Same underlying agent, config, and sessions as [Kilo Code CLI](./CLI.md#kilo-code-cli)
+- Website: [kilo.ai](https://kilo.ai/)
+- **Local LLMs:** Supported — see [CLI.md — Using Kilo Code with Local LLMs via LM Studio and Ollama](./CLI.md#using-kilo-code-with-local-llms-via-lm-studio-and-ollama)
+
+**Amp (Sourcegraph):**
+- Extension ID: search "Amp" in Marketplace (also available for Neovim and Zed)
+- Shares threads/sessions with [Amp CLI](./CLI.md#amp-cli)
+- Website: [ampcode.com](https://ampcode.com/)
+- **Local LLMs:** Not supported — locked to Sourcegraph's hosted model selection
 
 **Recommended Setup for VSCode/VSCodium:**
 

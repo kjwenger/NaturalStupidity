@@ -9,6 +9,8 @@
       * [Using Homebrew (If Homebrew is already installed)](#using-homebrew-if-homebrew-is-already-installed)
     * [Windows](#windows)
     * [Using `nvm` to Install Node.js](#using-nvm-to-install-nodejs)
+  * [pnpm](#pnpm)
+  * [Bun](#bun)
   * [UV CLI](#uv-cli)
 <!-- TOC -->
 
@@ -81,6 +83,79 @@ For example, to use Node.js version 18:
 ```bash
 nvm use 18
 ```
+
+## pnpm
+
+`pnpm` is a fast, disk-space-efficient npm-compatible package manager, required (in place of plain `npm`) to build several tools covered in [CLI.md](./CLI.md) from source — [DeepSeek Harness](./CLI.md#deepseek-harness-cli) (`pnpm install && pnpm run build`) and Kimi Code's development setup among them.
+
+**Install via Corepack (bundled with Node.js ≥ 16.13, recommended):**
+```bash
+corepack enable
+corepack prepare pnpm@latest --activate
+```
+
+**Install using the standalone script (macOS/Linux):**
+```bash
+curl -fsSL https://get.pnpm.io/install.sh | sh -
+```
+
+**Install using Homebrew (macOS/Linux):**
+```bash
+brew install pnpm
+```
+
+**Install using npm:**
+```bash
+npm install -g pnpm
+```
+
+**Windows (PowerShell):**
+```powershell
+iwr https://get.pnpm.io/install.ps1 -useb | iex
+```
+
+Verify the install:
+```bash
+pnpm --version
+```
+
+For more information, visit [pnpm.io](https://pnpm.io/installation).
+
+## Bun
+
+Bun is an all-in-one JavaScript/TypeScript runtime, bundler, and package manager, offered as a faster alternative to `npm`/`npx` by several tools in [CLI.md](./CLI.md) — [Grok CLI](./CLI.md#grok-cli) (`bun add -g @vibe-kit/grok-cli`) and [Oh My Pi](./CLI.md#oh-my-pi-cli) (`bun install -g @oh-my-pi/pi-coding-agent`) both recommend it over npm.
+
+**Install using the official script (macOS/Linux/WSL):**
+```bash
+curl -fsSL https://bun.sh/install | bash
+```
+
+**Install using Homebrew (macOS/Linux):**
+```bash
+brew install bun
+```
+
+**Install using npm:**
+```bash
+npm install -g bun
+```
+
+**Windows (PowerShell):**
+```powershell
+powershell -c "irm bun.sh/install.ps1 | iex"
+```
+
+Verify the install:
+```bash
+bun --version
+```
+
+Install a global CLI tool with Bun the same way you would with `npm install -g`:
+```bash
+bun add -g <package-name>
+```
+
+For more information, visit [bun.sh](https://bun.sh/docs/installation).
 
 ## UV CLI
 
