@@ -28,6 +28,17 @@
     * [macOS App (EXO)](#macos-app-exo)
     * [Linux (EXO)](#linux-exo)
     * [Running Models (EXO)](#running-models-exo)
+  * [Lemonade Installation](#lemonade-installation)
+    * [Windows (Lemonade)](#windows-lemonade)
+    * [Linux (Lemonade)](#linux-lemonade)
+    * [macOS (Lemonade)](#macos-lemonade)
+    * [Pulling and Running Models (Lemonade)](#pulling-and-running-models-lemonade)
+    * [OpenAI-Compatible API (Lemonade)](#openai-compatible-api-lemonade)
+  * [Unsloth Studio Installation](#unsloth-studio-installation)
+    * [Unsloth Desktop (Native App)](#unsloth-desktop-native-app)
+    * [Unsloth Studio (Web UI / Server)](#unsloth-studio-web-ui--server)
+    * [Unsloth Core (Python Library, for Fine-Tuning)](#unsloth-core-python-library-for-fine-tuning)
+    * [Running Models / OpenAI-Compatible API (Unsloth)](#running-models--openai-compatible-api-unsloth)
 <!-- TOC -->
 
 ## LM Studio Installation
@@ -494,3 +505,165 @@ export OPENAI_API_KEY=exo   # required by some tools but ignored by EXO
 - Supports models too large for a single device (e.g., DeepSeek v3.1 671B, Qwen3-235B)
 
 For more information, visit the [EXO GitHub repository](https://github.com/exo-explore/exo) and [EXO Labs website](https://exolabs.net/).
+
+## Lemonade Installation
+
+[Lemonade](https://github.com/lemonade-sdk/lemonade) is an open-source (Apache 2.0) local AI server built by AMD, aimed at giving "the same capabilities as cloud APIs, except 100% free and private." It is particularly optimized for AMD hardware — Ryzen AI NPUs (XDNA2, e.g. gfx1100/gfx1151), Radeon GPUs (RDNA3/RDNA4), and Strix Halo iGPUs — but also runs on NVIDIA CUDA GPUs (Turing through Blackwell), Apple Silicon, and plain x86_64/ARM64 CPUs via Vulkan. Beyond chat, it supports speech recognition, text-to-speech, and image generation through the same server.
+
+### Windows (Lemonade)
+
+Download and run the MSI installer from the [latest release](https://github.com/lemonade-sdk/lemonade/releases/latest/download/lemonade.msi).
+
+### Linux (Lemonade)
+
+Install via your distribution's package manager:
+
+```bash
+# Debian/Ubuntu (24.04+)
+sudo apt install lemonade-server
+
+# Fedora (43+)
+sudo dnf install lemonade-server
+
+# Arch Linux
+sudo pacman -S lemonade-server
+
+# Snap (any distro)
+sudo snap install lemonade-server
+```
+
+### macOS (Lemonade)
+
+Download the `.pkg` installer from the [releases page](https://github.com/lemonade-sdk/lemonade/releases/latest) (optimized for Apple Silicon).
+
+### Pulling and Running Models (Lemonade)
+
+```bash
+# Browse available models
+lemonade list
+
+# Download a model
+lemonade pull Gemma-4-E2B-it-GGUF
+
+# Run a model (starts the server and loads the model)
+lemonade run Gemma-4-E2B-it-GGUF
+
+# Quick integration setup for an AI CLI tool (Claude Code, Codex, etc.)
+lemonade launch claude
+
+# Show available inference backends (CPU / GPU / NPU) for this machine
+lemonade backends
+```
+
+Models are pulled from Hugging Face or ModelScope in GGUF, FLM, or ONNX format; expect roughly 10 GB of disk per model and 8 GB+ RAM as a baseline.
+
+### OpenAI-Compatible API (Lemonade)
+
+Lemonade serves an OpenAI-compatible API at `http://localhost:13305/api/v1`:
+
+```bash
+curl http://localhost:13305/api/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "Gemma-4-E2B-it-GGUF",
+    "messages": [{"role": "user", "content": "Hello!"}]
+  }'
+```
+
+To use with AI CLI tools, configure them to point to Lemonade's endpoint:
+```bash
+export OPENAI_API_BASE=http://localhost:13305/api/v1
+export OPENAI_API_KEY=lemonade   # required by some tools but ignored by Lemonade
+```
+
+For more information, visit the [Lemonade GitHub repository](https://github.com/lemonade-sdk/lemonade).
+
+## Unsloth Studio Installation
+
+[Unsloth](https://github.com/unslothai/unsloth) is best known as a fast, memory-efficient LLM **fine-tuning** framework, but the same project also ships a local inference stack under the "Unsloth Studio" / "Unsloth Desktop" names — not to be confused with LM Studio above, a separate, unrelated product with a similar name. Unsloth Core (the fine-tuning library) is Apache 2.0; Unsloth Studio's UI components are AGPL-3.0.
+
+### Unsloth Desktop (Native App)
+
+Pre-built installers are available from [GitHub Releases](https://github.com/unslothai/unsloth/releases):
+- **Windows:** `Unsloth-Desktop-Windows.exe`
+- **macOS:** `Unsloth-Desktop-MacOS.dmg`
+- **Linux (deb):** `Unsloth-Desktop-Ubuntu.deb`
+- **Linux (AppImage):** `Unsloth-Desktop-Linux.AppImage`
+
+### Unsloth Studio (Web UI / Server)
+
+**macOS, Linux, WSL:**
+```bash
+curl -fsSL https://unsloth.ai/install.sh | sh
+unsloth studio
+```
+
+**Windows (PowerShell):**
+```powershell
+irm https://unsloth.ai/install.ps1 | iex
+unsloth studio
+```
+
+Serve over HTTPS instead of plain HTTP:
+```bash
+unsloth studio --secure
+```
+
+**Docker:**
+```bash
+docker run -d --gpus all --ipc=host \
+  -p 8000:8000 -p 8888:8888 \
+  -e UNSLOTH_STUDIO_PASSWORD="mypassword" \
+  unsloth/unsloth
+```
+This exposes the Studio web UI at `http://localhost:8000` (user: `unsloth`) and a JupyterLab instance at `http://localhost:8888`.
+
+### Unsloth Core (Python Library, for Fine-Tuning)
+
+**Linux/WSL:**
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+uv venv unsloth_env --python 3.13
+source unsloth_env/bin/activate
+uv pip install unsloth --torch-backend=auto
+```
+
+**Windows (PowerShell):**
+```powershell
+winget install -e --id Python.Python.3.13
+uv venv unsloth_env --python 3.13
+.\unsloth_env\Scripts\activate
+uv pip install unsloth --torch-backend=auto
+```
+
+Requires Python 3.12+ (3.13 recommended). Supports NVIDIA CUDA, AMD ROCm, Intel GPUs, and a CPU/Vulkan fallback; this is the piece used for actually fine-tuning models, as opposed to just serving them.
+
+### Running Models / OpenAI-Compatible API (Unsloth)
+
+`unsloth run` loads a model and starts the local server (default port `8000`, or `8888` when launched via Unsloth Studio's own chat UI); pass `-p` for a custom port and `-H 0.0.0.0` to expose it on your local network:
+```bash
+unsloth run --model unsloth/gemma-4-26B-A4B-it-GGUF:UD-Q4_K_XL -H 0.0.0.0 -p 8888
+```
+
+`unsloth start` is the quick-integration launcher for AI CLI tools, analogous to Ollama's `launch` and Lemonade's `launch` above:
+```bash
+unsloth start claude --model unsloth/Qwen3.8-27B-GGUF:UD-Q4_K_XL
+unsloth start codex
+unsloth start hermes
+```
+
+Both `/v1/chat/completions` (OpenAI Chat Completions) and `/v1/messages` (Anthropic Messages) endpoints are served, so it can be used directly with either family of AI CLI tools. Every request needs an API key generated from the Studio UI (avatar → **Settings → API** → **Create**, keys are prefixed `sk-unsloth-` and shown once):
+```bash
+curl http://localhost:8888/v1/chat/completions \
+  -H "Authorization: Bearer sk-unsloth-xxxxxxxxxxxx" \
+  -H "Content-Type: application/json" \
+  -d '{"model": "gemma-4-26B-A4B-it-GGUF", "messages": [{"role": "user", "content": "Hello!"}]}'
+```
+
+To use with AI CLI tools that speak OpenAI's API:
+```bash
+export OPENAI_API_BASE=http://localhost:8888/v1
+export OPENAI_API_KEY=sk-unsloth-xxxxxxxxxxxx
+```
+
+For more information, visit the [Unsloth GitHub repository](https://github.com/unslothai/unsloth) and [Unsloth documentation](https://unsloth.ai/docs).

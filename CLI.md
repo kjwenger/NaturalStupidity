@@ -15,10 +15,14 @@
     * [Bash Completion on Linux (Aider-CE)](#bash-completion-on-linux-aider-ce)
     * [Using Aider-CE with Local LLMs via LM Studio](#using-aider-ce-with-local-llms-via-lm-studio)
     * [Using Aider-CE with Mammouth AI](#using-aider-ce-with-mammouth-ai)
+  * [Amp CLI](#amp-cli)
   * [Claude CLI](#claude-cli)
     * [Bash Completion on Linux (Claude)](#bash-completion-on-linux-claude)
     * [Using Claude with Local LLMs via LM Studio](#using-claude-with-local-llms-via-lm-studio)
     * [Using Claude with Mammouth AI](#using-claude-with-mammouth-ai)
+  * [Cline CLI](#cline-cli)
+    * [Using Cline with Local LLMs via LM Studio and Ollama](#using-cline-with-local-llms-via-lm-studio-and-ollama)
+    * [Using Cline with Mammouth AI](#using-cline-with-mammouth-ai)
   * [Codex CLI](#codex-cli)
     * [Using Codex with Local LLMs via LM Studio](#using-codex-with-local-llms-via-lm-studio)
     * [Bash Completion on Linux (Codex)](#bash-completion-on-linux-codex)
@@ -27,6 +31,10 @@
     * [Bash Completion on Linux (Copilot)](#bash-completion-on-linux-copilot)
     * [Using Copilot with Local LLMs via LM Studio](#using-copilot-with-local-llms-via-lm-studio)
     * [Using Copilot with Mammouth AI](#using-copilot-with-mammouth-ai)
+  * [Crush CLI](#crush-cli)
+    * [Using Crush with Local LLMs via LM Studio and Ollama](#using-crush-with-local-llms-via-lm-studio-and-ollama)
+    * [Using Crush with Mammouth AI](#using-crush-with-mammouth-ai)
+  * [Cursor CLI](#cursor-cli)
   * [DeepSeek CLI](#deepseek-cli)
     * [Bash Completion on Linux (DeepSeek)](#bash-completion-on-linux-deepseek)
     * [Using DeepSeek with Local LLMs via LM Studio](#using-deepseek-with-local-llms-via-lm-studio)
@@ -54,10 +62,31 @@
   * [Grok CLI](#grok-cli)
     * [Using Grok with Local LLMs via LM Studio](#using-grok-with-local-llms-via-lm-studio)
     * [Using Grok with Mammouth AI](#using-grok-with-mammouth-ai)
+  * [Grok Build CLI](#grok-build-cli)
+    * [Using Grok Build with Custom/Local Endpoints](#using-grok-build-with-customlocal-endpoints)
   * [Goose CLI](#goose-cli)
     * [Using Goose with Local LLMs via LM Studio](#using-goose-with-local-llms-via-lm-studio)
     * [Bash Completion on Linux (Goose)](#bash-completion-on-linux-goose)
     * [Using Goose with Mammouth AI](#using-goose-with-mammouth-ai)
+  * [Hermes Agent CLI](#hermes-agent-cli)
+    * [Configuring Hermes Agent](#configuring-hermes-agent)
+    * [Using Hermes Agent with the Nous Portal / OpenRouter (Online)](#using-hermes-agent-with-the-nous-portal--openrouter-online)
+    * [Using Hermes Agent with OpenAI](#using-hermes-agent-with-openai)
+    * [Using Hermes Agent with Local LLMs via LM Studio](#using-hermes-agent-with-local-llms-via-lm-studio)
+    * [Using Hermes Agent with Local LLMs via Ollama](#using-hermes-agent-with-local-llms-via-ollama)
+    * [Using Hermes Agent with Mammouth AI](#using-hermes-agent-with-mammouth-ai)
+    * [Troubleshooting (Hermes Agent)](#troubleshooting-hermes-agent)
+  * [Kilo Code CLI](#kilo-code-cli)
+    * [Using Kilo Code with Local LLMs via LM Studio and Ollama](#using-kilo-code-with-local-llms-via-lm-studio-and-ollama)
+    * [Using Kilo Code with Mammouth AI](#using-kilo-code-with-mammouth-ai)
+  * [Kimi Code CLI](#kimi-code-cli)
+    * [Configuring Kimi Code](#configuring-kimi-code)
+    * [Using Kimi Code with Local LLMs via LM Studio](#using-kimi-code-with-local-llms-via-lm-studio)
+    * [Using Kimi Code with Local LLMs via Ollama](#using-kimi-code-with-local-llms-via-ollama)
+    * [Using Kimi Code with Mammouth AI](#using-kimi-code-with-mammouth-ai)
+  * [Oh My Pi CLI](#oh-my-pi-cli)
+    * [Using Oh My Pi with Local LLMs via LM Studio and Ollama](#using-oh-my-pi-with-local-llms-via-lm-studio-and-ollama)
+    * [Using Oh My Pi with Mammouth AI](#using-oh-my-pi-with-mammouth-ai)
   * [OpenHands CLI](#openhands-cli)
     * [Bash Completion on Linux (OpenHands)](#bash-completion-on-linux-openhands)
     * [Using OpenHands with Local LLMs via LM Studio](#using-openhands-with-local-llms-via-lm-studio)
@@ -67,6 +96,8 @@
     * [OpenCode Config Gist (LM Studio)](#opencode-config-gist-lm-studio)
     * [Bash Completion on Linux (OpenCode)](#bash-completion-on-linux-opencode)
     * [Using OpenCode with Mammouth AI](#using-opencode-with-mammouth-ai)
+  * [Pi Agent CLI](#pi-agent-cli)
+    * [Using Pi Agent with Local LLMs via LM Studio and Ollama](#using-pi-agent-with-local-llms-via-lm-studio-and-ollama)
   * [Qwen CLI](#qwen-cli)
     * [Using Qwen with Local LLMs via LM Studio](#using-qwen-with-local-llms-via-lm-studio)
     * [Qwen Config Gist (LM Studio)](#qwen-config-gist-lm-studio)
@@ -477,9 +508,51 @@ export AIDER_MODEL=openai/gpt-4.1
 
 Replace `gpt-4.1` with your preferred Mammouth AI model (e.g., `openai/claude-sonnet-4-6`, `openai/mistral`, `openai/deepseek-v3`). For the full list of available model IDs, visit [Mammouth AI API documentation](https://info.mammouth.ai/docs/api-quick-start/).
 
+## Amp CLI
+
+[Amp](https://ampcode.com/) is Sourcegraph's coding agent — available as a terminal CLI as well as extensions for VS Code, JetBrains, Neovim, and Zed, all sharing the same threads/sessions. It runs Sourcegraph-selected frontier models (Claude Opus/Sonnet, GPT-5) rather than letting you bring your own.
+
+**Install with pnpm (recommended):**
+```bash
+pnpm add -g @ampcode/cli
+```
+
+**Install with npm:**
+```bash
+npm install -g @ampcode/cli
+```
+
+**Install with yarn:**
+```bash
+yarn global add @ampcode/cli
+```
+
+**Install with the official script (single-file executable):**
+```bash
+curl -fsSL https://ampcode.com/install.sh | bash
+```
+
+> The npm package was renamed from `@sourcegraph/amp` to `@ampcode/cli`; if a tutorial or lockfile still references the old name, switch to `@ampcode/cli`.
+
+Authenticate interactively:
+```bash
+amp login
+```
+or, for CI/scripting, set an API key from [ampcode.com/settings](https://ampcode.com/settings):
+```bash
+export AMP_API_KEY="your-api-key"
+```
+Settings live in `~/.config/amp/settings.json` (override the path with `AMP_SETTINGS_FILE`); this is also where MCP servers are configured.
+
+**Local LLMs and custom endpoints:** unlike most other harnesses in this document, Amp does not document support for custom OpenAI-compatible endpoints, bringing your own API key for a third-party model, or connecting to a local server like LM Studio or Ollama — it's built around Sourcegraph's own hosted model selection, similar to Copilot CLI and Cursor CLI below. If you need a local-LLM-capable harness, see [Aider](#aider-cli), [OpenCode](#opencode-cli), [Goose](#goose-cli), or most of the other tools in this document instead.
+
+For more information, visit [ampcode.com](https://ampcode.com/) and the [Amp CLI guide](https://github.com/sourcegraph/amp-examples-and-guides/blob/main/guides/cli/README.md).
+
 ## Claude CLI
 
 Claude CLI provides command-line access to Anthropic's Claude AI.
+
+*Composio's two cents:* in its [agent-harness benchmark](https://composio.dev/content/best-ai-agent-harnesses) (25 business-app tasks, all 8 harnesses driving the same external Kimi K3 model via OpenRouter, to isolate the harness from the model), Claude Code posted a respectable 76% pass rate but the **highest cost per success ($1.96)** and **slowest median runtime (330.5s)** of the field — its file tools, shell access, MCP, and subagent support are mature, but that overhead was most visible when it wasn't driving Anthropic's own models.
 
 Install using npm:
 ```bash
@@ -633,9 +706,50 @@ claude --settings ~/.claude/mammouth-settings.json
 
 **Note:** This is an advanced configuration that relies on a third-party proxy. For Mammouth AI model IDs (e.g., `gpt-4.1`, `claude-sonnet-4-6`, `mistral`), see the [Mammouth AI API documentation](https://info.mammouth.ai/docs/api-quick-start/).
 
+## Cline CLI
+
+[Cline](https://cline.bot/cli) is the terminal counterpart to the popular Cline VS Code extension — one of the most-starred open-source coding agents (~67k GitHub stars). The CLI is fully scriptable/headless: pipe a `git diff` into it for an automated review, wire it into GitHub Actions, or drive it with `--json` output for programmatic parsing.
+
+**Install with npm:**
+```bash
+npm install -g cline
+```
+Requires Node.js 22+, and either a free Cline account or your own API key from a supported provider (Anthropic, OpenAI, Google, and 30+ others via OpenAI-compatible endpoints, including local Ollama).
+
+**Usage:**
+```bash
+cline auth                        # authenticate (Cline account, ClinePass, or your own provider key)
+cline                              # interactive session
+cline "your task here"             # one-shot task
+cline -p "task"                    # plan-first mode
+cline --auto-approve true "task"   # auto-approve tool calls
+cline --json "task"                # structured output for scripts/CI
+cline config                       # configure providers interactively
+```
+Override the model/provider per invocation with `-m/--model` and `-P/--provider`. Headless mode triggers automatically when `--json` is used, stdin is piped, or output is redirected — handy for cron jobs and CI without any extra flag.
+
+For more information, visit the [Cline CLI overview](https://docs.cline.bot/usage/cli-overview) and [GitHub repository](https://github.com/cline/cline).
+
+### Using Cline with Local LLMs via LM Studio and Ollama
+
+Cline supports any OpenAI-compatible endpoint, with dedicated `ollama` and `lmstudio` provider ids (same ones the VS Code extension uses):
+
+1. Start LM Studio's local server (port `1234`) or Ollama (port `11434`), and load a model.
+2. Run `cline config` and select **Ollama** (base URL `http://localhost:11434`) or **LM Studio** (base URL `http://localhost:1234`) as the provider, then pick the detected model — or force it per-invocation:
+```bash
+cline -P ollama -m qwen3-coder:30b "your task"
+cline -P lmstudio -m qwen3-coder-30b-a3b-instruct "your task"
+```
+
+### Using Cline with Mammouth AI
+
+[Mammouth AI](https://mammouth.ai/) is an OpenAI-compatible gateway, reachable through Cline's generic OpenAI-compatible provider. For account setup and API key instructions, see [PROVIDERS.md — Mammouth AI](./PROVIDERS.md#mammouth-ai). Run `cline config`, choose the OpenAI-compatible provider option, and set the base URL to `https://api.mammouth.ai/v1` with your Mammouth AI key; then select a model such as `gpt-4.1`, `claude-sonnet-4-6`, or `deepseek-v3` (see the [Mammouth AI API documentation](https://info.mammouth.ai/docs/api-quick-start/) for the full list).
+
 ## Codex CLI
 
 OpenAI Codex CLI for code generation and completion.
+
+*Composio's two cents:* in the same [harness benchmark](https://composio.dev/content/best-ai-agent-harnesses) (25 business-app tasks, all harnesses driving an external Kimi K3 model), Codex posted the **lowest pass rate of the eight harnesses tested (68%)**, at a mid-pack $0.66 cost per success. Codex is purpose-built around OpenAI's own models and sandboxed approval flow, so this likely says more about pairing it with a non-OpenAI model than about the harness itself — worth factoring in if you plan to run Codex against Mammouth AI or a local model rather than OpenAI's API.
 
 Install using npm:
 ```bash
@@ -837,6 +951,91 @@ litellm --model openai/gpt-4.1 --api_base https://api.mammouth.ai/v1 --api_key y
 For a detailed walkthrough of this pattern, see [Using LiteLLM with GitHub Copilot](https://parsiya.net/blog/litellm-ghc-aad/).
 
 **Note:** This is an advanced configuration that relies on third-party proxy software and is not officially supported by GitHub. For Mammouth AI model IDs, see the [Mammouth AI API documentation](https://info.mammouth.ai/docs/api-quick-start/).
+
+## Crush CLI
+
+[Crush](https://github.com/charmbracelet/crush) (`crush`) is Charm's open-source, terminal-native coding agent — from the makers of Bubble Tea/Glow/Gum — built to work with a wide range of models across OpenAI, Anthropic, and other providers, with the ability to switch models mid-session while preserving context.
+
+**Install with Homebrew:**
+```bash
+brew install charmbracelet/tap/crush
+```
+
+**Install with npm:**
+```bash
+npm install -g @charmland/crush
+```
+
+**Install on Debian/Ubuntu (apt):**
+```bash
+sudo mkdir -p /etc/apt/keyrings
+curl -fsSL https://repo.charm.sh/apt/gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/charm.gpg
+echo "deb [signed-by=/etc/apt/keyrings/charm.gpg] https://repo.charm.sh/apt/ * *" | sudo tee /etc/apt/sources.list.d/charm.list
+sudo apt update && sudo apt install crush
+```
+
+Configuration lives in `.crushrc` (project root, checked before the global `~/.config/crush/crushrc`) using Bash syntax with Crush-specific builtins. For more information, visit the [Crush GitHub repository](https://github.com/charmbracelet/crush).
+
+### Using Crush with Local LLMs via LM Studio and Ollama
+
+Crush has first-class commands for registering local providers, rather than requiring you to hand-edit a config file:
+
+```bash
+# Ollama
+provider add ollama \
+  --name Ollama \
+  --type ollama \
+  --base-url "http://localhost:11434/v1/"
+
+# LM Studio
+provider add lmstudio \
+  --name "LM Studio" \
+  --type openai-compat \
+  --base-url "http://localhost:1234/v1"
+
+# Register a model on a provider (repeat per model you want available)
+model add ollama/qwen3-coder:30b --name "Qwen3 Coder 30B" --context-window 128000
+```
+
+### Using Crush with Mammouth AI
+
+[Mammouth AI](https://mammouth.ai/) is added the same way, as an `openai-compat` provider. For account setup and API key instructions, see [PROVIDERS.md — Mammouth AI](./PROVIDERS.md#mammouth-ai).
+```bash
+provider add mammouth \
+  --name "Mammouth AI" \
+  --type openai-compat \
+  --base-url "https://api.mammouth.ai/v1" \
+  --api-key "your-mammouth-api-key"
+
+model add mammouth/gpt-4.1 --name "GPT-4.1"
+```
+For the full model list, visit the [Mammouth AI API documentation](https://info.mammouth.ai/docs/api-quick-start/).
+
+## Cursor CLI
+
+[Cursor CLI](https://cursor.com/cli) (binary name `agent`, not `cursor` or `cursor-agent` — despite that being the package/product name) brings Cursor's coding agent to the terminal, GitHub Actions, and scripts, running headless over SSH or in tmux. It's currently in beta.
+
+**Install on macOS/Linux/WSL:**
+```bash
+curl https://cursor.com/install -fsS | bash
+```
+
+**Install on Windows (PowerShell):**
+```powershell
+irm 'https://cursor.com/install?win32=true' | iex
+```
+
+**Usage:**
+```bash
+agent                       # interactive session
+agent -p "your task"        # headless, for CI/scripts
+agent --model "gpt-5"       # pick a model from Cursor's catalog
+```
+Authenticate with `export CURSOR_API_KEY=your_api_key_here` for scripted/headless use.
+
+**Local LLMs and custom endpoints:** Cursor CLI is built around Cursor's own hosted model catalog and subscription — like Amp CLI and Copilot CLI above, it does not document support for a custom OpenAI-compatible endpoint or a local server like LM Studio/Ollama. If local-model support is a requirement, reach for one of the other harnesses in this document instead.
+
+For more information, visit the [Cursor CLI docs](https://cursor.com/docs/cli/overview).
 
 ## DeepSeek CLI
 
@@ -1249,7 +1448,9 @@ For the same reason as LM Studio above, Antigravity CLI cannot connect directly 
 
 ## Grok CLI
 
-Grok CLI is a conversational AI CLI tool powered by xAI's Grok with intelligent text editor capabilities and tool usage.
+Grok CLI ([`@vibe-kit/grok-cli`](https://github.com/superagent-ai/grok-cli)) is a community, open-source conversational AI CLI tool powered by xAI's Grok API, with intelligent text editor capabilities and tool usage.
+
+> **⚠️ Naming collision:** this is a different, unofficial project from xAI's own **[Grok Build](#grok-build-cli)** (`xai-org/grok-build`), covered below. Confusingly, both install a binary named `grok` and both default to a config directory under `~/.grok/` (`user-settings.json` here vs. `config.toml` for Grok Build) — installing both on the same machine means the second install wins the `grok` name on your `PATH`. Composio's [harness benchmark](https://composio.dev/content/best-ai-agent-harnesses) tested the official **Grok Build**, not this community CLI — see the [Grok Build CLI](#grok-build-cli) section for those numbers.
 
 **Install globally with Bun (recommended):**
 ```bash
@@ -1325,6 +1526,49 @@ grok --base-url https://api.mammouth.ai/v1 --api-key your-mammouth-api-key
 ```
 
 For available Mammouth AI model IDs, visit the [Mammouth AI API documentation](https://info.mammouth.ai/docs/api-quick-start/).
+
+## Grok Build CLI
+
+[Grok Build](https://github.com/xai-org/grok-build) is xAI's own official coding-agent harness and TUI — fullscreen, mouse-interactive, extensible — distinct from the community [Grok CLI](#grok-cli) above (see the naming-collision warning there). It's available to SuperGrok and X Premium Plus subscribers.
+
+*Composio's two cents:* in its [harness benchmark](https://composio.dev/content/best-ai-agent-harnesses) (25 business-app tasks, all harnesses driving an external Kimi K3 model via OpenRouter), Grok Build had a fast median runtime (196.2s) but made by far the **most tool calls of any harness tested (402)** without a pass-rate edge to show for it (72%, tied for mid-pack) — a sign it's more trigger-happy with tool invocations than its peers rather than more efficient with them.
+
+**Install on macOS/Linux:**
+```bash
+curl -fsSL https://x.ai/cli/install.sh | bash
+```
+
+**Install on Windows (PowerShell):**
+```powershell
+irm https://x.ai/cli/install.ps1 | iex
+```
+
+The installer places the `grok` binary on your `PATH` and sets up `~/.grok/` as the config directory. On first launch it opens your browser to authenticate with your xAI account; run `grok --plan` to force plan-first execution (index the repo, propose a step-by-step plan, then wait for confirmation before touching files).
+
+For more information, visit the [Grok Build GitHub repository](https://github.com/xai-org/grok-build) and [documentation](https://docs.x.ai/build/overview).
+
+### Using Grok Build with Custom/Local Endpoints
+
+Grok Build defaults to xAI's own `grok-4.6` model, but a custom model/provider can be added to `~/.grok/config.toml` (`%USERPROFILE%\.grok\config.toml` on Windows):
+```toml
+[model.lm-studio]
+model = "qwen3-coder-30b-a3b-instruct"
+base_url = "http://localhost:1234/v1"
+name = "LM Studio (local)"
+env_key = "LM_STUDIO_API_KEY"
+
+[models]
+default = "lm-studio"
+```
+```bash
+export LM_STUDIO_API_KEY=lm-studio
+```
+Select it explicitly, or verify it was picked up:
+```bash
+grok -p "Hello" -m lm-studio
+grok inspect    # confirms Grok Build sees the custom model
+```
+The same `[model.<name>]` pattern works for Ollama (`base_url = "http://localhost:11434/v1"`) or [Mammouth AI](https://mammouth.ai/) (`base_url = "https://api.mammouth.ai/v1"`, `env_key = "MAMMOUTH_API_KEY"`) — see [PROVIDERS.md — Mammouth AI](./PROVIDERS.md#mammouth-ai) for account setup. This is documented but not as heavily exercised as xAI's own models, so treat it as functional rather than a first-class, fully-tuned path.
 
 ## Goose CLI
 
@@ -1417,6 +1661,353 @@ export GOOSE_MODEL=gpt-4.1
 
 Replace `gpt-4.1` with your preferred model. Mammouth AI supports models from multiple providers — for example `claude-sonnet-4-6`, `mistral`, or `deepseek-v3`. For the full model list, visit the [Mammouth AI API documentation](https://info.mammouth.ai/docs/api-quick-start/).
 
+## Hermes Agent CLI
+
+[Hermes Agent](https://github.com/NousResearch/hermes-agent) (`hermes`) is Nous Research's open-source (MIT), model-agnostic agent — it runs as a CLI/TUI, but also as a gateway that connects the same agent to Telegram, Discord, Slack, WhatsApp, Signal, and email. It leans on a built-in learning loop (skills created and improved from experience, cross-session memory) rather than being a single-shot coding assistant.
+
+*Composio's two cents:* in its [harness benchmark](https://composio.dev/content/best-ai-agent-harnesses) (25 business-app tasks, all 8 harnesses driving the same external Kimi K3 model), Hermes Agent had the **lowest cost per success of any harness tested ($0.46)** and the second-fastest median runtime (164.0s), with an 80% pass rate — third-best in the field, behind Oh My Pi and Kimi Code. A strong efficiency-per-dollar pick, if not quite the top for raw reliability.
+
+**Install on Linux, macOS, WSL2, or Termux:**
+```bash
+curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash
+```
+
+**Install on Windows (PowerShell):**
+```powershell
+iex (irm https://hermes-agent.nousresearch.com/install.ps1)
+```
+The Windows installer bundles Git Bash, Python 3.11, Node.js, ripgrep, and ffmpeg alongside `hermes` itself.
+
+**Install via pip:**
+```bash
+pip install -U hermes-agent
+```
+
+**Install via npm:**
+```bash
+npm install -g hermes-agent
+```
+
+For more information, visit the [Hermes Agent GitHub repository](https://github.com/NousResearch/hermes-agent) and [documentation](https://hermes-agent.nousresearch.com/docs/).
+
+### Configuring Hermes Agent
+
+```bash
+hermes setup    # interactive configuration wizard (auth + default model)
+hermes model    # provider + model selector; also how you add new providers later
+hermes          # start an interactive chat session
+```
+
+Settings persist to `~/.hermes/config.yaml`; secrets can also be kept in `~/.hermes/.env`. `hermes` recognizes dozens of first-class `--provider` values (`nous`, `openrouter`, `openai-api`, `anthropic`, `gemini`, `deepseek`, `ollama-cloud`, `lmstudio`, `bedrock`, and many more), and anything else OpenAI-compatible via a **custom endpoint** — either interactively (`hermes model` → *Custom endpoint*) or directly in `config.yaml`:
+```yaml
+providers:
+  my-gateway:
+    api: https://llm.internal.example.com/v1
+    api_key: "${MY_GATEWAY_API_KEY}"
+```
+Switch providers mid-session with `/model <provider>:<model>` (e.g. `/model custom:local:qwen-2.5`). Hermes auto-detects local endpoints (loopback/private addresses) and relaxes streaming timeouts for them (read timeout raised from 120s to 1800s); for a slow CPU-only backend you can also raise it explicitly:
+```bash
+export HERMES_STREAM_READ_TIMEOUT=1800
+```
+
+### Using Hermes Agent with the Nous Portal / OpenRouter (Online)
+
+The Nous Portal is Hermes' own hosted option — a single subscription covering 300+ models — and is what `hermes setup --portal` OAuths into in one step:
+```bash
+hermes setup --portal
+```
+OpenRouter works the same way as a first-class provider:
+```bash
+hermes model    # choose "openrouter", paste your OpenRouter API key
+```
+
+### Using Hermes Agent with OpenAI
+
+OpenAI is a first-class provider (`--provider openai-api`); select it through the wizard:
+```bash
+hermes model    # choose "openai-api", paste your OPENAI_API_KEY
+```
+or force it per-invocation:
+```bash
+hermes chat --provider openai-api -m gpt-4.1
+```
+
+### Using Hermes Agent with Local LLMs via LM Studio
+
+LM Studio is a first-class provider (`lmstudio`), with JIT model loading, higher context (64K+), and reasoning-effort support built in:
+
+1. Start LM Studio's local server (default port `1234`):
+```bash
+lms server start --port 1234
+```
+2. Load a model with at least ~64K context — Hermes' tool-calling and memory features consume substantial context.
+3. Run `hermes setup` (new install) or `hermes model` (existing install) and select **LM Studio** as the provider; Hermes finds it on `localhost:1234` automatically.
+
+For more detail, see the [LM Studio × Hermes Agent integration guide](https://lmstudio.ai/docs/integrations/hermes).
+
+### Using Hermes Agent with Local LLMs via Ollama
+
+Ollama has no dedicated first-class provider id — it's wired up as a **custom endpoint** at its OpenAI-compatible `/v1` path:
+
+1. Install and start Ollama, then pull a tool-calling-capable model:
+```bash
+curl -fsSL https://ollama.com/install.sh | sh
+ollama pull qwen3-coder:30b    # or another model with tool-call support
+```
+2. Ollama's default 2K context is too small for an agent — raise it (minimum ~64K recommended):
+```bash
+export OLLAMA_CONTEXT_LENGTH=65536
+```
+3. Run `hermes model` (or `hermes setup`) and choose **Custom endpoint**:
+   - **Base URL:** `http://localhost:11434/v1`
+   - **API Key:** leave empty, or `no-key`
+   - **Model:** the tag you pulled, e.g. `qwen3-coder:30b`
+
+   Or edit `~/.hermes/config.yaml` directly:
+```yaml
+model:
+  default: "qwen3-coder:30b"
+  provider: "custom"
+  base_url: "http://localhost:11434/v1"
+```
+4. If you set a custom `num_ctx` on the Ollama side (e.g. via a Modelfile or `ollama run --num_ctx 65536`), set the matching context length on the Hermes side too — Ollama's `/api/show` reports the model's *maximum* context, not the effective `num_ctx` you configured, so Hermes can't infer it automatically:
+```yaml
+providers:
+  custom:
+    models:
+      qwen3-coder:30b:
+        context_length: 65536
+```
+
+**WSL2 note:** if Ollama runs on the Windows host and Hermes runs inside WSL2, either add `networkingMode=mirrored` to `.wslconfig` (Windows 11 22H2+), or bind Ollama to `0.0.0.0` and use the host's WSL-visible IP instead of `localhost`.
+
+### Using Hermes Agent with Mammouth AI
+
+[Mammouth AI](https://mammouth.ai/) is an OpenAI-compatible gateway, so — like Ollama above — it's added as a **custom endpoint** rather than a first-class provider. For account setup and API key instructions, see [PROVIDERS.md — Mammouth AI](./PROVIDERS.md#mammouth-ai).
+
+```yaml
+providers:
+  mammouth:
+    api: https://api.mammouth.ai/v1
+    api_key: "${MAMMOUTH_API_KEY}"
+```
+```bash
+export MAMMOUTH_API_KEY=your-mammouth-api-key
+hermes chat --provider custom:mammouth -m gpt-4.1
+```
+Mammouth AI supports models from multiple providers — for example `claude-sonnet-4-6`, `mistral`, or `deepseek-v3`. For the full model list, visit the [Mammouth AI API documentation](https://info.mammouth.ai/docs/api-quick-start/).
+
+### Troubleshooting (Hermes Agent)
+
+- **Tool calls silently fail or aren't attempted on a local model** — Not every GGUF/model supports tool calling well; prefer a model documented as tool-call capable (e.g. `qwen3-coder`, `gemma4`). On vLLM, tool calling additionally requires `--enable-auto-tool-choice --tool-call-parser hermes`; on `llama-server`, pass `--jinja`.
+- **Requests to a local endpoint time out or drop mid-stream** — Hermes auto-relaxes timeouts for detected local addresses, but a very slow CPU-only backend may still need `HERMES_STREAM_READ_TIMEOUT` raised further (see [Configuring Hermes Agent](#configuring-hermes-agent)).
+- **Context gets truncated on Ollama despite a large `num_ctx`** — Hermes reads Ollama's advertised *maximum* context, not your configured `num_ctx`; set `context_length` explicitly for that model under `providers.custom.models` in `config.yaml`.
+- **Can't reach a local server from WSL2 (or vice versa)** — See the WSL2 networking note under [Using Hermes Agent with Local LLMs via Ollama](#using-hermes-agent-with-local-llms-via-ollama).
+- **`hermes` picks up the wrong config or credentials** — Pass `--ignore-user-config` to skip `~/.hermes/config.yaml` (credentials in `.env` still load), or `--safe-mode` to disable all customizations while debugging.
+
+For the full guide, see the upstream [LLM and Model Providers](https://hermes-agent.nousresearch.com/docs/integrations/providers/) and [Local Models](https://hermes-agent.nousresearch.com/docs/user-guide/local-models) documentation.
+
+## Kilo Code CLI
+
+[Kilo Code](https://kilo.ai/cli) (`kilo`) is the CLI face of the Kilo agentic engineering platform — the same agent also ships as VS Code and JetBrains extensions, sharing config and sessions. It supports 500+ models across providers and multiple built-in modes (Architect, Coder, Debugger).
+
+**Install with npm:**
+```bash
+npm install -g @kilocode/cli
+```
+
+Alternative installs: curl script, pnpm, bun, Homebrew, and the AUR (Arch Linux) are all documented at [kilo.ai/cli](https://kilo.ai/cli). Upgrade in place with:
+```bash
+kilo upgrade
+```
+
+Run `kilo` in a project directory, then use `/connect` for the interactive wizard that configures API keys per provider. Config lives in `~/.config/kilo/kilo.json[c]` (global) or `./kilo.json[c]` / `./.kilo/` (project-level):
+```json
+{
+  "$schema": "https://app.kilo.ai/config.json",
+  "model": "anthropic/claude-sonnet-4-20250514",
+  "provider": {
+    "anthropic": {
+      "options": {
+        "apiKey": "{env:ANTHROPIC_API_KEY}"
+      }
+    }
+  }
+}
+```
+
+For more information, visit the [Kilo Code GitHub repository](https://github.com/Kilo-Org/kilocode) and [CLI documentation](https://kilo.ai/docs/code-with-ai/platforms/cli).
+
+### Using Kilo Code with Local LLMs via LM Studio and Ollama
+
+Any provider — including a local OpenAI-compatible server — is registered under `provider.<provider_id>` in the config file, with models declared under `provider.<provider_id>.models`:
+```jsonc
+{
+  "provider": {
+    "lm-studio": {
+      "options": { "baseURL": "http://localhost:1234/v1", "apiKey": "lm-studio" },
+      "models": { "qwen3-coder-30b-a3b-instruct": {} }
+    },
+    "ollama": {
+      "options": { "baseURL": "http://localhost:11434/v1", "apiKey": "ollama" },
+      "models": { "qwen3-coder:30b": {} }
+    }
+  },
+  "model": "lm-studio/qwen3-coder-30b-a3b-instruct"
+}
+```
+
+### Using Kilo Code with Mammouth AI
+
+[Mammouth AI](https://mammouth.ai/) plugs in the same way, as a named provider. For account setup and API key instructions, see [PROVIDERS.md — Mammouth AI](./PROVIDERS.md#mammouth-ai).
+```jsonc
+{
+  "provider": {
+    "mammouth": {
+      "options": { "baseURL": "https://api.mammouth.ai/v1", "apiKey": "{env:MAMMOUTH_API_KEY}" },
+      "models": { "gpt-4.1": {}, "claude-sonnet-4-6": {}, "deepseek-v3": {} }
+    }
+  },
+  "model": "mammouth/gpt-4.1"
+}
+```
+For the full model list, visit the [Mammouth AI API documentation](https://info.mammouth.ai/docs/api-quick-start/).
+
+## Kimi Code CLI
+
+[Kimi Code](https://github.com/MoonshotAI/kimi-code) (`kimi`) is Moonshot AI's own terminal coding agent, built as the native harness for their Kimi models — reads/edits code, runs shell commands, searches files, fetches web pages, takes video input (drop in a screen recording), and configures MCP servers conversationally via `/mcp-config`. Single-binary distribution — no Node.js required for the standard install.
+
+*Composio's two cents:* in its [harness benchmark](https://composio.dev/content/best-ai-agent-harnesses) (25 business-app tasks, all 8 harnesses driving the same external Kimi K3 model via OpenRouter), Kimi Code posted the **second-highest pass rate (84%)** — but also burned **the most tokens of any harness tested (15.27M across 24 tasks)**. Capable, especially when paired with its own home-team model, but not the lean choice.
+
+**Install on macOS/Linux:**
+```bash
+curl -fsSL https://code.kimi.com/kimi-code/install.sh | bash
+```
+
+**Install on Windows (PowerShell):**
+```powershell
+irm https://code.kimi.com/kimi-code/install.ps1 | iex
+```
+Windows requires Git for Windows first — Kimi Code uses its bundled Git Bash as the shell environment.
+
+**Install via npm:**
+```bash
+npm install -g @moonshot-ai/kimi-code
+```
+
+Run `kimi` in a project directory, then `/login` to authenticate (OAuth device-code flow, or a direct API key from the [Kimi Platform](https://platform.moonshot.ai/)). For more information, visit the [Kimi Code GitHub repository](https://github.com/MoonshotAI/kimi-code) and [documentation](https://moonshotai.github.io/kimi-code/en/guides/getting-started).
+
+### Configuring Kimi Code
+
+Settings live in `~/.kimi-code/config.toml` (TOML, snake_case keys like `default_model`); relocate the whole directory with `KIMI_CODE_HOME`. Kimi Code reads credentials **only** from `config.toml` — a plain `export OPENAI_API_KEY=...` in your shell is not picked up automatically, so put keys directly in the file (or under a provider's `env` sub-table).
+
+### Using Kimi Code with Local LLMs via LM Studio
+
+1. Start LM Studio's local server (default port `1234`) and load a model.
+2. Add a custom OpenAI-compatible provider to `~/.kimi-code/config.toml`:
+```toml
+[providers."lm-studio"]
+type = "openai"
+base_url = "http://localhost:1234/v1"
+api_key = "lm-studio"
+```
+3. Select it as the default model provider (via `default_model`, or interactively if the TUI offers a picker).
+
+### Using Kimi Code with Local LLMs via Ollama
+
+Same pattern, pointed at Ollama's OpenAI-compatible endpoint:
+```toml
+[providers."ollama"]
+type = "openai"
+base_url = "http://localhost:11434/v1"
+api_key = "ollama"
+```
+
+### Using Kimi Code with Mammouth AI
+
+[Mammouth AI](https://mammouth.ai/) is an OpenAI-compatible gateway, so it plugs in the same way. For account setup and API key instructions, see [PROVIDERS.md — Mammouth AI](./PROVIDERS.md#mammouth-ai).
+```toml
+[providers."mammouth"]
+type = "openai"
+base_url = "https://api.mammouth.ai/v1"
+api_key = "your-mammouth-api-key"
+```
+For available model IDs, visit the [Mammouth AI API documentation](https://info.mammouth.ai/docs/api-quick-start/).
+
+## Oh My Pi CLI
+
+[Oh My Pi](https://github.com/can1357/oh-my-pi) (`omp`) is a fork of Mario Zechner's minimal [Pi](#pi-agent-cli) coding agent that adds "everything you're missing": 60+ providers, 31 built-in tools, LSP and DAP integration, and persistent Python/Bun workers that the agent's own tools can call back into over a loopback bridge.
+
+*Composio's two cents:* in its [harness benchmark](https://composio.dev/content/best-ai-agent-harnesses) (25 business-app tasks, all 8 harnesses driving the same external Kimi K3 model via OpenRouter), Oh My Pi came out **on top overall** — the **highest pass rate of any harness tested (88%, 22/25 tasks)** at a low $0.52 cost per success, the strongest balance of reliability and resource use in the whole bake-off.
+
+**Install on macOS/Linux (shell script):**
+```bash
+curl -fsSL https://omp.sh/install | sh
+```
+
+**Install with Homebrew:**
+```bash
+brew install can1357/tap/omp
+```
+
+**Install with Bun (recommended for the npm-style package):**
+```bash
+bun install -g @oh-my-pi/pi-coding-agent
+```
+
+**Install on Windows (PowerShell):**
+```powershell
+irm https://omp.sh/install.ps1 | iex
+```
+
+**Nix:**
+```bash
+nix run github:can1357/oh-my-pi
+# or
+nix profile install github:can1357/oh-my-pi
+```
+
+**Alpine/musl note:** the prebuilt musl binary dynamically links `libstdc++`/`libgcc`, which stock Alpine doesn't ship — install them first: `apk add libstdc++ libgcc`.
+
+For more information, visit the [Oh My Pi GitHub repository](https://github.com/can1357/oh-my-pi).
+
+### Using Oh My Pi with Local LLMs via LM Studio and Ollama
+
+Custom OpenAI-compatible providers — LM Studio, Ollama, llama.cpp, vLLM, LiteLLM, and more are all supported this way — are defined in `~/.omp/agent/models.yml`:
+```yaml
+providers:
+  lm-studio:
+    baseUrl: http://localhost:1234/v1
+    api: openai-completions
+    apiKey: dummy
+    models:
+      - id: qwen3-coder-30b-a3b-instruct
+
+  ollama:
+    baseUrl: http://localhost:11434/v1
+    api: openai-completions
+    apiKey: dummy
+    models:
+      - id: qwen3-coder:30b
+```
+A local instance typically needs only a placeholder `apiKey` — neither LM Studio nor Ollama validates it.
+
+### Using Oh My Pi with Mammouth AI
+
+[Mammouth AI](https://mammouth.ai/) plugs in the same way, as a named provider in `~/.omp/agent/models.yml`. For account setup and API key instructions, see [PROVIDERS.md — Mammouth AI](./PROVIDERS.md#mammouth-ai).
+```yaml
+providers:
+  mammouth:
+    baseUrl: https://api.mammouth.ai/v1
+    api: openai-completions
+    apiKey: "${MAMMOUTH_API_KEY}"
+    models:
+      - id: gpt-4.1
+      - id: claude-sonnet-4-6
+      - id: deepseek-v3
+```
+For the full model list, visit the [Mammouth AI API documentation](https://info.mammouth.ai/docs/api-quick-start/).
+
 ## OpenHands CLI
 
 OpenHands CLI brings AI-powered development assistance directly to your terminal, enabling autonomous coding, debugging, and task execution.
@@ -1497,6 +2088,8 @@ Replace `gpt-4.1` with your preferred Mammouth AI model (e.g., `openai/claude-so
 ## OpenCode CLI
 
 OpenCode CLI is an AI-powered coding assistant that provides a terminal UI (TUI) and command-line interface for code generation, review, and automation.
+
+*Composio's two cents:* in its [harness benchmark](https://composio.dev/content/best-ai-agent-harnesses) (25 business-app tasks, all 8 harnesses driving the same external Kimi K3 model), OpenCode landed at a 72% pass rate and the **highest cost per success of the mid-pack ($0.72)** — it handled genuinely complex, multi-step tasks (e.g. a CRM migration) but showed "mixed guardrail performance" along the way, i.e. it doesn't always stay on the rails as cleanly as the top finishers.
 
 **Install using curl:**
 ```bash
@@ -1703,6 +2296,50 @@ Create or edit `~/.config/opencode/opencode.json`:
 ```
 
 Add or remove models from the `models` block to match your preferences. For the full list of available Mammouth AI model IDs, visit the [Mammouth AI API documentation](https://info.mammouth.ai/docs/api-quick-start/).
+
+## Pi Agent CLI
+
+[Pi](https://github.com/earendil-works/pi) (`pi`, package `@earendil-works/pi-coding-agent`) is a small, opinionated, extensible terminal coding harness — the base project that [Oh My Pi](#oh-my-pi-cli) above forks and extends. It ships four default tools (`read`, `write`, `edit`, `bash`), session management (resume/branch), TypeScript extensions, skills, and prompt templates, and supports 30+ providers (subscriptions like Claude Pro/Max, ChatGPT Plus/Pro, GitHub Copilot, or API keys for OpenAI, DeepSeek, Gemini, Mistral, Groq, and more).
+
+*Composio's two cents:* in its [harness benchmark](https://composio.dev/content/best-ai-agent-harnesses) (25 business-app tasks, all 8 harnesses driving the same external Kimi K3 model), Pi Agent had the **fastest median runtime of any harness tested (156.2s)** and the fewest tokens used, at a 72% pass rate — a deliberately lean harness, trading a bit of reliability for speed and resource efficiency; if that trade-off doesn't work for you, [Oh My Pi](#oh-my-pi-cli) is the same lineage aimed at higher pass rates instead.
+
+**Install via npm:**
+```bash
+npm install -g --ignore-scripts @earendil-works/pi-coding-agent
+```
+
+**Install via curl:**
+```bash
+curl -fsSL https://pi.dev/install.sh | sh
+```
+
+Run `pi`, then authenticate with an environment variable (e.g. `export ANTHROPIC_API_KEY=sk-ant-...`) or interactively with `/login` to pick a provider. Switch models mid-session with `/model`, or launch directly against one: `pi --model openai/gpt-4o "Your request"`. For more information, visit the [Pi GitHub repository](https://github.com/earendil-works/pi) and [documentation](https://pi.dev/docs/latest).
+
+### Using Pi Agent with Local LLMs via LM Studio and Ollama
+
+Pi's built-in `llama.cpp` support (`/login llama.cpp`, then `/llama` to manage models) covers one local path, but LM Studio and Ollama are added as custom OpenAI-compatible providers via a small TypeScript extension — drop this in Pi's extensions directory and it registers on startup:
+```typescript
+export default async function (pi: ExtensionAPI) {
+  pi.registerProvider("lm-studio", {
+    baseUrl: "http://localhost:1234/v1",
+    apiKey: "$LM_STUDIO_API_KEY",
+    api: "openai-completions",
+    models: [{ id: "qwen3-coder-30b-a3b-instruct", contextWindow: 128000, maxTokens: 4096 }]
+  });
+
+  pi.registerProvider("ollama", {
+    baseUrl: "http://localhost:11434/v1",
+    apiKey: "$OLLAMA_API_KEY",
+    api: "openai-completions",
+    models: [{ id: "qwen3-coder:30b", contextWindow: 128000, maxTokens: 4096 }]
+  });
+}
+```
+```bash
+export LM_STUDIO_API_KEY=lm-studio
+export OLLAMA_API_KEY=ollama
+```
+Then select either with `/model lm-studio/qwen3-coder-30b-a3b-instruct` or `/model ollama/qwen3-coder:30b`. The same `pi.registerProvider()` mechanism works for [Mammouth AI](https://mammouth.ai/) — swap in `baseUrl: "https://api.mammouth.ai/v1"` and a real `apiKey` env var; see [PROVIDERS.md — Mammouth AI](./PROVIDERS.md#mammouth-ai) for account setup. Full details are in the [Custom Providers guide](https://pi.dev/docs/latest/custom-provider.md).
 
 ## Qwen CLI
 
