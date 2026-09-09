@@ -39,6 +39,7 @@
     * [Unsloth Studio (Web UI / Server)](#unsloth-studio-web-ui--server)
     * [Unsloth Core (Python Library, for Fine-Tuning)](#unsloth-core-python-library-for-fine-tuning)
     * [Running Models / OpenAI-Compatible API (Unsloth)](#running-models--openai-compatible-api-unsloth)
+    * [Sharing Already-Downloaded LM Studio Models with Unsloth Studio](#sharing-already-downloaded-lm-studio-models-with-unsloth-studio)
   * [llama.cpp Installation](#llamacpp-installation)
     * [macOS (llama.cpp)](#macos-llamacpp)
     * [Linux (llama.cpp)](#linux-llamacpp)
@@ -678,6 +679,32 @@ export OPENAI_API_KEY=sk-unsloth-xxxxxxxxxxxx
 ```
 
 For more information, visit the [Unsloth GitHub repository](https://github.com/unslothai/unsloth) and [Unsloth documentation](https://unsloth.ai/docs).
+
+### Sharing Already-Downloaded LM Studio Models with Unsloth Studio
+
+Unsloth Studio has no built-in "point me at another app's model folder" feature yet — [issue #8568](https://github.com/unslothai/unsloth/issues/8568) is an open feature request (filed August 2026, no PR as of this writing) asking for exactly that, generalized to text/image/audio/video model folders shared across LM Studio, Ollama, ComfyUI, and Forge. Until it lands, a directory symlink works today, because GGUF is just a file format — both apps already use the same on-disk layout:
+
+- **Unsloth Studio** auto-detects local models placed under `~/.unsloth/studio/models` (it also scans your Hugging Face hub cache, but that's a separate, unrelated path — not where LM Studio keeps anything).
+- **LM Studio** stores models at `~/.lmstudio/models/<publisher>/<repo>/<file>.gguf` (see [LM Studio Installation](#lm-studio-installation) above).
+
+Since both use `<publisher>/<repo>/<file>.gguf`, symlinking each publisher folder across bridges them — and new models LM Studio downloads under an already-linked publisher show up in Unsloth Studio automatically, with no extra step:
+
+**macOS/Linux:**
+```bash
+mkdir -p ~/.unsloth/studio/models
+for pub_dir in ~/.lmstudio/models/*/; do
+  ln -s "$pub_dir" ~/.unsloth/studio/models/"$(basename "$pub_dir")"
+done
+```
+
+**Windows (PowerShell):** plain symlinks are often blocked without Developer Mode or admin rights; directory junctions aren't:
+```powershell
+foreach ($pub in Get-ChildItem "$env:USERPROFILE\.lmstudio\models" -Directory) {
+    cmd /c mklink /J "$env:USERPROFILE\.unsloth\studio\models\$($pub.Name)" $pub.FullName
+}
+```
+
+A new publisher LM Studio hasn't downloaded from before needs the loop re-run once. Unsloth Studio's own docs note that GGUF models are **inference-only** — they won't show up as fine-tunable in the Fine-tuned tab, only in the chat/inference model picker, which is the same way LM Studio itself treats them.
 
 ## llama.cpp Installation
 
