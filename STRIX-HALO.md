@@ -17,6 +17,7 @@
     * [What Actually Works on Strix Halo (and What Doesn't)](#what-actually-works-on-strix-halo-and-what-doesnt)
     * [Dynamic GGUF: the Right Default Here](#dynamic-gguf-the-right-default-here)
   * [Recommended Models for a 128GB Strix Halo](#recommended-models-for-a-128gb-strix-halo)
+  * [Fine-Tuning with Unsloth](#fine-tuning-with-unsloth)
   * [Combining with a Second Machine (e.g. a Mac Mini)](#combining-with-a-second-machine-eg-a-mac-mini)
     * [Option 1: More Agents, No Extra Tooling (Recommended Starting Point)](#option-1-more-agents-no-extra-tooling-recommended-starting-point)
     * [Option 2: Asymmetric Task Routing (Small Model on the Mac, Big Model on Strix Halo)](#option-2-asymmetric-task-routing-small-model-on-the-mac-big-model-on-strix-halo)
@@ -91,11 +92,11 @@ It still requires a reboot to take effect, same as editing GRUB directly, but it
 
 Published guides for 128GB Strix Halo boxes allocate anywhere from ~115GB (conservative, ~13GB left for the OS) to ~124GB (aggressive, ~4GB left) to the GPU — leave a headroom amount that matches how you actually use this machine, not a fixed percentage:
 
-| Profile | GPU allocation | Host headroom | `ttm.pages_limit` = `ttm.page_pool_size` |
-|---|---|---|---|
-| Desktop (browser, IDE, etc. running alongside) | 112 GB | 16 GB | `29360128` |
-| Balanced (recommended default) | 120 GB | 8 GB | `31457280` |
-| Dedicated inference box (headless) | 124 GB | 4 GB | `32505856` |
+| Profile                                        | GPU allocation | Host headroom | `ttm.pages_limit` = `ttm.page_pool_size` |
+|------------------------------------------------|----------------|---------------|------------------------------------------|
+| Desktop (browser, IDE, etc. running alongside) | 112 GB         | 16 GB         | `29360128`                               |
+| Balanced (recommended default)                 | 120 GB         | 8 GB          | `31457280`                               |
+| Dedicated inference box (headless)             | 124 GB         | 4 GB          | `32505856`                               |
 
 (The Dedicated row matches a real published 128GB Strix Halo config verbatim — a useful independent sanity check on the formula above. Note this comfortably exceeds the BIOS's 96GB UMA_SPECIFIED ceiling — that's the whole point of using this mechanism instead.)
 
@@ -177,10 +178,10 @@ Rough expectations on this hardware: a 26-27B dense/hybrid model at Q4 cold-load
 
 Everything above builds the **HIP/ROCm backend**. llama.cpp also has a **Vulkan backend** (`-DGGML_VULKAN=ON`) that works on gfx1151 through the open-source RADV/Mesa driver — no ROCm install, no version pinning, no `HSA_OVERRIDE_GFX_VERSION` at all. It's worth knowing about because the performance story between the two is genuinely workload-dependent, not a clean win for either side, and it's changed as both stacks have matured:
 
-| Workload | Winner | Rough margin (varies by model/build) |
-|---|---|---|
-| Prompt processing / prefill (long input: RAG, codebase context, summarization) | **ROCm/HIP** | ~20-48% faster |
-| Token generation / decode (long output: chat, creative writing) | **Vulkan** | ~13-28% faster |
+| Workload                                                                       | Winner       | Rough margin (varies by model/build) |
+|--------------------------------------------------------------------------------|--------------|--------------------------------------|
+| Prompt processing / prefill (long input: RAG, codebase context, summarization) | **ROCm/HIP** | ~20-48% faster                       |
+| Token generation / decode (long output: chat, creative writing)                | **Vulkan**   | ~13-28% faster                       |
 
 In other words: if your workload is "feed it a lot of context, get a short answer," ROCm wins. If it's "short prompt, long generated response," Vulkan wins. Coding agents tend to do a lot of both (large context ingestion *and* long generated diffs/explanations), so there's no universal answer — benchmark your actual workload if it matters to you, or just pick ROCm as the default this document builds around (since the rest of this guide, and [vLLM below](#vllm-on-rocm-for-concurrentthroughput-workloads), is ROCm-based) and reach for a Vulkan build if decode speed on long generations is your bottleneck.
 
@@ -218,11 +219,11 @@ layers × kv_heads × head_dim × 2 (K and V) × bytes_per_element
 ```
 For Qwen3.8-27B's 16 full-attention layers (4 KV heads, head dim 256), that's `16 × 4 × 256 × 2 = 32,768` values/token — 64 KiB/token at 16-bit precision. That scales to:
 
-| Context | KV cache @ FP16 | KV cache @ 8-bit | KV cache @ 4-bit |
-|---|---|---|---|
-| 32K tokens | ~2 GB | ~1 GB | ~0.5 GB |
-| 128K tokens | ~8 GB | ~4 GB | ~2 GB |
-| 262K tokens (native max) | ~16 GB | ~8.5 GB | ~4.5 GB |
+| Context                  | KV cache @ FP16 | KV cache @ 8-bit | KV cache @ 4-bit |
+|--------------------------|-----------------|------------------|------------------|
+| 32K tokens               | ~2 GB           | ~1 GB            | ~0.5 GB          |
+| 128K tokens              | ~8 GB           | ~4 GB            | ~2 GB            |
+| 262K tokens (native max) | ~16 GB          | ~8.5 GB          | ~4.5 GB          |
 
 **The takeaway that matters most for a fixed-memory unified-memory box:** a quant that "fits" at a short prompt can blow your budget the moment you feed it a long document or codebase, because the KV cache — not just the weights — grows with context. On Strix Halo there's no PCIe spillover to fall back on gracefully; you're sharing one memory pool, so an overflow degrades everything on the box, not just the model. This is exactly why `--cache-type-k q8_0 --cache-type-v q8_0` in the [Running a Model](#running-a-model) command above is not a minor detail — quantizing the KV cache is often a bigger lever on usable context length than shaving another bit off the weights.
 
@@ -247,16 +248,26 @@ Look for the `UD-` prefix on Hugging Face (e.g. `UD-Q4_K_XL`, `UD-Q4_K_M`, `UD-Q
 
 This complements — and updates — the hardware-specific recommendations already in [RUNTIMES.md — Recommended Models from Claude](./RUNTIMES.md#recommended-models-from-claude), which targets this exact class of hardware (Ryzen AI Max 300-series / Radeon 8060S, 128GB). With the memory budget from [Sizing the GTT Aperture](#sizing-the-gtt-aperture-for-128gb) above (112-124GB usable), reasonable picks:
 
-| Model | Size on disk (approx.) | Notes |
-|---|---|---|
-| `unsloth/Qwen3.8-27B-GGUF` (`UD-Q6_K_XL` or `UD-Q8_K_XL`) | ~22-29 GB | Hybrid attention, 262K native context — see the KV-cache math above. Huge headroom for context at this size on a 128GB box; a good default for interactive agent use. |
-| `unsloth/Qwen3-Coder-Next-GGUF` (`UD-Q8_K_XL`) | ~85 GB | MoE (80B total, 3B active) — fast decode despite the large total size; comfortable fit at any GTT profile, still leaves real room for a long context. |
-| `Qwen/Qwen3.6-35B-A3B` (MoE, 3B active) | ~24 GB in BF16 | Good middle ground; also the model the vLLM/ROCm toolbox guide below defaults to. |
-| GLM-4.5-Air (~106B, MoE) | Varies by quant | Repeatedly recommended elsewhere in this repo as a strong "daily driver" for 96-128GB-class hardware; even more comfortable at 128GB. |
-| GPT-OSS-120B (`UD-` GGUF, MXFP4) | ~65 GB | High-end pick; at 128GB there's real headroom left for context — check the actual file size against your chosen GTT profile before committing. |
-| Qwen3-235B-A22B (MoE, 22B active) at a low-bit UD quant (~88 GB, `UD-Q2_K_XL`) | ~88 GB | Only realistically fits once you're past 96GB — the extra 32GB on this box specifically opens the door to this one. Tight on context at any GTT profile; use the "Dedicated" profile if you go this route. |
+| Model                                                                          | Size on disk (approx.) | Notes                                                                                                                                                                                                      |
+|--------------------------------------------------------------------------------|------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `unsloth/Qwen3.8-27B-GGUF` (`UD-Q6_K_XL` or `UD-Q8_K_XL`)                      | ~22-29 GB              | Hybrid attention, 262K native context — see the KV-cache math above. Huge headroom for context at this size on a 128GB box; a good default for interactive agent use.                                      |
+| `unsloth/Qwen3-Coder-Next-GGUF` (`UD-Q8_K_XL`)                                 | ~85 GB                 | MoE (80B total, 3B active) — fast decode despite the large total size; comfortable fit at any GTT profile, still leaves real room for a long context.                                                      |
+| `Qwen/Qwen3.6-35B-A3B` (MoE, 3B active)                                        | ~24 GB in BF16         | Good middle ground; also the model the vLLM/ROCm toolbox guide below defaults to.                                                                                                                          |
+| GLM-4.5-Air (~106B, MoE)                                                       | Varies by quant        | Repeatedly recommended elsewhere in this repo as a strong "daily driver" for 96-128GB-class hardware; even more comfortable at 128GB.                                                                      |
+| GPT-OSS-120B (`UD-` GGUF, MXFP4)                                               | ~65 GB                 | High-end pick; at 128GB there's real headroom left for context — check the actual file size against your chosen GTT profile before committing.                                                             |
+| Qwen3-235B-A22B (MoE, 22B active) at a low-bit UD quant (~88 GB, `UD-Q2_K_XL`) | ~88 GB                 | Only realistically fits once you're past 96GB — the extra 32GB on this box specifically opens the door to this one. Tight on context at any GTT profile; use the "Dedicated" profile if you go this route. |
 
 Always check the actual on-disk size and context-length trade-off for the *specific* quant file you pick against the KV-cache table above — "it downloaded" isn't the same as "it fits with the context length you actually need."
+
+## Fine-Tuning with Unsloth
+
+Everything above this point is about *running* models. This box's ROCm setup and 128GB memory budget also make it a legitimately good machine for *training* — and [Unsloth](./RUNTIMES.md#fine-tuning-training--the-one-thing-this-tool-does-that-the-others-cant) is the tool for it, since none of the inference runtimes above (llama.cpp, Ollama, LM Studio, vLLM) can train at all.
+
+**This is officially supported, not an experimental stretch:** Unsloth's own AMD documentation names "Strix Halo powered Ryzen AI Max systems" explicitly, with a published collaboration-with-AMD claim of up to 2x faster training and 70% less VRAM usage versus a naive baseline (benchmarked 1.39x faster / 1.33x less memory on a Llama-3.1-8B LoRA run, no accuracy loss). QLoRA, LoRA, and RL workflows are all covered. Install it the same way as [Unsloth Studio](./RUNTIMES.md#unsloth-studio-web-ui--server) or [Unsloth Core](./RUNTIMES.md#unsloth-core-python-library-for-fine-tuning) in RUNTIMES.md — the installer handles ROCm/PyTorch setup itself.
+
+**What 128GB actually buys you here:** QLoRA fine-tuning is far cheaper than full fine-tuning (you're training small adapter weights against a frozen 4-bit base model, not updating every parameter), which is why people already routinely QLoRA a 30-34B model on a single 24GB Nvidia card. At 128GB unified memory, that headroom extends comfortably to the ~30B-class models this document already recommends for inference — [Qwen3-Coder-Next](#recommended-models-for-a-128gb-strix-halo) or Qwen3.8-27B among them — territory no consumer Nvidia card touches without offloading. The practical loop this enables: fine-tune a model on your own code/conventions/data, export straight to GGUF, and it drops into the exact same `llama-server`/UD-GGUF workflow documented above with zero new serving infrastructure.
+
+**Not yet available for the Mac Mini side of this setup:** Unsloth's own docs are explicit that Apple Silicon (MLX) training is "coming soon," not shipped — today a Mac can only serve/chat with models via Unsloth Studio, not train them. That reinforces rather than complicates the split this document already recommends in [Combining with a Second Machine](#combining-with-a-second-machine-eg-a-mac-mini) below: train here on Strix Halo, run inference on either machine.
 
 ## Combining with a Second Machine (e.g. a Mac Mini)
 
@@ -387,6 +398,7 @@ Notes:
 
 - [RepoCad — quantization deep-dive (YouTube)](https://www.youtube.com/watch?v=vW0KY_8z4q0&list=PLIVW7clnv28ov8Dg_4JKH0oXNRM5jwGI1&index=16) — the numeric-representation/algorithm/container/kernel framework and the KV-cache math in this document are drawn from and cross-checked against this video.
 - [ggml-org/llama.cpp discussion #20856 — Known-Good Strix Halo ROCm + llama.cpp Stack](https://github.com/ggml-org/llama.cpp/discussions/20856) — `GGML_HIP_NO_VMM`, `GGML_HIP_MMQ_MFMA`, and the `-dio` runtime flag.
+- [Unsloth — Train & run models on AMD GPUs](https://unsloth.ai/docs/basics/amd) and [Unsloth Studio announcement (Substack)](https://unslothai.substack.com/p/introducing-unsloth-studio) — explicit Strix Halo/Ryzen AI Max training support, published performance numbers, and confirmation that Apple Silicon MLX training is not yet shipped.
 - [soothill.io — llama.cpp: Vulkan vs ROCm on Strix Halo](https://www.soothill.io/blog/2026/08/03/llamacpp-vulkan-vs-rocm-strix-halo/) — the prefill-vs-decode backend comparison and per-model benchmark numbers.
 - [Gygeek/Framework-strix-halo-llm-setup](https://github.com/Gygeek/Framework-strix-halo-llm-setup) — BIOS/kernel/ROCm/llama.cpp setup for a 128GB Strix Halo box.
 - [LucRoot/Strix-Halo-Linux-Llama_cpp-ROCm](https://github.com/LucRoot/Strix-Halo-Linux-Llama_cpp-ROCm) — pinned ROCm version, build flags, multi-model systemd fleet, KV-cache sizing.

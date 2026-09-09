@@ -40,6 +40,7 @@
     * [Unsloth Core (Python Library, for Fine-Tuning)](#unsloth-core-python-library-for-fine-tuning)
     * [Running Models / OpenAI-Compatible API (Unsloth)](#running-models--openai-compatible-api-unsloth)
     * [Sharing Already-Downloaded LM Studio Models with Unsloth Studio](#sharing-already-downloaded-lm-studio-models-with-unsloth-studio)
+    * [Fine-Tuning (Training) — the One Thing This Tool Does That the Others Can't](#fine-tuning-training--the-one-thing-this-tool-does-that-the-others-cant)
   * [llama.cpp Installation](#llamacpp-installation)
     * [macOS (llama.cpp)](#macos-llamacpp)
     * [Linux (llama.cpp)](#linux-llamacpp)
@@ -707,6 +708,16 @@ foreach ($pub in Get-ChildItem "$env:USERPROFILE\.lmstudio\models" -Directory) {
 ```
 
 A new publisher LM Studio hasn't downloaded from before needs the loop re-run once. Unsloth Studio's own docs note that GGUF models are **inference-only** — they won't show up as fine-tunable in the Fine-tuned tab, only in the chat/inference model picker, which is the same way LM Studio itself treats them.
+
+### Fine-Tuning (Training) — the One Thing This Tool Does That the Others Can't
+
+Every other runtime in this document (LM Studio, Ollama, MLX, EXO, Lemonade, llama.cpp, vLLM) is **inference-only** — they run models, they don't train them. Unsloth is the exception, and it's the reason to actually install it rather than treat it as a third redundant way to serve GGUFs you already run through LM Studio or llama.cpp.
+
+**AMD ROCm (including Strix Halo) is explicitly, officially supported for training**, not just inference: Unsloth's own AMD documentation lists "Strix Halo powered Ryzen AI Max systems" by name alongside Radeon RX 7000/9000 series and Instinct MI300/MI350 datacenter GPUs, across Windows, WSL, and Linux. The collaboration with AMD claims **up to 2x faster training and 70% less VRAM usage** versus a naive baseline, with a published benchmark of 1.39x faster / 1.33x less memory on a Llama-3.1-8B LoRA run — no accuracy loss reported. QLoRA, LoRA, and reinforcement-learning workflows are all supported; the installer (same `curl -fsSL https://unsloth.ai/install.sh | sh` from [Unsloth Studio (Web UI / Server)](#unsloth-studio-web-ui--server) above) handles ROCm and PyTorch setup automatically.
+
+On a 128GB Strix Halo box specifically, that memory budget makes QLoRA fine-tuning of ~30B-class models realistic — see [STRIX-HALO.md — Fine-Tuning with Unsloth](./STRIX-HALO.md#fine-tuning-with-unsloth) for what that looks like against the models this repo already recommends for that hardware, and how a fine-tuned model exports straight back into the existing GGUF workflow.
+
+**Apple Silicon (MLX) training is not yet available** — as of this writing, Unsloth's own docs state plainly: *"MacOS and CPU work for Chat GGUF inference. MLX training coming soon."* Today, a Mac can only serve/chat with models through Unsloth Studio, not train them; that's an announced-but-unshipped feature, not something to plan around yet. (An unofficial third-party project, `mlx-tune` — formerly `unsloth-mlx` — offers Unsloth-style training on MLX today, but it isn't the official Unsloth project and carries the usual caveats of a community tool filling a gap ahead of upstream support.)
 
 ## llama.cpp Installation
 

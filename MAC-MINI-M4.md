@@ -122,6 +122,8 @@ The full breakdown of how to combine this Mac with the Strix Halo box lives in *
 - **[Option 2 — Asymmetric task routing](./STRIX-HALO.md#option-2-asymmetric-task-routing-small-model-on-the-mac-big-model-on-strix-halo):** the recommended way to use this Mac's role deliberately — this Mac serves a fast small model (see the table above) for quick edits/planning, Strix Halo serves the heavy-lifting model, both registered as named providers in the same harness config.
 - **[Option 3 — llama.cpp RPC model sharding](./STRIX-HALO.md#option-3-model-sharding-across-both-machines-llamacpp-rpc):** pooling this Mac's 16GB into a single model spanning both machines. Rarely worth it given how little 16GB adds to Strix Halo's 128GB, but the build/run commands (including the Mac's `-DGGML_METAL=ON` side) are documented there.
 
+**One more asymmetry worth knowing:** if you're considering [Unsloth](./RUNTIMES.md#fine-tuning-training--the-one-thing-this-tool-does-that-the-others-cant) for fine-tuning, that's currently a Strix-Halo-only capability in this pairing — Unsloth's own docs confirm Apple Silicon (MLX) *training* isn't shipped yet ("coming soon"), only MLX/GGUF *inference*. This Mac's role stays inference-only for now; see [STRIX-HALO.md — Fine-Tuning with Unsloth](./STRIX-HALO.md#fine-tuning-with-unsloth) for the training side.
+
 ## Alternative Runtimes: Ollama and LM Studio
 
 Both work identically on a Mac Mini as on any other machine — see [RUNTIMES.md](./RUNTIMES.md) for full install/usage instructions ([Ollama](./RUNTIMES.md#ollama-installation), [LM Studio](./RUNTIMES.md#lm-studio-installation)). Two Mac-specific notes worth calling out:
