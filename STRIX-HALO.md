@@ -1,11 +1,11 @@
-# Strix Halo + ROCm: 96GB Unified Memory LLM Setup
+# Strix Halo + ROCm: 128GB Unified Memory LLM Setup
 
 <!-- TOC -->
-* [Strix Halo + ROCm: 96GB Unified Memory LLM Setup](#strix-halo--rocm-96gb-unified-memory-llm-setup)
+* [Strix Halo + ROCm: 128GB Unified Memory LLM Setup](#strix-halo--rocm-128gb-unified-memory-llm-setup)
   * [The Unified Memory Model (Read This First)](#the-unified-memory-model-read-this-first)
   * [BIOS Configuration](#bios-configuration)
   * [Kernel / GRUB Configuration](#kernel--grub-configuration)
-    * [Sizing the GTT Aperture for 96GB](#sizing-the-gtt-aperture-for-96gb)
+    * [Sizing the GTT Aperture for 128GB](#sizing-the-gtt-aperture-for-128gb)
   * [ROCm Installation](#rocm-installation)
     * [Verifying the GPU Is Visible](#verifying-the-gpu-is-visible)
   * [Building llama.cpp for gfx1151](#building-llamacpp-for-gfx1151)
@@ -15,13 +15,17 @@
     * [KV Cache Math on Hybrid-Attention Models](#kv-cache-math-on-hybrid-attention-models)
     * [What Actually Works on Strix Halo (and What Doesn't)](#what-actually-works-on-strix-halo-and-what-doesnt)
     * [Dynamic GGUF: the Right Default Here](#dynamic-gguf-the-right-default-here)
-  * [Recommended Models for a 96GB Strix Halo](#recommended-models-for-a-96gb-strix-halo)
+  * [Recommended Models for a 128GB Strix Halo](#recommended-models-for-a-128gb-strix-halo)
+  * [Combining with a Second Machine (e.g. a Mac Mini)](#combining-with-a-second-machine-eg-a-mac-mini)
+    * [Option 1: More Agents, No Extra Tooling (Recommended Starting Point)](#option-1-more-agents-no-extra-tooling-recommended-starting-point)
+    * [Option 2: Asymmetric Task Routing (Small Model on the Mac, Big Model on Strix Halo)](#option-2-asymmetric-task-routing-small-model-on-the-mac-big-model-on-strix-halo)
+    * [Option 3: Model Sharding Across Both Machines (llama.cpp RPC)](#option-3-model-sharding-across-both-machines-llamacpp-rpc)
   * [vLLM on ROCm (for Concurrent/Throughput Workloads)](#vllm-on-rocm-for-concurrentthroughput-workloads)
   * [Troubleshooting and Gotchas](#troubleshooting-and-gotchas)
   * [Sources](#sources)
 <!-- TOC -->
 
-This is a hardware-specific companion to [RUNTIMES.md](./RUNTIMES.md) — that document covers local LLM runtimes in general (LM Studio, Ollama, MLX, EXO, Lemonade, Unsloth Studio, llama.cpp, vLLM); this one is about getting the most out of an **AMD Ryzen AI Max+ 300-series ("Strix Halo") APU with 96GB of unified LPDDR5X memory**, on Linux, via ROCm.
+This is a hardware-specific companion to [RUNTIMES.md](./RUNTIMES.md) — that document covers local LLM runtimes in general (LM Studio, Ollama, MLX, EXO, Lemonade, Unsloth Studio, llama.cpp, vLLM); this one is about getting the most out of an **AMD Ryzen AI Max+ 300-series ("Strix Halo") APU with 128GB of unified LPDDR5X memory** (this repo's own BosGameM5 box), on Linux, via ROCm — plus how to put a second machine (e.g. a 16GB Mac Mini M4) to work alongside it.
 
 ## The Unified Memory Model (Read This First)
 
@@ -58,17 +62,19 @@ sudo grub2-mkconfig -o /boot/grub2/grub.cfg
 sudo reboot
 ```
 
-### Sizing the GTT Aperture for 96GB
+### Sizing the GTT Aperture for 128GB
 
 `amdgpu.gttsize` is in **MiB**; `ttm.pages_limit` is in **4KiB pages**, and the two must agree: `pages_limit = gttsize_MiB × 256`.
 
-Published guides for 128GB Strix Halo boxes allocate anywhere from ~115GB (conservative, ~13GB left for the OS) to ~124GB (aggressive, ~4GB left) to the GPU. On a **96GB** box, scale by leaving a similar *absolute* amount of headroom for the host OS rather than a fixed percentage — the OS doesn't need proportionally more RAM just because your box has less of it:
+Published guides for 128GB Strix Halo boxes allocate anywhere from ~115GB (conservative, ~13GB left for the OS) to ~124GB (aggressive, ~4GB left) to the GPU — leave a headroom amount that matches how you actually use this machine, not a fixed percentage:
 
 | Profile | GPU allocation | Host headroom | `gttsize` (MiB) | `ttm.pages_limit` |
 |---|---|---|---|---|
-| Desktop (browser, IDE, etc. running alongside) | 80 GB | 16 GB | `81920` | `20971520` |
-| Balanced (recommended default) | 88 GB | 8 GB | `90112` | `23068672` |
-| Dedicated inference box (headless) | 92 GB | 4 GB | `94208` | `24117248` |
+| Desktop (browser, IDE, etc. running alongside) | 112 GB | 16 GB | `114688` | `29360128` |
+| Balanced (recommended default) | 120 GB | 8 GB | `122880` | `31457280` |
+| Dedicated inference box (headless) | 124 GB | 4 GB | `126976` | `32505856` |
+
+(The Dedicated row matches a real published 128GB Strix Halo config verbatim — a useful independent sanity check on the formula above.)
 
 Start with **Balanced**. Push toward Dedicated only once you're confident nothing else on the box needs headroom — an out-of-memory GPU allocation under ROCm on this platform tends to manifest as a KFD driver hang (spinning, unresponsive), not a clean error, so don't be aggressive on a machine you also use for daily work.
 
@@ -177,7 +183,7 @@ The video (correctly) surveys several 4-bit approaches — but most of them are 
 - **MLX 4-bit affine quantization** — Apple Silicon only, via the unified-memory-but-different `mlx-lm` runtime (see [RUNTIMES.md — MLX](./RUNTIMES.md#mlx-installation-macos-only)). Not usable here.
 - **AMD's own low-precision path is MXFP4 via Quark** — the AMD-side answer to Nvidia's NVFP4, but tooling and model availability for it lags; treat it as emerging rather than the safe default today.
 - **Calibrated INT4 (AWQ/GPTQ/AutoRound), served via vLLM** — this *does* work on ROCm, and is the right choice once you're serving concurrent requests rather than a single interactive session (see [vLLM on ROCm](#vllm-on-rocm-for-concurrentthroughput-workloads) below).
-- **Bonsai 27B (ternary, ~1.71 bits/weight)** — a genuinely different category: it's a from-scratch low-bit *retraining* of Qwen3.6-27B by PrismML (not a post-training quant of Qwen3.8), using custom ternary kernels, at ~5.9GB. It recovers math ability well but shows a real drop in tool-calling and complex instruction-following — worth trying as a curiosity for a phone/tiny-footprint use case, not as your daily driver on a 96GB box that doesn't need to compress that hard.
+- **Bonsai 27B (ternary, ~1.71 bits/weight)** — a genuinely different category: it's a from-scratch low-bit *retraining* of Qwen3.6-27B by PrismML (not a post-training quant of Qwen3.8), using custom ternary kernels, at ~5.9GB. It recovers math ability well but shows a real drop in tool-calling and complex instruction-following — worth trying as a curiosity for a phone/tiny-footprint use case, not as your daily driver on a 128GB box that doesn't need to compress that hard.
 
 ### Dynamic GGUF: the Right Default Here
 
@@ -185,19 +191,99 @@ For llama.cpp on ROCm, **GGUF with per-layer ("dynamic") quantization is the cor
 
 Look for the `UD-` prefix on Hugging Face (e.g. `UD-Q4_K_XL`, `UD-Q4_K_M`, `UD-Q3_K_XL`) under the `unsloth/` org — these are exactly the [Recommended Models](./RUNTIMES.md#recommended-models-for-lm-studio) already called out elsewhere in this repo for LM Studio, and they work identically well through `llama-server` on ROCm.
 
-## Recommended Models for a 96GB Strix Halo
+## Recommended Models for a 128GB Strix Halo
 
-This complements — and updates — the hardware-specific recommendations already in [RUNTIMES.md — Recommended Models from Claude](./RUNTIMES.md#recommended-models-from-claude), which targets this exact class of hardware (Ryzen AI Max 300-series / Radeon 8060S, 96GB). With the memory budget from [Sizing the GTT Aperture](#sizing-the-gtt-aperture-for-96gb) above (80-92GB usable), reasonable picks:
+This complements — and updates — the hardware-specific recommendations already in [RUNTIMES.md — Recommended Models from Claude](./RUNTIMES.md#recommended-models-from-claude), which targets this exact class of hardware (Ryzen AI Max 300-series / Radeon 8060S, 128GB). With the memory budget from [Sizing the GTT Aperture](#sizing-the-gtt-aperture-for-128gb) above (112-124GB usable), reasonable picks:
 
 | Model | Size on disk (approx.) | Notes |
 |---|---|---|
-| `unsloth/Qwen3.8-27B-GGUF` (`UD-Q6_K_XL` or `UD-Q8_K_XL`) | ~22-29 GB | Hybrid attention, 262K native context — see the KV-cache math above. High headroom for context at this size on a 96GB box. |
-| `unsloth/Qwen3-Coder-Next-GGUF` (`UD-Q8_K_XL`) | ~85 GB | MoE (80B total, 3B active) — fast decode despite the large total size; tight fit, use the "Dedicated" GTT profile and a modest context length. |
+| `unsloth/Qwen3.8-27B-GGUF` (`UD-Q6_K_XL` or `UD-Q8_K_XL`) | ~22-29 GB | Hybrid attention, 262K native context — see the KV-cache math above. Huge headroom for context at this size on a 128GB box; a good default for interactive agent use. |
+| `unsloth/Qwen3-Coder-Next-GGUF` (`UD-Q8_K_XL`) | ~85 GB | MoE (80B total, 3B active) — fast decode despite the large total size; comfortable fit at any GTT profile, still leaves real room for a long context. |
 | `Qwen/Qwen3.6-35B-A3B` (MoE, 3B active) | ~24 GB in BF16 | Good middle ground; also the model the vLLM/ROCm toolbox guide below defaults to. |
-| GLM-4.5-Air (~106B, MoE) | Varies by quant | Repeatedly recommended elsewhere in this repo as a strong "daily driver" for 96GB-class hardware. |
-| GPT-OSS-120B (`UD-` GGUF, MXFP4) | ~65 GB | High-end pick; leaves less headroom for context — check actual file size against your chosen GTT profile before committing. |
+| GLM-4.5-Air (~106B, MoE) | Varies by quant | Repeatedly recommended elsewhere in this repo as a strong "daily driver" for 96-128GB-class hardware; even more comfortable at 128GB. |
+| GPT-OSS-120B (`UD-` GGUF, MXFP4) | ~65 GB | High-end pick; at 128GB there's real headroom left for context — check the actual file size against your chosen GTT profile before committing. |
+| Qwen3-235B-A22B (MoE, 22B active) at a low-bit UD quant (~88 GB, `UD-Q2_K_XL`) | ~88 GB | Only realistically fits once you're past 96GB — the extra 32GB on this box specifically opens the door to this one. Tight on context at any GTT profile; use the "Dedicated" profile if you go this route. |
 
 Always check the actual on-disk size and context-length trade-off for the *specific* quant file you pick against the KV-cache table above — "it downloaded" isn't the same as "it fits with the context length you actually need."
+
+## Combining with a Second Machine (e.g. a Mac Mini)
+
+A 16GB Mac Mini M4 and this 128GB Strix Halo box are a genuinely useful pair, but not because you literally glue their memory together into one giant pool — a 16GB contribution is a rounding error next to 128GB, and (as [Option 3](#option-3-model-sharding-across-both-machines-llamacpp-rpc) below explains) combining them that way makes everything run at the speed of your *network link*, not your fastest machine. The two setups that are actually worth doing are running them as **two independent lanes** (more throughput) or **two asymmetric roles** (small/fast + large/capable). Both are things you can wire into the harnesses in [CLI.md](./CLI.md) today with zero extra tooling.
+
+### Option 1: More Agents, No Extra Tooling (Recommended Starting Point)
+
+If what you actually want is "more machines for the agents to run on," you already have that the moment both boxes are each running their own model server:
+
+- **Strix Halo:** `llama-server` (from [Building llama.cpp for gfx1151](#building-llamacpp-for-gfx1151) above) or Ollama, serving on `0.0.0.0:8080` or `0.0.0.0:11434`.
+- **Mac Mini:** MLX (see [RUNTIMES.md — MLX Installation](./RUNTIMES.md#mlx-installation-macos-only)) or Ollama, serving locally or on `0.0.0.0` on its own port.
+
+Point two *separate* instances of any harness from [CLI.md](./CLI.md) at the two endpoints (e.g. `OPENAI_API_BASE=http://<strix-halo-ip>:8080/v1` in one terminal/session, `OPENAI_API_BASE=http://<mac-mini-ip>:1234/v1` — or just `localhost` if you're running the harness on the Mac itself — in another), and you have two fully independent agents working on two different tasks/repos/branches concurrently. No distributed-inference tooling, no shared cluster to keep in sync, no single point of failure — just two ordinary local-LLM setups your agents happen to be pointed at. This is the highest-value, lowest-effort answer to "get more machines for the agents to run on."
+
+### Option 2: Asymmetric Task Routing (Small Model on the Mac, Big Model on Strix Halo)
+
+For "use a smaller LLM on the Mac for some processing and the Strix Halo for the other" specifically: the Mac Mini's 16GB comfortably handles a fast ~7-9B model via MLX (Qwen3.5-9B-class is a commonly recommended fit — see [RUNTIMES.md — Running Models (MLX)](./RUNTIMES.md#running-models-mlx)), while Strix Halo runs whatever large model you picked from the table above. Rather than manually switching endpoints, register **both as named providers in the same harness config** and let the harness (or you, per task) pick which one handles what — this is exactly the multi-provider pattern already documented for several harnesses in [CLI.md](./CLI.md):
+
+```yaml
+# Oh My Pi example (~/.omp/agent/models.yml) — see CLI.md's Oh My Pi CLI section
+providers:
+  mac-fast:
+    baseUrl: http://<mac-mini-ip>:8080/v1   # mlx_lm.server on the Mac
+    api: openai-completions
+    apiKey: dummy
+    models:
+      - id: qwen3.5-9b
+
+  strix-heavy:
+    baseUrl: http://localhost:8080/v1        # llama-server on Strix Halo itself
+    api: openai-completions
+    apiKey: dummy
+    models:
+      - id: qwen3.8-27b
+```
+The same pattern applies to [Kilo Code](./CLI.md#using-kilo-code-with-local-llms-via-lm-studio-and-ollama), [Pi Agent](./CLI.md#using-pi-agent-with-local-llms-via-lm-studio-and-ollama), [Hermes Agent](./CLI.md#using-hermes-agent-with-local-llms-via-lm-studio), [Kimi Code](./CLI.md#using-kimi-code-with-local-llms-via-lm-studio), and [DeepSeek Harness](./CLI.md#using-deepseek-harness-with-local-llms-via-lm-studio) — every one of those already supports multiple named custom providers, so "small model for quick edits/planning, big model for the hard reasoning step" is a config choice, not new infrastructure. Which task goes where is then either a manual `/model` switch, or — for harnesses with an architect/planner + editor split (Aider's `--architect`, Claude Code subagents, Hermes Agent's multi-agent orchestration) — an automatic routing decision the harness already makes for you.
+
+### Option 3: Model Sharding Across Both Machines (llama.cpp RPC)
+
+If you specifically want to pool memory across both machines to run *one* model too big for 128GB alone (rare, but real for some MoE flagships), two tools can theoretically do this — but only one is actually ready today:
+
+- **EXO** (already covered in [RUNTIMES.md — EXO Installation](./RUNTIMES.md#exo-installation)) is built exactly for this and would be the more elegant choice — *except* its Linux backend is still CPU-only as of this writing (no ROCm/Vulkan support upstream; [tracking issue](https://github.com/exo-explore/exo/issues/434)). Combining a Mac (Metal, fast) with a Strix Halo node running EXO on CPU alone would bottleneck badly and waste the iGPU entirely. Don't use EXO for this pairing yet.
+- **llama.cpp's RPC backend** is mature, ROCm-compatible, and the practical choice today. It treats a remote machine as just another device you hand a slice of layers to.
+
+**On the Strix Halo box** (build with `-DGGML_RPC=ON` added to the [existing build command](#building-llamacpp-for-gfx1151)):
+```bash
+cmake -B build -G Ninja \
+  -DGGML_HIP=ON -DAMDGPU_TARGETS=gfx1151 -DGGML_RPC=ON \
+  -DCMAKE_BUILD_TYPE=Release -DGGML_HIP_ROCWMMA_FATTN=ON -DLLAMA_CURL=ON
+cmake --build build -j --target llama-server rpc-server
+```
+
+**On the Mac Mini** (needs the *identical* llama.cpp version/tag — mismatched builds hang at the handshake):
+```bash
+xcode-select --install
+brew install cmake
+git clone https://github.com/ggml-org/llama.cpp && cd llama.cpp
+git checkout <same-tag-as-strix-halo>
+cmake -B build -DGGML_RPC=ON -DGGML_METAL=ON -DCMAKE_BUILD_TYPE=Release
+cmake --build build --target rpc-server -j
+```
+Then start the Mac as an RPC worker (16GB machine, so advertise conservatively):
+```bash
+./build/bin/rpc-server -H 0.0.0.0 -p 50052 -m 12000
+```
+And drive it from Strix Halo as the primary node:
+```bash
+./build/bin/llama-server \
+  -m /path/to/model-too-big-for-128GB-alone.gguf \
+  --rpc <mac-mini-ip>:50052 \
+  -ngl 99 --tensor-split 90,12 \
+  --host 0.0.0.0 --port 8080
+```
+`--tensor-split 90,12` weights the layer split roughly by each machine's free memory (adjust to taste — it does not need to be exact).
+
+**Before you do this, know the tradeoffs:**
+- **`rpc-server` has no authentication.** Only run this on a trusted private network, or tunnel it over Tailscale/WireGuard.
+- **Network quality dominates.** Under ~5ms latency on wired gigabit, overhead is barely noticeable; WiFi has been measured dropping throughput from ~20 tok/s to ~2 tok/s on the same setup. Use Ethernet.
+- **RPC turns "can't run this at all" into "can run this, slowly"** — it does not turn slow into fast, and generation speed bottlenecks at the slowest link in the chain. Given Strix Halo alone already covers most models worth running locally (see the table above), reach for this only when you have a specific model that genuinely doesn't fit in 128GB — for everyday use, [Option 1](#option-1-more-agents-no-extra-tooling-recommended-starting-point) or [Option 2](#option-2-asymmetric-task-routing-small-model-on-the-mac-big-model-on-strix-halo) will serve you better.
 
 ## vLLM on ROCm (for Concurrent/Throughput Workloads)
 
@@ -214,7 +300,7 @@ cd amd-strix-halo-vllm-toolboxes/
 toolbox enter vllm
 ```
 
-Before entering the toolbox, add the GRUB parameters from [Sizing the GTT Aperture](#sizing-the-gtt-aperture-for-96gb) above if you haven't already — vLLM needs the larger GTT aperture exposed the same way llama.cpp does.
+Before entering the toolbox, add the GRUB parameters from [Sizing the GTT Aperture](#sizing-the-gtt-aperture-for-128gb) above if you haven't already — vLLM needs the larger GTT aperture exposed the same way llama.cpp does.
 
 ```bash
 vllm serve Qwen/Qwen3.6-35B-A3B \
@@ -229,7 +315,7 @@ vllm serve Qwen/Qwen3.6-35B-A3B \
 ```
 
 Notes:
-- `--gpu-memory-utilization 0.90` — leave more headroom than the container's own default (0.95) on a 96GB box that's smaller than the 128GB reference systems these container images were built against.
+- `--gpu-memory-utilization 0.90` — a bit more conservative than the container's own default (0.95); this matches the 128GB reference systems these container images were built against, so 0.95 is also fine to try once you've confirmed stability at 0.90.
 - First request after starting the server is slow (Triton kernel compilation); subsequent requests use the cache at `~/.cache/vllm/`.
 - This exposes the same OpenAI-compatible `/v1/chat/completions` API as everything else in [RUNTIMES.md](./RUNTIMES.md) — point any tool from [CLI.md](./CLI.md) at `http://localhost:8000/v1`.
 
@@ -251,5 +337,7 @@ Notes:
 - [kyuz0/amd-strix-halo-vllm-toolboxes](https://github.com/kyuz0/amd-strix-halo-vllm-toolboxes) and [blog.jreb.nl — vLLM on Ryzen AI Max+ 395](https://blog.jreb.nl/2026/04/16/setupv-llmamdryzen-aimax/) — vLLM-on-ROCm container setup.
 - [Unsloth — Dynamic 3.0 GGUFs](https://unsloth.ai/docs/basics/dynamic-3.0-ggufs) and [Qwen3.8 — How to Run Locally](https://unsloth.ai/docs/models/qwen3.8) — dynamic quantization methodology and Qwen3.8-27B specifics.
 - [PrismML — Bonsai 27B](https://prismml.com/news/bonsai-27b) — ternary/1-bit Qwen3.6-27B builds.
+- [sharedllm.org — llama.cpp RPC backend: distributed inference across multiple machines](https://sharedllm.org/blog/llama-cpp-rpc-distributed-inference.html) and [Splitting Llama across two MacBook Pros with llama.cpp RPC](https://sharedllm.org/blog/llama-cpp-rpc-two-macs.html) — RPC backend setup, flags, and measured network-latency impact.
+- [exo-explore/exo issue #434 — ROCm support planned](https://github.com/exo-explore/exo/issues/434) — current status of EXO's (lack of) Linux GPU backend.
 
 This document was assembled from the above sources; none of it was independently benchmarked on the author's own hardware — treat the specific numbers (throughput, exact GTT sizing) as a well-sourced starting point to verify on your own box, not a guarantee.
