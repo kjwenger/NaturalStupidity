@@ -17,6 +17,7 @@
     * [What Actually Works on Strix Halo (and What Doesn't)](#what-actually-works-on-strix-halo-and-what-doesnt)
     * [Dynamic GGUF: the Right Default Here](#dynamic-gguf-the-right-default-here)
   * [Recommended Models for a 128GB Strix Halo](#recommended-models-for-a-128gb-strix-halo)
+  * [Models Built or Tuned Specifically for This Hardware](#models-built-or-tuned-specifically-for-this-hardware)
   * [Fine-Tuning with Unsloth](#fine-tuning-with-unsloth)
   * [Combining with a Second Machine (e.g. a Mac Mini)](#combining-with-a-second-machine-eg-a-mac-mini)
     * [Option 1: More Agents, No Extra Tooling (Recommended Starting Point)](#option-1-more-agents-no-extra-tooling-recommended-starting-point)
@@ -259,6 +260,20 @@ This complements — and updates — the hardware-specific recommendations alrea
 
 Always check the actual on-disk size and context-length trade-off for the *specific* quant file you pick against the KV-cache table above — "it downloaded" isn't the same as "it fits with the context length you actually need."
 
+## Models Built or Tuned Specifically for This Hardware
+
+Beyond generic Dynamic GGUF quants, three genuinely distinct categories of "AMD/Strix-Halo-specific" models and quants exist — ordered from safest/most official to most experimental:
+
+**1. AMD's own Quark MXFP4 checkpoints** (the `amd/` organization on Hugging Face — Qwen3.8-27B, DeepSeek-R1, MiniMax-M2.1, and others), quantized with AMD's own [Quark](https://quark.docs.amd.com/) toolkit specifically for AMD hardware. On Strix Halo specifically: these run through llama.cpp's **Vulkan** backend (not the ROCm/HIP build this document centers on), and **not** through vLLM-ROCm — gfx1151 (RDNA 3.5) has no working MXFP4 kernel there yet, so vLLM falls back to CPU or refuses to compile. In one direct benchmark on this hardware, MXFP4 didn't clearly beat a standard Q4_K_M GGUF (54.5 vs 59.8 tok/s) — worth knowing exists, not an obvious upgrade over what's already in [Recommended Models](#recommended-models-for-a-128gb-strix-halo) above (which already includes an MXFP4 pick, GPT-OSS-120B).
+
+**2. AMD's Instella-MoE** — a model AMD trained from scratch (not just quantized) on their own Instinct MI300X/MI325X hardware using ROCm, Primus, and Miles; 16B total / 2.8B active MoE, with weights, data mixtures, training configs, and inference code all published. The closest thing to a genuinely "AMD-native" model. Two caveats: it ships under a **Research RAIL license** (academic/non-commercial use only — fine to experiment with personally, not something to build a service around), and AMD hasn't published a GGUF or consumer-inference path for it — running it on this box today means converting/quantizing it yourself.
+
+**3. Community "ROCmFP4" GGUF quants + speculative decoding, tuned specifically for gfx1151** — the most eye-catching numbers of the three. Repos like `kingjones777/Qwen3.8-27B-ROCmFP4-STRIX-MTP-GGUF` pair a ROCmFP4-quantized model with a small multi-token-prediction (MTP) draft model for speculative decoding, benchmarked at **30.30 tok/s decode versus ~10.70-13.46 tok/s for a standard Q4_K_M build** — tested on a Ryzen AI Max+ 395, this repo's own hardware. That's a real, substantial speedup, but it comes with two costs worth weighing honestly rather than just chasing the headline number:
+- It requires a **non-mainline "ROCmFPX" fork** of llama.cpp — `ggml types 100-106` used by these files don't exist in upstream llama.cpp, which rejects them outright. That means giving up the officially-maintained build in [Building llama.cpp for gfx1151](#building-llamacpp-for-gfx1151) above, with the usual fork risks: it may lag upstream features, may not stay maintained, and has a much smaller community to troubleshoot with.
+- **No prompt caching** — the fork forces full prompt reprocessing on every turn ("forcing full prompt re-processing due to lack of cache data" is the reported llama.cpp log line) because of how it handles this architecture's hybrid attention. For a single long generation that barely matters. For the **multi-turn, growing-context agentic workflows this whole document — and the CLI harnesses in [CLI.md](./CLI.md) — are built around**, reprocessing the entire conversation from scratch every turn is a real regression, not a footnote. Whether the decode-speed win is worth that trade-off depends entirely on your actual usage pattern: a single big one-shot generation, sure; a long agent session with growing context, probably not.
+
+Treat categories 1 and 2 as low-risk to try alongside your existing setup. Category 3 is a genuinely different (forked, cache-less) stack from everything else in this document — worth trying if raw decode speed on short, one-shot generations matters more to you than agentic multi-turn efficiency, but go in knowing the trade-off rather than discovering it mid-session.
+
 ## Fine-Tuning with Unsloth
 
 Everything above this point is about *running* models. This box's ROCm setup and 128GB memory budget also make it a legitimately good machine for *training* — and [Unsloth](./RUNTIMES.md#fine-tuning-training--the-one-thing-this-tool-does-that-the-others-cant) is the tool for it, since none of the inference runtimes above (llama.cpp, Ollama, LM Studio, vLLM) can train at all.
@@ -398,6 +413,9 @@ Notes:
 
 - [RepoCad — quantization deep-dive (YouTube)](https://www.youtube.com/watch?v=vW0KY_8z4q0&list=PLIVW7clnv28ov8Dg_4JKH0oXNRM5jwGI1&index=16) — the numeric-representation/algorithm/container/kernel framework and the KV-cache math in this document are drawn from and cross-checked against this video.
 - [ggml-org/llama.cpp discussion #20856 — Known-Good Strix Halo ROCm + llama.cpp Stack](https://github.com/ggml-org/llama.cpp/discussions/20856) — `GGML_HIP_NO_VMM`, `GGML_HIP_MMQ_MFMA`, and the `-dio` runtime flag.
+- [amd/Qwen3.8-27B-Quark-AWQ-MXFP4](https://huggingface.co/amd/Qwen3.8-27B-Quark-AWQ-MXFP4) and other `amd/` org models on Hugging Face — AMD's own Quark-quantized MXFP4 checkpoints.
+- [AMD ROCm Blogs — Introducing Instella-MoE](https://rocm.blogs.amd.com/artificial-intelligence/instella-moe/README.html) — AMD's from-scratch open MoE model, architecture, training hardware, and license.
+- [kingjones777/Qwen3.8-27B-ROCmFP4-STRIX-MTP-GGUF](https://huggingface.co/kingjones777/Qwen3.8-27B-ROCmFP4-STRIX-MTP-GGUF) — community ROCmFP4 + MTP speculative decoding quant, benchmarked on Ryzen AI Max+ 395, including the ROCmFPX-fork requirement and the no-prompt-caching caveat.
 - [Unsloth — Train & run models on AMD GPUs](https://unsloth.ai/docs/basics/amd) and [Unsloth Studio announcement (Substack)](https://unslothai.substack.com/p/introducing-unsloth-studio) — explicit Strix Halo/Ryzen AI Max training support, published performance numbers, and confirmation that Apple Silicon MLX training is not yet shipped.
 - [soothill.io — llama.cpp: Vulkan vs ROCm on Strix Halo](https://www.soothill.io/blog/2026/08/03/llamacpp-vulkan-vs-rocm-strix-halo/) — the prefill-vs-decode backend comparison and per-model benchmark numbers.
 - [Gygeek/Framework-strix-halo-llm-setup](https://github.com/Gygeek/Framework-strix-halo-llm-setup) — BIOS/kernel/ROCm/llama.cpp setup for a 128GB Strix Halo box.
