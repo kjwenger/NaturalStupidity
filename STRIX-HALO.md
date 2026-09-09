@@ -35,21 +35,31 @@ This matters because it's the whole reason "how much VRAM do I have" is a *kerne
 
 ## BIOS Configuration
 
-1. **UMA Frame Buffer Size:** set to **512MB**. This is just the small carve-out Linux reports as "VRAM" — it does not limit how much memory the GPU can actually use once the GTT aperture is configured below.
+1. **UMA/Graphics memory allocation:** set to **512MB, or `Auto`** — not the vendor's larger fixed options.
+
+   Many Strix Halo boards, including BOSGAME's M5, expose this as **Advanced → GFX Configuration → iGPU Configuration → UMA_SPECIFIED**, which then unlocks a **UMA Frame Buffer Size** slider — on a 128GB board this typically tops out at **96GB**. That 96GB ceiling is a *fixed, static* carve-out aimed at Windows (where AMD Adrenalin's own "Variable Graphics Memory" slider works the same way, also capped around 96GB on this class of hardware) — it permanently reserves that much RAM for the GPU whether you're using it or not, and 96GB is the hard maximum the BIOS will ever hand out, full stop.
+
+   **On Linux this setting works against you.** Leave `UMA_SPECIFIED` off entirely (back to `Auto`, or the smallest explicit option if `Auto` isn't offered) and let the kernel's TTM/GTT mechanism do the real allocation instead, in [Kernel / GRUB Configuration](#kernel--grub-configuration) below — it can exceed the BIOS's 96GB ceiling (up to ~124GB is realistic, see the sizing table below), costs nothing when idle since it's demand-mapped rather than permanently reserved, and — per AMD's own ROCm docs — carries no performance penalty versus a BIOS-reserved framebuffer, because it's all the same physical LPDDR5X either way.
 2. **IOMMU:** leave enabled unless you have a specific reason not to. Fully disabling it (`amd_iommu=off`) is reported to give a small (~6%) throughput bump on some setups, but it also disables IOMMU-based isolation. A middle ground some ROCm/vLLM setups use instead is **IOMMU passthrough** (`iommu=pt`, set at the kernel/GRUB level below) — keeps IOMMU nominally on while avoiding most of the translation overhead. Pick disable-entirely only if this box is a dedicated inference appliance you don't otherwise care about isolating.
 3. **TDP / power mode:** optional — some guides bump this to 85W for sustained inference throughput on APUs that ship with a lower default.
 
 ## Kernel / GRUB Configuration
 
-You need a reasonably recent kernel (6.16+ recommended; 6.17 is confirmed working). Edit `/etc/default/grub`:
+**Yes, this is the "dynamic" part of the answer:** once the BIOS UMA setting is out of the way, how much memory the GPU can use becomes a Linux kernel parameter, changeable any time by editing GRUB and rebooting — no trip back into BIOS setup required, and no permanent commitment the way the BIOS slider is. It's not a *live/hot* change without a reboot (see the `amd-ttm` tool below for the closest thing to that), but it's a normal `reboot`, not a firmware reconfiguration.
 
+You need a reasonably recent kernel — **6.18+ is recommended** for the current two-parameter approach below (older guides used `amdgpu.gttsize` alone; that parameter is now considered deprecated in favor of the `ttm.*` pair). Check yours:
+```bash
+uname -r
+```
+
+Edit `/etc/default/grub`:
 ```bash
 sudo nano /etc/default/grub
 ```
 
-Add (or extend) `GRUB_CMDLINE_LINUX_DEFAULT`:
+Add (or extend) `GRUB_CMDLINE_LINUX_DEFAULT` — **both `ttm.pages_limit` and `ttm.page_pool_size` must be set to the same value**:
 ```
-GRUB_CMDLINE_LINUX_DEFAULT="quiet splash iommu=pt amdgpu.gttsize=<MiB> ttm.pages_limit=<pages>"
+GRUB_CMDLINE_LINUX_DEFAULT="quiet splash iommu=pt ttm.pages_limit=<pages> ttm.page_pool_size=<pages>"
 ```
 Then regenerate GRUB and reboot:
 ```bash
@@ -62,21 +72,39 @@ sudo grub2-mkconfig -o /boot/grub2/grub.cfg
 sudo reboot
 ```
 
+**A friendlier alternative to hand-editing GRUB:** AMD ships an `amd-ttm` helper as part of `amd-debug-tools`:
+```bash
+sudo apt install pipx
+pipx ensurepath
+pipx install amd-debug-tools
+
+amd-ttm                # query current setting
+sudo amd-ttm --set <NUM>    # set pages_limit + page_pool_size together
+sudo amd-ttm --clear        # revert
+```
+It still requires a reboot to take effect, same as editing GRUB directly, but it handles the arithmetic and keeps both parameters in sync for you.
+
 ### Sizing the GTT Aperture for 128GB
 
-`amdgpu.gttsize` is in **MiB**; `ttm.pages_limit` is in **4KiB pages**, and the two must agree: `pages_limit = gttsize_MiB × 256`.
+`ttm.pages_limit` and `ttm.page_pool_size` are both in **4KiB pages**: `pages = GB × 262144` (1 GB = 262,144 4KiB pages).
 
 Published guides for 128GB Strix Halo boxes allocate anywhere from ~115GB (conservative, ~13GB left for the OS) to ~124GB (aggressive, ~4GB left) to the GPU — leave a headroom amount that matches how you actually use this machine, not a fixed percentage:
 
-| Profile | GPU allocation | Host headroom | `gttsize` (MiB) | `ttm.pages_limit` |
-|---|---|---|---|---|
-| Desktop (browser, IDE, etc. running alongside) | 112 GB | 16 GB | `114688` | `29360128` |
-| Balanced (recommended default) | 120 GB | 8 GB | `122880` | `31457280` |
-| Dedicated inference box (headless) | 124 GB | 4 GB | `126976` | `32505856` |
+| Profile | GPU allocation | Host headroom | `ttm.pages_limit` = `ttm.page_pool_size` |
+|---|---|---|---|
+| Desktop (browser, IDE, etc. running alongside) | 112 GB | 16 GB | `29360128` |
+| Balanced (recommended default) | 120 GB | 8 GB | `31457280` |
+| Dedicated inference box (headless) | 124 GB | 4 GB | `32505856` |
 
-(The Dedicated row matches a real published 128GB Strix Halo config verbatim — a useful independent sanity check on the formula above.)
+(The Dedicated row matches a real published 128GB Strix Halo config verbatim — a useful independent sanity check on the formula above. Note this comfortably exceeds the BIOS's 96GB UMA_SPECIFIED ceiling — that's the whole point of using this mechanism instead.)
 
 Start with **Balanced**. Push toward Dedicated only once you're confident nothing else on the box needs headroom — an out-of-memory GPU allocation under ROCm on this platform tends to manifest as a KFD driver hang (spinning, unresponsive), not a clean error, so don't be aggressive on a machine you also use for daily work.
+
+**Verify after reboot:**
+```bash
+cat /sys/module/ttm/parameters/p* | awk '{print $1 / (1024 * 1024 / 4)}'
+```
+Both lines printed should match, and the number is your effective GPU-accessible memory in GB.
 
 ## ROCm Installation
 
@@ -321,7 +349,8 @@ Notes:
 
 ## Troubleshooting and Gotchas
 
-- **`rocm-smi` shows ~1 GiB VRAM and you're worried the setup is broken.** It isn't — see [The Unified Memory Model](#the-unified-memory-model-read-this-first). Check `amdgpu.gttsize` instead.
+- **`rocm-smi` shows ~1 GiB VRAM and you're worried the setup is broken.** It isn't — see [The Unified Memory Model](#the-unified-memory-model-read-this-first). Check `/sys/module/ttm/parameters/pages_limit` instead (see [Sizing the GTT Aperture](#sizing-the-gtt-aperture-for-128gb) for the verification command).
+- **BIOS shows a 96GB (or similar) "UMA Frame Buffer" option and you're not sure whether to use it.** Don't — see [BIOS Configuration](#bios-configuration). It's a static, Windows-oriented cap; the `ttm.pages_limit`/`ttm.page_pool_size` kernel parameters can exceed it and are the correct mechanism on Linux.
 - **The box hangs/spins instead of erroring on an out-of-memory load.** This is a known Strix Halo/KFD-driver failure mode when the GTT aperture is exceeded — there's no graceful spillover. Use `--no-mmap`, pick a smaller quant or shorter context, and consider a cgroup memory budget if you're running multiple models.
 - **Don't launch `llama-server`/`vllm serve` in a detached/backgrounded shell you then close.** Both guides sourced for this document explicitly warn this creates an orphaned process that still owns the port, GPU memory, and model state — use a proper systemd unit or a terminal multiplexer (tmux/screen) instead.
 - **GPU resets on experimental backends.** If the GPU resets, find and kill the actual owning process before restarting anything else — check `ps -eo pid,ppid,lstart,cmd --forest`, `ss -ltnp`, and `journalctl -k --since '-15 minutes' | grep -iE 'amdgpu|reset|fault'`.
@@ -339,5 +368,8 @@ Notes:
 - [PrismML — Bonsai 27B](https://prismml.com/news/bonsai-27b) — ternary/1-bit Qwen3.6-27B builds.
 - [sharedllm.org — llama.cpp RPC backend: distributed inference across multiple machines](https://sharedllm.org/blog/llama-cpp-rpc-distributed-inference.html) and [Splitting Llama across two MacBook Pros with llama.cpp RPC](https://sharedllm.org/blog/llama-cpp-rpc-two-macs.html) — RPC backend setup, flags, and measured network-latency impact.
 - [exo-explore/exo issue #434 — ROCm support planned](https://github.com/exo-explore/exo/issues/434) — current status of EXO's (lack of) Linux GPU backend.
+- [AMD ROCm documentation — Strix Halo system optimization](https://rocm.docs.amd.com/en/docs-7.2.0/how-to/system-optimization/strixhalo.html) — AMD's own guidance on BIOS UMA sizing vs. `ttm.pages_limit`/`ttm.page_pool_size`, the `amd-ttm` helper, and minimum kernel version.
+- [dev.webonomic.nl — Setting up unified memory for Strix Halo correctly on Ubuntu 25.04/25.10](https://dev.webonomic.nl/setting-up-unified-memory-for-strix-halo-correctly-on-ubuntu-25-04-or-25-10) — exact `ttm.pages_limit`/`ttm.page_pool_size` GRUB values and verification command.
+- [BOSGAME — Mini PC VRAM: why the number looks wrong](https://www.bosgame.com/blogs/news/mini-pc-vram-why-the-number-looks-wrong) and [ServeTheHome — Bosgame M5 review](https://www.servethehome.com/bosgame-m5-amd-ryzen-ai-max-395-128gb-ai-desktop-review/) — BOSGAME M5's BIOS `UMA_SPECIFIED`/UMA Frame Buffer Size option and its 96GB ceiling on the 128GB configuration.
 
 This document was assembled from the above sources; none of it was independently benchmarked on the author's own hardware — treat the specific numbers (throughput, exact GTT sizing) as a well-sourced starting point to verify on your own box, not a guarantee.
