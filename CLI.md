@@ -109,6 +109,8 @@
     * [Using Warp with Mammouth AI](#using-warp-with-mammouth-ai)
 <!-- TOC -->
 
+Every "Using [Tool] with Local LLMs via LM Studio/Ollama" section below assumes a generic `localhost:1234`/`localhost:11434` setup. If you're pointing one of these tools at this repo's own hardware, see the dedicated hardware guides instead: **[STRIX-HALO.md](./STRIX-HALO.md)** (AMD Ryzen AI Max+ "Strix Halo", 128GB) and **[MAC-MINI-M4.md](./MAC-MINI-M4.md)** (Mac Mini M4, 16GB) — both cover the runtime setup those generic sections don't (GPU memory sizing, ROCm/MLX install, model picks for that hardware, exposing the server on your network).
+
 ## Discovering New AI CLI Tools
 
 The AI CLI landscape is rapidly evolving. To stay up-to-date with the latest and most popular tools:
