@@ -712,6 +712,8 @@ A new publisher LM Studio hasn't downloaded from before needs the loop re-run on
 
 [llama.cpp](https://github.com/ggml-org/llama.cpp) is the C/C++ LLM inference engine that most of the GGUF-based tooling in this document is actually built on — LM Studio's local server, Ollama's engine, and the `llama.cpp` backend several harnesses in [CLI.md](./CLI.md) call out by name (Hermes Agent's Mac guide, Pi Agent's built-in `/login llama.cpp` support, Oh My Pi's and Hermes Agent's lists of supported local servers) are all running it, or something derived from it, under the hood. Running it directly gives you the least abstraction and the widest hardware support (CPU, CUDA, Metal, Vulkan, ROCm, SYCL) of anything in this document.
 
+**Why build it yourself instead of just using LM Studio or Ollama?** Both of those already bundle a llama.cpp build, and for most people that's the right call — less setup, a GUI or simple CLI, automatic updates. Reach for building it directly when you need something they don't expose: hardware-specific build flags tuned for a particular GPU target (see the ROCm/gfx1151 case below), the very latest upstream model support before it lands in a packaged release, the `rpc-server` distributed-inference backend (see [STRIX-HALO.md — Option 3](./STRIX-HALO.md#option-3-model-sharding-across-both-machines-llamacpp-rpc)), or just wanting to know exactly what's running your models.
+
 ### macOS (llama.cpp)
 
 ```bash
@@ -739,6 +741,8 @@ cmake -B build -DGGML_HIP=ON
 cmake --build build --config Release -j
 ```
 Binaries land under `build/bin/` (`llama-cli`, `llama-server`, and others).
+
+**AMD ROCm note:** the bare `-DGGML_HIP=ON` above builds for cmake's auto-detected GPU target, which is not reliable on every AMD GPU — on this repo's own Strix Halo (gfx1151) box it needs an explicit `-DAMDGPU_TARGETS=gfx1151` plus several other stability/performance flags, a pinned ROCm version, and a `HSA_OVERRIDE_GFX_VERSION` override to be recognized correctly at all. It's also not automatically the fastest choice — llama.cpp's Vulkan backend beats ROCm on this hardware for some workloads. See [STRIX-HALO.md — Building llama.cpp for gfx1151](./STRIX-HALO.md#building-llamacpp-for-gfx1151) and [ROCm vs Vulkan: Which Backend?](./STRIX-HALO.md#rocm-vs-vulkan-which-backend) for the full picture if you're on that hardware specifically.
 
 ### Windows (llama.cpp)
 

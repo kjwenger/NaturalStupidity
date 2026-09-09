@@ -10,6 +10,7 @@
     * [Verifying the GPU Is Visible](#verifying-the-gpu-is-visible)
   * [Building llama.cpp for gfx1151](#building-llamacpp-for-gfx1151)
   * [Running a Model](#running-a-model)
+  * [ROCm vs Vulkan: Which Backend?](#rocm-vs-vulkan-which-backend)
   * [Quantization Strategy: Why "4-bit" Isn't One Thing](#quantization-strategy-why-4-bit-isnt-one-thing)
     * [Four Concepts That Get Mixed Up](#four-concepts-that-get-mixed-up)
     * [KV Cache Math on Hybrid-Attention Models](#kv-cache-math-on-hybrid-attention-models)
@@ -141,12 +142,14 @@ cmake -B build -G Ninja \
   -DAMDGPU_TARGETS=gfx1151 \
   -DCMAKE_BUILD_TYPE=Release \
   -DGGML_HIP_ROCWMMA_FATTN=ON \
+  -DGGML_HIP_NO_VMM=ON \
+  -DGGML_HIP_MMQ_MFMA=ON \
   -DLLAMA_CURL=ON
 
 cmake --build build -j --target llama-server
 ```
 
-`HSA_OVERRIDE_GFX_VERSION=11.5.1` is required — without it, ROCm doesn't correctly recognize gfx1151 hardware. Export both `ROCM_HOME` and `HSA_OVERRIDE_GFX_VERSION` in every shell (or a systemd unit's `Environment=`) that runs `llama-server`, not just the build shell.
+`HSA_OVERRIDE_GFX_VERSION=11.5.1` is required — without it, ROCm doesn't correctly recognize gfx1151 hardware. `-DAMDGPU_TARGETS=gfx1151` is mandatory too — don't rely on cmake's default target detection. `-DGGML_HIP_NO_VMM=ON` is specifically called out by community testing as important for stability on this platform, and `-DGGML_HIP_MMQ_MFMA=ON` improves matmul performance. Export both `ROCM_HOME` and `HSA_OVERRIDE_GFX_VERSION` in every shell (or a systemd unit's `Environment=`) that runs `llama-server`, not just the build shell.
 
 ## Running a Model
 
@@ -157,17 +160,38 @@ export AMD_SERIALIZE_KERNEL=3   # helps surface real errors instead of silent co
 
 ./build/bin/llama-server \
   -m /path/to/your-model-Q4.gguf \
-  -ngl 99 -c 32768 --host 0.0.0.0 --port 8080 \
+  -ngl 99 -c 32768 --host 0.0.0.0 --port 8080 -dio \
   --no-mmap --flash-attn on --cache-type-k q8_0 --cache-type-v q8_0
 ```
 
 Notes on the flags:
 - `-ngl 99` — offload all layers to GPU.
+- `-dio` (direct I/O) — reported as effectively required for models larger than ~6GB on this HIP build; without it, loading a large model can hang rather than fail cleanly. Given every model in [Recommended Models](#recommended-models-for-a-128gb-strix-halo) below is well past that threshold, treat this as non-optional here.
 - `--no-mmap` — recommended on Strix Halo for GPU backends, and close to mandatory for MoE/hybrid models under memory pressure; without it (and without a cgroup memory budget), overflowing the GTT aperture has been observed to cause KFD driver thrashing rather than a clean failure.
 - `--flash-attn on` — required if you use `--cache-type-v q8_0` (quantized V-cache needs flash attention).
 - `--cache-type-k q8_0 --cache-type-v q8_0` — 8-bit KV cache; see the [quantization](#kv-cache-math-on-hybrid-attention-models) section below for why this matters more than the weight quant on a long-context hybrid model.
 
 Rough expectations on this hardware: a 26-27B dense/hybrid model at Q4 cold-loads in roughly 20-40 seconds; expect single-digit-to-teens tokens/sec on 70B-class dense models fully resident in the unified memory pool, faster on MoE/hybrid architectures where only a fraction of parameters are active per token.
+
+## ROCm vs Vulkan: Which Backend?
+
+Everything above builds the **HIP/ROCm backend**. llama.cpp also has a **Vulkan backend** (`-DGGML_VULKAN=ON`) that works on gfx1151 through the open-source RADV/Mesa driver — no ROCm install, no version pinning, no `HSA_OVERRIDE_GFX_VERSION` at all. It's worth knowing about because the performance story between the two is genuinely workload-dependent, not a clean win for either side, and it's changed as both stacks have matured:
+
+| Workload | Winner | Rough margin (varies by model/build) |
+|---|---|---|
+| Prompt processing / prefill (long input: RAG, codebase context, summarization) | **ROCm/HIP** | ~20-48% faster |
+| Token generation / decode (long output: chat, creative writing) | **Vulkan** | ~13-28% faster |
+
+In other words: if your workload is "feed it a lot of context, get a short answer," ROCm wins. If it's "short prompt, long generated response," Vulkan wins. Coding agents tend to do a lot of both (large context ingestion *and* long generated diffs/explanations), so there's no universal answer — benchmark your actual workload if it matters to you, or just pick ROCm as the default this document builds around (since the rest of this guide, and [vLLM below](#vllm-on-rocm-for-concurrentthroughput-workloads), is ROCm-based) and reach for a Vulkan build if decode speed on long generations is your bottleneck.
+
+**Building the Vulkan alternative** (much simpler — no ROCm dependency at all):
+```bash
+sudo apt install libvulkan-dev glslc
+
+cmake -B build-vulkan -G Ninja -DGGML_VULKAN=ON -DCMAKE_BUILD_TYPE=Release
+cmake --build build-vulkan -j --target llama-server
+```
+Run it the same way as the HIP build (same `llama-server` flags); no `ROCM_HOME`/`HSA_OVERRIDE_GFX_VERSION` needed. Keep the two builds in separate directories (`build` vs `build-vulkan`) if you want both available.
 
 ## Quantization Strategy: Why "4-bit" Isn't One Thing
 
@@ -362,6 +386,8 @@ Notes:
 ## Sources
 
 - [RepoCad — quantization deep-dive (YouTube)](https://www.youtube.com/watch?v=vW0KY_8z4q0&list=PLIVW7clnv28ov8Dg_4JKH0oXNRM5jwGI1&index=16) — the numeric-representation/algorithm/container/kernel framework and the KV-cache math in this document are drawn from and cross-checked against this video.
+- [ggml-org/llama.cpp discussion #20856 — Known-Good Strix Halo ROCm + llama.cpp Stack](https://github.com/ggml-org/llama.cpp/discussions/20856) — `GGML_HIP_NO_VMM`, `GGML_HIP_MMQ_MFMA`, and the `-dio` runtime flag.
+- [soothill.io — llama.cpp: Vulkan vs ROCm on Strix Halo](https://www.soothill.io/blog/2026/08/03/llamacpp-vulkan-vs-rocm-strix-halo/) — the prefill-vs-decode backend comparison and per-model benchmark numbers.
 - [Gygeek/Framework-strix-halo-llm-setup](https://github.com/Gygeek/Framework-strix-halo-llm-setup) — BIOS/kernel/ROCm/llama.cpp setup for a 128GB Strix Halo box.
 - [LucRoot/Strix-Halo-Linux-Llama_cpp-ROCm](https://github.com/LucRoot/Strix-Halo-Linux-Llama_cpp-ROCm) — pinned ROCm version, build flags, multi-model systemd fleet, KV-cache sizing.
 - [soothill.io — ROCm on Strix Halo: setup and recovery](https://www.soothill.io/blog/2026/08/03/rocm-on-strix-halo-without-folklore/) — unified-memory model explanation, service-ownership and GPU-reset gotchas.
