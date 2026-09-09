@@ -31,13 +31,26 @@
     * [Bash Completion on Linux (DeepSeek)](#bash-completion-on-linux-deepseek)
     * [Using DeepSeek with Local LLMs via LM Studio](#using-deepseek-with-local-llms-via-lm-studio)
     * [Using DeepSeek with Mammouth AI](#using-deepseek-with-mammouth-ai)
+  * [DeepSeek Harness CLI](#deepseek-harness-cli)
+    * [Configuring DeepSeek Harness](#configuring-deepseek-harness)
+    * [Using DeepSeek Harness with the DeepSeek Cloud API](#using-deepseek-harness-with-the-deepseek-cloud-api)
+    * [Using DeepSeek Harness with OpenAI](#using-deepseek-harness-with-openai)
+    * [Using DeepSeek Harness with Local LLMs via LM Studio](#using-deepseek-harness-with-local-llms-via-lm-studio)
+    * [Using DeepSeek Harness with Local LLMs via Ollama](#using-deepseek-harness-with-local-llms-via-ollama)
+    * [Using DeepSeek Harness with Mammouth AI](#using-deepseek-harness-with-mammouth-ai)
+    * [Troubleshooting (DeepSeek Harness)](#troubleshooting-deepseek-harness)
   * [Factory CLI](#factory-cli)
     * [Using Factory with Local LLMs via LM Studio](#using-factory-with-local-llms-via-lm-studio)
     * [Using Factory with Mammouth AI](#using-factory-with-mammouth-ai)
-  * [Gemini CLI](#gemini-cli)
+  * [Gemini CLI (Deprecated)](#gemini-cli-deprecated)
     * [Bash Completion on Linux (Gemini)](#bash-completion-on-linux-gemini)
     * [Using Gemini with Local LLMs via LM Studio](#using-gemini-with-local-llms-via-lm-studio)
     * [Using Gemini with Mammouth AI](#using-gemini-with-mammouth-ai)
+  * [Antigravity CLI](#antigravity-cli)
+    * [Migrating from Gemini CLI](#migrating-from-gemini-cli)
+    * [Authentication](#authentication-antigravity)
+    * [Using Antigravity with Local LLMs via LM Studio](#using-antigravity-with-local-llms-via-lm-studio)
+    * [Using Antigravity with Mammouth AI](#using-antigravity-with-mammouth-ai)
   * [Grok CLI](#grok-cli)
     * [Using Grok with Local LLMs via LM Studio](#using-grok-with-local-llms-via-lm-studio)
     * [Using Grok with Mammouth AI](#using-grok-with-mammouth-ai)
@@ -915,6 +928,161 @@ export OPENAI_API_KEY=your-mammouth-api-key
 
 **Note:** Exact environment variable support varies by DeepSeek CLI version. If the above does not work, check the [DeepSeek CLI GitHub repository](https://github.com/holasoymalva/deepseek-cli) for the current configuration options for custom base URLs.
 
+## DeepSeek Harness CLI
+
+[DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (`dsh`) is a separate, unrelated project from the [DeepSeek CLI](#deepseek-cli) above — an open-source, plugin-based agent framework built on DeepSeek's Cordis composability framework. Rather than a chat-only terminal REPL, it runs a local Web UI. The project is currently in **developer preview**, so expect rapid, potentially compatibility-breaking changes.
+
+**Run instantly with npx (no installation required):**
+```bash
+npx @deepseek-ai/dsh web
+```
+This launches the Web UI at `http://127.0.0.1:3080` and opens it in your default browser. Pass `--no-open` to start the server without launching a browser (useful on a headless box reached over SSH port-forwarding).
+
+**Install from source:**
+```bash
+git clone https://github.com/deepseek-ai/deepseek-harness.git
+cd deepseek-harness
+pnpm install
+pnpm run build
+pnpm dsh web
+```
+Requires Node.js and [pnpm](https://pnpm.io/).
+
+For more information, visit the [DeepSeek Harness GitHub repository](https://github.com/deepseek-ai/deepseek-harness) and its [documentation site](https://deepseek-harness.github.io/deepseek-harness/).
+
+### Configuring DeepSeek Harness
+
+DeepSeek's own API, OpenAI, and any local/self-hosted OpenAI-compatible server are all configured the same way, from **Settings → Models** in the Web UI:
+
+- **Add provider** installs one of the providers `dsh` ships with (provider ids such as `anthropic`, `openai`, `moonshotai` for Kimi, or `zai` for GLM) — just supply its API key; the installed catalog supplies the endpoint, protocol, and model list.
+- **Add a custom provider** is for anything else: a company gateway, a self-hosted server, or a local LLM runner like LM Studio or Ollama. It needs a lowercase Provider ID, a base URL, an API protocol (`openai-completions` for OpenAI Chat Completions, `openai-responses` for the OpenAI Responses API, or `anthropic-messages` for the Anthropic Messages API), a credential, and at least one model. Use **Fetch available models** under **Model catalog** to auto-discover the model list from the endpoint's `GET /models`, or add model ids by hand if discovery doesn't work.
+
+API keys entered through the UI are stored in `$DSH_HOME/.credentials.yaml` (`$DSH_HOME` defaults to `~/.dsh`); `settings.yaml` (`$DSH_HOME/settings.yaml`) retains only a credential reference (`apiKeyEnv`, an environment-variable name). Fields the Web UI form doesn't expose — reasoning-effort levels, image input (`input: [text, image]`), request-compatibility switches (`compat.*`) — are set by editing `$DSH_HOME/settings.yaml` directly, or via **Open configuration file** in the Settings header when the browser runs on the same machine as the server. The adapters re-read the file on the next request, so nothing needs a restart.
+
+### Using DeepSeek Harness with the DeepSeek Cloud API
+
+Open **Settings → Models** and enter your API key on the DeepSeek card. Get a key from the [DeepSeek Platform](https://platform.deepseek.com/api_keys). The key is read from the `DEEPSEEK_API_KEY` environment variable (and, for a non-default endpoint, `DEEPSEEK_BASE_URL`).
+
+To set the default reasoning effort the model picker starts from, edit `$DSH_HOME/settings.yaml`:
+```yaml
+llm-deepseek:
+  reasoningEffort: max   # off | low | high | max
+```
+
+### Using DeepSeek Harness with OpenAI
+
+Choose **Add provider** and pick `openai` from the built-in catalog, then supply a credential backed by `OPENAI_API_KEY`. This talks to OpenAI's own Chat Completions/Responses endpoints without needing a custom provider.
+
+To route OpenAI through a proxy or gateway instead, add a **custom provider** (or edit `$DSH_HOME/settings.yaml`):
+```yaml
+llm-pi-ai:
+  providers:
+    openai:
+      apiKeyEnv: OPENAI_API_KEY
+      api: openai-responses      # or openai-completions
+      baseURL: https://api.openai.com/v1
+      models:
+        - id: gpt-4.1
+```
+
+### Using DeepSeek Harness with Local LLMs via LM Studio
+
+LM Studio's local server speaks the OpenAI Chat Completions protocol, so it is added as a custom provider:
+
+1. Start LM Studio and load your preferred model.
+2. Enable the Local Server feature in LM Studio (default port `1234`).
+3. In the Web UI, choose **Add a custom provider** (or edit `$DSH_HOME/settings.yaml` directly):
+```yaml
+llm-pi-ai:
+  providers:
+    lm-studio:
+      apiKeyEnv: LM_STUDIO_API_KEY
+      api: openai-completions
+      baseURL: http://localhost:1234/v1
+      models:
+        - id: qwen3-coder-30b-a3b-instruct
+        - id: openai/gpt-oss-120b
+```
+4. Export a value for the credential env var — LM Studio itself doesn't check it, but `dsh` still requires the referenced variable to be set or it refuses the request with `MISSING_CREDENTIAL`:
+```bash
+export LM_STUDIO_API_KEY=lm-studio
+```
+5. Select the model from the picker, or use **Fetch available models** to pull LM Studio's currently-loaded model list automatically. Replace the model ids above with whatever you've actually loaded.
+
+If LM Studio refuses requests from a reasoning-capable model (its system prompt sent as the `developer` role, or an output cap it doesn't recognize), add compatibility switches to the route:
+```yaml
+      compat:
+        supportsDeveloperRole: false
+        maxTokensField: max_tokens
+```
+
+### Using DeepSeek Harness with Local LLMs via Ollama
+
+Ollama also exposes an OpenAI-compatible endpoint, at `/v1` on its default port `11434`:
+
+1. Install and start Ollama:
+```bash
+# macOS
+brew install ollama
+# Linux
+curl -fsSL https://ollama.ai/install.sh | sh
+
+ollama serve
+```
+2. Pull a model:
+```bash
+ollama pull deepseek-coder:6.7b     # or qwen2.5-coder, deepseek-r1, etc.
+```
+3. Add it as a custom provider in `$DSH_HOME/settings.yaml`:
+```yaml
+llm-pi-ai:
+  providers:
+    ollama:
+      apiKeyEnv: OLLAMA_API_KEY
+      api: openai-completions
+      baseURL: http://localhost:11434/v1
+      models:
+        - id: deepseek-coder:6.7b
+```
+4. Export a dummy credential (Ollama ignores it, but `dsh` still needs the env var set):
+```bash
+export OLLAMA_API_KEY=ollama
+```
+
+**Docker note:** if `dsh web` runs inside a container while Ollama runs on the host, use `http://host.docker.internal:11434/v1` instead of `localhost`.
+
+### Using DeepSeek Harness with Mammouth AI
+
+[Mammouth AI](https://mammouth.ai/) is an OpenAI-compatible cloud gateway, so it plugs in the same way as a local server — just with a cloud `baseURL` and a real key. For account setup and API key instructions, see [PROVIDERS.md — Mammouth AI](./PROVIDERS.md#mammouth-ai).
+
+```yaml
+llm-pi-ai:
+  providers:
+    mammouth:
+      apiKeyEnv: MAMMOUTH_API_KEY
+      api: openai-completions
+      baseURL: https://api.mammouth.ai/v1
+      models:
+        - id: gpt-4.1
+        - id: claude-sonnet-4-6
+        - id: deepseek-v3
+```
+```bash
+export MAMMOUTH_API_KEY=your-mammouth-api-key
+```
+For the full list of available model IDs, visit the [Mammouth AI API documentation](https://info.mammouth.ai/docs/api-quick-start/).
+
+### Troubleshooting (DeepSeek Harness)
+
+- **`MISSING_CREDENTIAL`** — Store the provider key through the Models page, or export the environment variable named in `apiKeyEnv` (LM Studio and Ollama don't validate it, but `dsh` still requires it to be set).
+- **`UNKNOWN_MODEL`** — Select a configured model, or add the missing model id to the custom provider's `models` list.
+- **Fetching available models returns 401** — Check the key. Discovery calls the OpenAI-compatible `GET /models`; enter models by hand for endpoints (including some Ollama versions) that don't provide it.
+- **Fetching available models reports neither a `data` array nor a `models` object** — The endpoint's listing format isn't one discovery reads. Enter the models by hand instead.
+- **The gateway refuses every request although the key and URL are right** — Its request shape differs from OpenAI's. Start with `compat.supportsDeveloperRole: false` and `compat.maxTokensField: max_tokens` on the route.
+- **Only reasoning models fail** — pi-ai sends their system prompt as the `developer` role, which the gateway rejects. Set `compat.supportsDeveloperRole: false`.
+
+For the full guide (image input, reasoning-effort mapping, more compat switches), see the upstream [Configure models guide](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/user/guide/providers.md).
+
 ## Factory CLI
 
 Factory CLI enables AI-powered automation across the software development lifecycle, from CI/CD to code migrations and maintenance.
@@ -979,9 +1147,11 @@ Factory's BYOK (Bring Your Own Key) feature supports any OpenAI-compatible provi
 
 This gives Factory access to all models available on Mammouth AI (GPT-4, Claude, Gemini, Mistral, DeepSeek, and more) under your subscription. For more information on BYOK configuration, see [Factory BYOK documentation](https://docs.factory.ai/cli/byok/overview).
 
-## Gemini CLI
+## Gemini CLI (Deprecated)
 
-Google's Gemini AI CLI tool.
+Google's original Gemini AI CLI tool (`@google/gemini-cli`).
+
+> **⚠️ Deprecated.** Google announced retirement of Gemini CLI at I/O on May 19, 2026, and shut it down for Google AI Pro/Ultra users and free individual Gemini Code Assist on **June 18, 2026** — the `gemini` command simply stops serving requests on affected tiers, with no advance per-user warning. Only Gemini Code Assist Standard/Enterprise and Gemini Enterprise Agent Platform API-key customers are unaffected. Its replacement is **[Antigravity CLI](#antigravity-cli)**, covered below — see that section, including [Migrating from Gemini CLI](#migrating-from-gemini-cli). The rest of this section is kept for reference (e.g. if you're on an unaffected enterprise tier or maintaining legacy automation).
 
 **Run instantly with npx (no installation required):**
 ```bash
@@ -1019,6 +1189,63 @@ Third-party proxy solutions exist (e.g., [geminicli2api](https://github.com/sear
 Gemini CLI is designed to work exclusively with Google's Gemini API and does not natively support custom OpenAI-compatible endpoints. Direct connection to [Mammouth AI](https://mammouth.ai/) is not supported.
 
 **Note:** Mammouth AI offers Gemini models (e.g., `gemini-2.5-flash`, `gemini-2.5-pro`) through its OpenAI-compatible API. To use them, choose a CLI tool that supports custom base URLs (e.g., Aider, OpenCode, Goose) and select a Gemini model ID from [PROVIDERS.md — Available Gemini Models](./PROVIDERS.md#available-gemini-models-gemini-api).
+
+## Antigravity CLI
+
+[Antigravity CLI](https://antigravity.google/) is Google's replacement for Gemini CLI — a closed-source, Go-based rewrite (command name `agy`, not `gemini`) built as the terminal-first surface of the wider **Antigravity** agentic development platform (which also ships an agentic IDE, IDE extensions, and a Python SDK). It's a fresh install with its own binary, config layout, and quota model (weekly rather than daily limits) rather than an in-place upgrade — see [Migrating from Gemini CLI](#migrating-from-gemini-cli) below.
+
+**Install on macOS/Linux:**
+```bash
+curl -fsSL https://antigravity.google/cli/install.sh | bash
+```
+Installs to `~/.local/bin/agy`.
+
+**Install on Windows (PowerShell):**
+```powershell
+irm https://antigravity.google/cli/install.ps1 | iex
+```
+
+**Install on Windows (CMD):**
+```cmd
+curl -fsSL https://antigravity.google/cli/install.cmd -o install.cmd && install.cmd && del install.cmd
+```
+
+Once installed, run `agy` to start. For the full desktop app (Antigravity 2.0, a GUI "command center" for managing multiple local agents) rather than just the CLI, download it from [antigravity.google/download](https://antigravity.google/download) — macOS (Apple Silicon/Intel `.dmg`, macOS 12+), Windows (x64/ARM64 `.exe`, Windows 10+), and Linux (x64/ARM64 `.tar.gz`, glibc ≥ 2.28) builds are available.
+
+For more information, visit the [Antigravity CLI GitHub repository](https://github.com/google-antigravity/antigravity-cli) and the [Getting Started docs](https://antigravity.google/docs/cli/getting-started/).
+
+### Migrating from Gemini CLI
+
+Antigravity CLI keeps your skills, hooks, subagents, and extensions (now called Antigravity plugins) conceptually, but does **not** read Gemini CLI's old config directly — it needs re-authentication and re-testing, not a drop-in swap:
+
+1. Install the `agy` binary (above) alongside, or in place of, `gemini`.
+2. Authenticate with the same Google account used for Gemini CLI (see [Authentication](#authentication-antigravity) below).
+3. Walk through Google's migration guide at [antigravity.google/docs/gcli-migration](https://antigravity.google/docs/gcli-migration) to carry over settings.
+4. **Update automation:** any script, CI/CD job, or cron task invoking `gemini` breaks outright on an affected tier once Gemini CLI stops serving requests — audit for `gemini` invocations and repoint them at `agy` before relying on it unattended.
+5. Re-test MCP servers, custom commands, Agent Skills, Hooks, and Subagents under the new harness — Antigravity CLI is explicitly a multi-agent orchestration harness, not a like-for-like conversational REPL, so some behaviors differ.
+
+### Authentication (Antigravity)
+
+**Google account sign-in (default):** on a local machine, `agy` opens your default browser to sign in automatically. Over SSH, it prints an authorization URL to open in a local browser, plus a short code to paste back into the terminal.
+
+**API key (headless/CI):** for automation, authenticate with a Gemini API key instead of an account session — with an API key, requests go straight to the Gemini API and no account session is established. Create a key at [Google AI Studio](https://aistudio.google.com/app/api-keys), then set it in `~/.gemini/antigravity-cli/settings.json`:
+```json
+{
+    "modelProvider": "gemini"
+}
+```
+```bash
+export GEMINI_API_KEY=your-api-key-here
+```
+`GEMINI_API_KEY` alone has no effect without `modelProvider` set in `settings.json`. `/logout` ends an account session but does nothing under API-key auth.
+
+### Using Antigravity with Local LLMs via LM Studio
+
+Like Gemini CLI before it, Antigravity CLI does not support OpenAI-compatible endpoints. Its one endpoint override, `GOOGLE_GEMINI_BASE_URL`, redirects requests to a different **Gemini-protocol-compatible** endpoint (e.g. an internal Gemini API proxy) — it does not speak the OpenAI Chat Completions format LM Studio (or Ollama) exposes, so pointing it at `http://localhost:1234/v1` will not work. As with Gemini CLI, a translation proxy would be required, and none is officially supported by Google as of this writing.
+
+### Using Antigravity with Mammouth AI
+
+For the same reason as LM Studio above, Antigravity CLI cannot connect directly to [Mammouth AI](https://mammouth.ai/)'s OpenAI-compatible endpoint — `GOOGLE_GEMINI_BASE_URL` only accepts a Gemini-protocol endpoint. Mammouth AI does offer Gemini models (e.g., `gemini-2.5-flash`, `gemini-2.5-pro`) through its OpenAI-compatible API; to use them, pick a CLI tool that supports custom OpenAI-compatible base URLs (e.g., Aider, OpenCode, Goose) instead, and select a Gemini model ID from [PROVIDERS.md — Available Gemini Models](./PROVIDERS.md#available-gemini-models-gemini-api).
 
 ## Grok CLI
 
