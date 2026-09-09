@@ -238,6 +238,8 @@ Always check the actual on-disk size and context-length trade-off for the *speci
 
 A 16GB Mac Mini M4 and this 128GB Strix Halo box are a genuinely useful pair, but not because you literally glue their memory together into one giant pool — a 16GB contribution is a rounding error next to 128GB, and (as [Option 3](#option-3-model-sharding-across-both-machines-llamacpp-rpc) below explains) combining them that way makes everything run at the speed of your *network link*, not your fastest machine. The two setups that are actually worth doing are running them as **two independent lanes** (more throughput) or **two asymmetric roles** (small/fast + large/capable). Both are things you can wire into the harnesses in [CLI.md](./CLI.md) today with zero extra tooling.
 
+**For the Mac Mini's own setup** — installing MLX, sizing its GPU memory ceiling, model recommendations for 16GB, and exposing it to the network — see the dedicated [MAC-MINI-M4.md](./MAC-MINI-M4.md). The rest of this section covers how the two machines fit together; that document covers the Mac side in the same depth this one covers Strix Halo.
+
 ### Option 1: More Agents, No Extra Tooling (Recommended Starting Point)
 
 If what you actually want is "more machines for the agents to run on," you already have that the moment both boxes are each running their own model server:

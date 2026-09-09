@@ -351,6 +351,8 @@ For more information, visit [Ollama documentation](https://docs.ollama.com/) and
 
 MLX is an open-source array framework for machine learning on Apple Silicon, created by Apple Machine Learning Research. **mlx-lm** is the companion package for running, serving, and fine-tuning LLMs. MLX is designed specifically for the unified memory architecture of Apple Silicon chips (M1, M2, M3, M4, M5) and provides an OpenAI-compatible API server on port `8080`.
 
+For hardware-specific tuning on a memory-constrained Mac (GPU memory ceiling, model picks, exposing the server on your network) see [MAC-MINI-M4.md](./MAC-MINI-M4.md) — written for a 16GB Mac Mini M4, but the `iogpu.wired_limit_mb` guidance there applies to any Apple Silicon Mac.
+
 **Requirements:**
 - macOS with Apple Silicon (M1 or later)
 - macOS >= 14.0 (Sonoma)

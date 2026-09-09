@@ -6,6 +6,7 @@ Playground for all things Artificial Intelligence
 - [Prerequisites](#prerequisites)
 - [Local LLM Runtimes](#local-llm-runtimes)
 - [Strix Halo + ROCm Setup](#strix-halo--rocm-setup)
+- [Mac Mini M4 Setup](#mac-mini-m4-setup)
 - [Cloud LLM Providers](#cloud-llm-providers)
 - [AI CLI Tools](#ai-cli-tools)
 - [AI IDE Plugins](#ai-ide-plugins)
@@ -16,6 +17,8 @@ Playground for all things Artificial Intelligence
 ## [Local LLM Runtimes](RUNTIMES.md)
 
 ## [Strix Halo + ROCm Setup](STRIX-HALO.md)
+
+## [Mac Mini M4 Setup](MAC-MINI-M4.md)
 
 ## [Cloud LLM Providers](PROVIDERS.md)
 
