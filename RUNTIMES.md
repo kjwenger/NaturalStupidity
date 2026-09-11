@@ -883,11 +883,12 @@ Pre-converted models are also published on Hugging Face — e.g. `mastouri/GLM-5
 
 ### Running Models / OpenAI-Compatible API (Colibri)
 
+Colibri has both a terminal CLI and a browser-based web UI:
 ```bash
-COLI_MODEL=/nvme/glm52_i4 ./coli chat      # interactive text UI
-COLI_MODEL=/nvme/glm52_i4 ./coli doctor    # readiness/diagnostics check
-./coli web --model /nvme/glm52_i4          # browser dashboard + OpenAI-compatible API
-./coli serve --model /nvme/glm52_i4        # headless OpenAI-compatible API + dashboard
+COLI_MODEL=/nvme/glm52_i4 ./coli chat      # CLI: interactive terminal chat
+COLI_MODEL=/nvme/glm52_i4 ./coli doctor    # CLI: readiness/diagnostics check
+./coli web --model /nvme/glm52_i4          # Web UI: browser dashboard (token/sec, hardware status, live expert-routing "cortex" visualization) + OpenAI-compatible API on the same port
+./coli serve --model /nvme/glm52_i4        # Headless: same API as `web`, no dashboard
 ```
 
 Both serve on **port 8000** by default (`127.0.0.1`), with `/v1/chat/completions`, `/v1/completions`, and `/v1/models` — no API key required unless you set `COLI_API_KEY` yourself:
