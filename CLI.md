@@ -3,6 +3,7 @@
 <!-- TOC -->
 * [AI CLI Tools](#ai-cli-tools)
   * [Discovering New AI CLI Tools](#discovering-new-ai-cli-tools)
+  * [Understanding Token & Context Overhead](#understanding-token--context-overhead)
   * [Installing All AI CLI Tools](#installing-all-ai-cli-tools)
   * [Installing Bash Completion for All CLI Tools](#installing-bash-completion-for-all-cli-tools)
   * [Enabling Bash Completion for Zsh](#enabling-bash-completion-for-zsh)
@@ -96,6 +97,7 @@
     * [OpenCode Config Gist (LM Studio)](#opencode-config-gist-lm-studio)
     * [Bash Completion on Linux (OpenCode)](#bash-completion-on-linux-opencode)
     * [Using OpenCode with Mammouth AI](#using-opencode-with-mammouth-ai)
+    * [Reducing Token Overhead (OpenCode)](#reducing-token-overhead-opencode)
   * [Pi Agent CLI](#pi-agent-cli)
     * [Using Pi Agent with Local LLMs via LM Studio and Ollama](#using-pi-agent-with-local-llms-via-lm-studio-and-ollama)
   * [Qwen CLI](#qwen-cli)
@@ -136,6 +138,22 @@ When considering a new AI CLI tool, check for:
 - License and cost model
 - Local vs. cloud options
 - Integration capabilities
+
+## Understanding Token & Context Overhead
+
+Every agentic harness in this document sends far more to the LLM per request than the message you typed — and it's easy to never notice, because none of the CLI tools surface it by default. This is worth understanding before you pick a harness or a local model for it, since it directly affects cost, latency, and how much of your context window is actually available for your own conversation.
+
+**What's actually being sent.** A minimal user message like "hello" typically rides alongside a full system prompt (behavioral instructions, formatting rules, when to use tools) plus the complete JSON schema for every tool the agent has enabled — tool name, description, every parameter, often hundreds to thousands of characters *each*. One measured example: a stock agentic-coding harness sent a 9.5k-character (~114-line) system prompt plus 11 full tool definitions (a single `bash` tool description ran 4,700 characters on its own) for a single word of user input — roughly 8,000 tokens total, of which the actual "hello" was about 0.025%.
+
+**Hidden auxiliary calls are a separate, easy-to-miss cost.** Some harnesses make LLM calls you didn't ask for — the same measured example showed the harness silently generating a conversation title in a second, separate ~2,000-token request before your actual message was even answered. If a harness feels like it costs more than your usage pattern implies, check whether it's making calls like this in the background (see [OpenCode's token-overhead options](#reducing-token-overhead-opencode) below for a concrete, verified example, including the official fix).
+
+**Prompt caching reduces $ cost, but not the other costs.** Providers cache repeated system-prompt/tool-definition prefixes and charge less for the cached portion on a second request — but the full prompt is still transmitted over your connection, still occupies your context window, and still adds to latency, every single time. The cache is a cost optimization on the provider's compute, not a reduction in what you're actually sending or how much room is left for your own conversation.
+
+**How to see this for yourself, for any harness.** Point the tool's provider config at a local MITM (man-in-the-middle) proxy — e.g. [mitmproxy](https://mitmproxy.org/) — sitting between the harness and the LLM API, and log the full request/response bodies for any call containing a `system` role message. This is a small, mechanical script (on the order of 40 lines of Python), and it will show you exactly what system prompt and tool definitions a given harness sends, since almost none of them surface this through their own UI or logs. Several harnesses in this document (Hermes Agent, Kilo Code, DeepSeek Harness, Oh My Pi, Pi Agent) already support pointing their provider config at an arbitrary base URL, which is exactly what a MITM proxy needs.
+
+**The general mitigation, across harnesses:** start with the fewest tools/capabilities your task actually needs, and add more back in only when you hit a wall — rather than running a full "everything enabled" agent for a quick question. Most harnesses with a subagent/custom-agent system (OpenCode, Claude Code, Hermes Agent, Kilo Code, and others in this document) let you define a stripped-down agent for exactly this. See the [Composio benchmark numbers](#claude-cli) already cited throughout this document's per-harness sections — the wide token-usage spread they measured across harnesses on identical tasks (from Pi Agent's leanest runs to Kimi Code's 15.27M tokens across 24 tasks) is the same phenomenon showing up as a real, measured cost difference, not just a theoretical concern.
+
+**One caveat on the numbers above:** they're drawn from one specific measured example (one harness, one model, one point in time) rather than something re-verified against every tool in this document — treat the *pattern* (large fixed per-request overhead, hidden auxiliary calls, caching not solving either) as the generalizable finding, and the exact token counts as illustrative rather than universal.
 
 ## Installing All AI CLI Tools
 
@@ -2298,6 +2316,47 @@ Create or edit `~/.config/opencode/opencode.json`:
 ```
 
 Add or remove models from the `models` block to match your preferences. For the full list of available Mammouth AI model IDs, visit the [Mammouth AI API documentation](https://info.mammouth.ai/docs/api-quick-start/).
+
+### Reducing Token Overhead (OpenCode)
+
+See [Understanding Token & Context Overhead](#understanding-token--context-overhead) above for the general phenomenon this addresses. OpenCode is a concrete, measured example: its default `build` agent (all 11 tools enabled) has been observed sending roughly 8,000 tokens — a ~9.5k-character system prompt plus full tool-definition JSON for every tool — for a single-word "hello", before counting a separate, unrequested ~2,000-token call OpenCode makes to auto-generate the session title.
+
+**Custom, minimal agents** are the primary fix. Define one as a markdown file with YAML frontmatter:
+- **Project-level:** `.opencode/agents/<name>.md`
+- **Global:** `~/.config/opencode/agents/<name>.md`
+
+```markdown
+---
+description: Minimal agent for quick questions and small edits — no tools
+mode: primary
+model: anthropic/claude-sonnet-4-6
+temperature: 0.2
+---
+
+You are a coding assistant. Answer directly and concisely. You have no tools available.
+```
+`mode: primary` makes it selectable with the **Tab** key (cycles between primary agents) alongside the built-in `build`/`plan` agents; `mode: subagent` makes it reachable via `@name` instead. Other frontmatter fields: `permission` (see below), `steps` (cap agentic iterations), `disable`, `hidden` (hide a subagent from `@` autocomplete), `top_p`.
+
+**Fine-grained tool restriction**, as a lighter-touch alternative to a fully separate agent — add a `permission` block to any agent (including a copy of `build`) to allow/ask/deny individual tools, down to specific command patterns:
+```yaml
+permission:
+  edit: deny
+  bash:
+    "git push": ask
+    "grep *": allow
+```
+
+**The built-in `plan` agent** is a lighter middle ground with no custom config needed — file edits and bash commands default to `ask` rather than running freely, useful for analysis/planning without modification.
+
+**For the title-generation overhead specifically:** set `small_model` in `opencode.json` to route that (and other lightweight, non-primary-task) calls through a cheaper/faster model instead of your main one:
+```json
+{
+  "small_model": "anthropic/claude-haiku-4-5"
+}
+```
+There is no officially documented way to skip title generation entirely as of this writing — an [open feature request](https://github.com/anomalyco/opencode/issues/33140) tracks that ask upstream.
+
+Reported result of combining a minimal custom agent with the above: the same "hello" that cost ~8,000 tokens on stock `build` dropped to roughly 300-500 tokens — over a 90% reduction — with the obvious trade-off that a tool-less agent can't edit files, run commands, delegate to subagents, or fetch web pages. Start minimal and re-add specific tools/permissions as you actually need them, rather than running `build` by default for everything.
 
 ## Pi Agent CLI
 
