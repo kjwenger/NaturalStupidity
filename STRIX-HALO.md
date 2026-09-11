@@ -262,7 +262,7 @@ Always check the actual on-disk size and context-length trade-off for the *speci
 
 ## Models Built or Tuned Specifically for This Hardware
 
-Beyond generic Dynamic GGUF quants, three genuinely distinct categories of "AMD/Strix-Halo-specific" models and quants exist — ordered from safest/most official to most experimental:
+Beyond generic Dynamic GGUF quants, four genuinely distinct categories of "AMD/Strix-Halo-specific" models and quants exist — ordered from safest/most official to most experimental:
 
 **1. AMD's own Quark MXFP4 checkpoints** (the `amd/` organization on Hugging Face — Qwen3.8-27B, DeepSeek-R1, MiniMax-M2.1, and others), quantized with AMD's own [Quark](https://quark.docs.amd.com/) toolkit specifically for AMD hardware. On Strix Halo specifically: these run through llama.cpp's **Vulkan** backend (not the ROCm/HIP build this document centers on), and **not** through vLLM-ROCm — gfx1151 (RDNA 3.5) has no working MXFP4 kernel there yet, so vLLM falls back to CPU or refuses to compile. In one direct benchmark on this hardware, MXFP4 didn't clearly beat a standard Q4_K_M GGUF (54.5 vs 59.8 tok/s) — worth knowing exists, not an obvious upgrade over what's already in [Recommended Models](#recommended-models-for-a-128gb-strix-halo) above (which already includes an MXFP4 pick, GPT-OSS-120B).
 
@@ -272,7 +272,9 @@ Beyond generic Dynamic GGUF quants, three genuinely distinct categories of "AMD/
 - It requires a **non-mainline "ROCmFPX" fork** of llama.cpp — `ggml types 100-106` used by these files don't exist in upstream llama.cpp, which rejects them outright. That means giving up the officially-maintained build in [Building llama.cpp for gfx1151](#building-llamacpp-for-gfx1151) above, with the usual fork risks: it may lag upstream features, may not stay maintained, and has a much smaller community to troubleshoot with.
 - **No prompt caching** — the fork forces full prompt reprocessing on every turn ("forcing full prompt re-processing due to lack of cache data" is the reported llama.cpp log line) because of how it handles this architecture's hybrid attention. For a single long generation that barely matters. For the **multi-turn, growing-context agentic workflows this whole document — and the CLI harnesses in [CLI.md](./CLI.md) — are built around**, reprocessing the entire conversation from scratch every turn is a real regression, not a footnote. Whether the decode-speed win is worth that trade-off depends entirely on your actual usage pattern: a single big one-shot generation, sure; a long agent session with growing context, probably not.
 
-Treat categories 1 and 2 as low-risk to try alongside your existing setup. Category 3 is a genuinely different (forked, cache-less) stack from everything else in this document — worth trying if raw decode speed on short, one-shot generations matters more to you than agentic multi-turn efficiency, but go in knowing the trade-off rather than discovering it mid-session.
+**4. A different axis entirely: [Colibri](./RUNTIMES.md#colibri-installation)**, not a Strix-Halo-tuned quant but a runtime that changes what "fits" even means here. Rather than choosing a smaller quant of a model that fits in 128GB, Colibri streams a Mixture-of-Experts model's inactive parameters from disk on demand, so models with total sizes far beyond 128GB (GLM-5.2/5.3 at 744B, Kimi K3 at 2.8T) run with as little as 16-25GB of RAM. On this box, 128GB of unified memory clears every model Colibri currently supports with room to spare — the actual constraint becomes NVMe disk space (GLM-5.2 alone is ~372GB on disk) and disk throughput, not RAM. AMD GPU acceleration is via Vulkan, same as category 3 above but without the fork/cache trade-offs — it's a separate engine, not a llama.cpp variant.
+
+Treat categories 1, 2, and 4 as low-risk to try alongside your existing setup. Category 3 is a genuinely different (forked, cache-less) stack from everything else in this document — worth trying if raw decode speed on short, one-shot generations matters more to you than agentic multi-turn efficiency, but go in knowing the trade-off rather than discovering it mid-session.
 
 ## Fine-Tuning with Unsloth
 
@@ -412,6 +414,7 @@ Notes:
 ## Sources
 
 - [RepoCad — quantization deep-dive (YouTube)](https://www.youtube.com/watch?v=vW0KY_8z4q0&list=PLIVW7clnv28ov8Dg_4JKH0oXNRM5jwGI1&index=16) — the numeric-representation/algorithm/container/kernel framework and the KV-cache math in this document are drawn from and cross-checked against this video.
+- [JustVugg/colibri](https://github.com/JustVugg/colibri) — the disk-streaming MoE inference engine, model requirements table, and GPU backend support.
 - [ggml-org/llama.cpp discussion #20856 — Known-Good Strix Halo ROCm + llama.cpp Stack](https://github.com/ggml-org/llama.cpp/discussions/20856) — `GGML_HIP_NO_VMM`, `GGML_HIP_MMQ_MFMA`, and the `-dio` runtime flag.
 - [amd/Qwen3.8-27B-Quark-AWQ-MXFP4](https://huggingface.co/amd/Qwen3.8-27B-Quark-AWQ-MXFP4) and other `amd/` org models on Hugging Face — AMD's own Quark-quantized MXFP4 checkpoints.
 - [AMD ROCm Blogs — Introducing Instella-MoE](https://rocm.blogs.amd.com/artificial-intelligence/instella-moe/README.html) — AMD's from-scratch open MoE model, architecture, training hardware, and license.

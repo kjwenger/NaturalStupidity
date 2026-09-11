@@ -50,6 +50,9 @@
     * [pip (vLLM)](#pip-vllm)
     * [Docker (vLLM)](#docker-vllm)
     * [Running Models / OpenAI-Compatible API (vLLM)](#running-models--openai-compatible-api-vllm)
+  * [Colibri Installation](#colibri-installation)
+    * [Downloading or Converting a Model](#downloading-or-converting-a-model)
+    * [Running Models / OpenAI-Compatible API (Colibri)](#running-models--openai-compatible-api-colibri)
 <!-- TOC -->
 
 ## LM Studio Installation
@@ -840,3 +843,66 @@ For tool-calling / agentic use (Hermes Agent and similar harnesses), enable auto
 ```
 
 For more information, visit the [vLLM GitHub repository](https://github.com/vllm-project/vllm) and [documentation](https://docs.vllm.ai/).
+
+## Colibri Installation
+
+[Colibri](https://github.com/JustVugg/colibri) is a pure-C, zero-dependency inference engine built specifically to run frontier-scale Mixture-of-Experts models — GLM-5.2/5.3 (744B), Kimi K3 (2.8T), DeepSeek V4 Flash (284B), and others, down to small ones like OLMoE (7B) — on hardware nowhere near large enough to hold them entirely in RAM. Its trick is **"AI memory multitiering"**: only the dense parts of a model stay resident in RAM (at int4, ~9.9GB for GLM-5.2), while the model's thousands of routed experts stream from disk on demand, treating VRAM, RAM, and NVMe as one hierarchy rather than requiring everything to fit in one tier. A GPU is optional, not required — insufficient fast memory only slows things down, it never changes the model's precision.
+
+This is a different tool for a different job than everything else in this document: LM Studio/Ollama/llama.cpp/vLLM all assume the *whole* model fits in RAM/VRAM (possibly quantized down until it does); Colibri is built around models that are far too large for that on any consumer machine, by design.
+
+**Prebuilt release (no compiler needed):**
+```bash
+mkdir colibri && tar xzf colibri-v1.8.0-linux-x86_64.tar.gz -C colibri && cd colibri
+python3 coli info
+```
+
+**From source (Linux/macOS, requires gcc/clang with OpenMP):**
+```bash
+git clone https://github.com/JustVugg/colibri && cd colibri/c
+./setup.sh
+pip install -e .    # puts the `coli` launcher on PATH
+```
+
+**Windows:** use the prebuilt `coli.cmd chat --model D:\path\to\model` (or double-click `coli.cmd`).
+
+### Downloading or Converting a Model
+
+```bash
+# Convert your own safetensors checkpoint to Colibri's format
+./coli convert --model /nvme/glm52_i4
+```
+Pre-converted models are also published on Hugging Face — e.g. `mastouri/GLM-5.2-colibri-int4-g64-with-int8-mtp`. **Disk space is the real prerequisite here, not RAM:** GLM-5.2/5.3 alone needs ~372GB on disk (fast NVMe strongly recommended, since experts stream from it during inference), even though it needs only 16GB of RAM to run.
+
+| Model | Disk | RAM | GPU |
+|---|---|---|---|
+| OLMoE (7B) | ~7 GB | 8 GB | Not required |
+| Qwen3.6-35B-A3B | ~20 GB | 24 GB | Optional (CUDA) |
+| DeepSeek V4 Flash (284B) | ~167 GB | 16 GB min | Optional (NVIDIA GTX 10-series+) |
+| GLM-5.3-Flash (321B) | ~195 GB | 25 GB | Not required |
+| GLM-5.2/5.3 (744B) | ~372 GB | 16 GB min | Not required |
+
+### Running Models / OpenAI-Compatible API (Colibri)
+
+```bash
+COLI_MODEL=/nvme/glm52_i4 ./coli chat      # interactive text UI
+COLI_MODEL=/nvme/glm52_i4 ./coli doctor    # readiness/diagnostics check
+./coli web --model /nvme/glm52_i4          # browser dashboard + OpenAI-compatible API
+./coli serve --model /nvme/glm52_i4        # headless OpenAI-compatible API + dashboard
+```
+
+To use with AI CLI tools, configure them to point to Colibri's endpoint (see `docs/api.md` in the repo for exact port/routes):
+```bash
+export OPENAI_API_BASE=http://localhost:<port>/v1
+export OPENAI_API_KEY=colibri   # required by some tools but ignored by Colibri
+```
+
+**GPU backends** (all optional — build with the flag for your hardware):
+```bash
+make -C c deepseek-v4 CUDA=1     # NVIDIA (GTX 10-series+)
+make -C c deepseek-v4 METAL=1    # Apple Silicon
+```
+AMD GPUs are supported via **Vulkan** (RADV driver) rather than ROCm/HIP — no separate flag needed, same as the [Vulkan alternative](./STRIX-HALO.md#rocm-vs-vulkan-which-backend) already documented for llama.cpp on this repo's Strix Halo box.
+
+**On this repo's own hardware:** Strix Halo's 128GB unified memory comfortably clears the RAM bar for every model in the table above (GLM-5.2/5.3 needs only 16GB of that 128GB) — the real gate is disk space, since none of these models remotely fit in a typical SSD without planning for it. The 16GB Mac Mini M4 can run OLMoE and not much else on this engine; anything past that needs more RAM than it has, regardless of how little of the model is active per token.
+
+For more information, visit the [Colibri GitHub repository](https://github.com/JustVugg/colibri).
