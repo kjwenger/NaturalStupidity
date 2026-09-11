@@ -53,6 +53,8 @@
   * [Colibri Installation](#colibri-installation)
     * [Downloading or Converting a Model](#downloading-or-converting-a-model)
     * [Running Models / OpenAI-Compatible API (Colibri)](#running-models--openai-compatible-api-colibri)
+  * [FreeToken Installation](#freetoken-installation)
+    * [Running Models / OpenAI-Compatible API (FreeToken)](#running-models--openai-compatible-api-freetoken)
 <!-- TOC -->
 
 ## LM Studio Installation
@@ -916,3 +918,41 @@ AMD GPUs are supported via **Vulkan** (RADV driver) rather than ROCm/HIP — no 
 **On this repo's own hardware:** Strix Halo's 128GB unified memory comfortably clears the RAM bar for every model in the table above (GLM-5.2/5.3 needs only 16GB of that 128GB) — the real gate is disk space, since none of these models remotely fit in a typical SSD without planning for it. The 16GB Mac Mini M4 can run OLMoE and not much else on this engine; anything past that needs more RAM than it has, regardless of how little of the model is active per token.
 
 For more information, visit the [Colibri GitHub repository](https://github.com/JustVugg/colibri).
+
+## FreeToken Installation
+
+[FreeToken](https://github.com/FlashML-org/FreeToken) (12.5k+ stars) is another edge-native Mixture-of-Experts serving engine in the same category as [Colibri](#colibri-installation) above — it treats "GPUs, CPUs, host memory, and interconnects as a unified, elastic inference platform" to run 290B+-parameter frontier MoE models (DeepSeek-V4-Flash, Qwen3.6-35B-A3B, GLM-5.2, across MXFP4/NVFP4/FP8/BF16 quantization) on consumer hardware, with an Anthropic/OpenAI-compatible API aimed squarely at coding/tool-calling agents.
+
+> **⚠️ Not usable on this repo's own hardware today.** FreeToken officially supports **NVIDIA RTX 30/40/50-series GPUs only** — no AMD/ROCm and no Apple Silicon/Metal backend has shipped. Both are on the [2026 roadmap](https://github.com/FlashML-org/FreeToken/issues/79) ("AMD: support for AMD GPUs via ROCm", "macOS: a native Metal engine on Apple Silicon Macs") but unshipped as of this writing, and a [feature request for Apple Silicon support](https://github.com/FlashML-org/FreeToken/issues/9) remains open. A community fork exists for AMD ROCm, but it targets RDNA4 desktop cards (RX 9070 XT/9060 XT, gfx1200/gfx1201) — a different GPU generation from Strix Halo's RDNA 3.5 (gfx1151) — so it doesn't confirm support for [this repo's own box](./STRIX-HALO.md) either. Documented here for completeness and to watch for when AMD/Apple Silicon support lands, not as something to install on BosGameM5 or the Mac Mini right now.
+
+**Install with uv (recommended):**
+```bash
+uv pip install "freetoken[accel]"
+```
+
+**Install from source:**
+```bash
+git clone https://github.com/FlashML-org/FreeToken.git && cd FreeToken
+uv venv && source .venv/bin/activate
+uv pip install -e ".[accel]"
+```
+
+### Running Models / OpenAI-Compatible API (FreeToken)
+
+```bash
+ft serve --model ~/models/Qwen3.6-35B-A3B   # --model also accepts a Hugging Face repo id directly
+```
+Serves on `127.0.0.1:1919` by default, with the OpenAI-compatible `/v1/chat/completions`:
+```bash
+curl http://127.0.0.1:1919/v1/chat/completions \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "model": "Qwen3.6-35B-A3B",
+    "messages": [{"role": "user", "content": "What is a Mixture-of-Experts model?"}],
+    "max_tokens": 256,
+    "stream": true
+  }'
+```
+It also exposes an Anthropic-compatible endpoint alongside the OpenAI one, per the project's own description — check `docs/cli.md` in the repo for exact routes if you're on supported (NVIDIA) hardware and want to wire it into [Claude CLI](./CLI.md#claude-cli).
+
+Apache 2.0 licensed. For more information, visit the [FreeToken GitHub repository](https://github.com/FlashML-org/FreeToken).
