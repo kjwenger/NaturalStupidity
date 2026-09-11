@@ -890,11 +890,20 @@ COLI_MODEL=/nvme/glm52_i4 ./coli doctor    # readiness/diagnostics check
 ./coli serve --model /nvme/glm52_i4        # headless OpenAI-compatible API + dashboard
 ```
 
-To use with AI CLI tools, configure them to point to Colibri's endpoint (see `docs/api.md` in the repo for exact port/routes):
+Both serve on **port 8000** by default (`127.0.0.1`), with `/v1/chat/completions`, `/v1/completions`, and `/v1/models` — no API key required unless you set `COLI_API_KEY` yourself:
 ```bash
-export OPENAI_API_BASE=http://localhost:<port>/v1
-export OPENAI_API_KEY=colibri   # required by some tools but ignored by Colibri
+curl http://127.0.0.1:8000/v1/chat/completions \
+  -H 'Content-Type: application/json' \
+  -d '{"model":"glm-5.2-colibri","messages":[{"role":"user","content":"hi"}]}'
 ```
+
+To use with AI CLI tools:
+```bash
+export OPENAI_API_BASE=http://localhost:8000/v1
+export OPENAI_API_KEY=colibri   # required by some tools but ignored unless COLI_API_KEY is set
+```
+
+**Notably, Colibri also implements the Anthropic Messages API at `/v1/messages`** on the same port — unlike every other local runtime in this document, [Claude CLI](./CLI.md#claude-cli) can point at it directly (`ANTHROPIC_BASE_URL=http://localhost:8000`) with no LiteLLM translation proxy needed.
 
 **GPU backends** (all optional — build with the flag for your hardware):
 ```bash
