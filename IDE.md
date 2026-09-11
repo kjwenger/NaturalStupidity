@@ -729,6 +729,14 @@ If you have the old "Claude Dev" extension:
 - **Local LLMs:** Not supported — its endpoint override only accepts a Gemini-protocol-compatible URL, not OpenAI-compatible servers like LM Studio/Ollama
 - See [CLI.md — Antigravity CLI](./CLI.md#antigravity-cli) for install, auth, and the Gemini CLI migration notes
 
+**LM Studio Bionic:**
+- Note: despite the name, this is **not a CLI** — it's a separate, standalone desktop GUI app from LM Studio (developed under "Element Labs"), distinct from the existing `lms` CLI/headless server covered in [RUNTIMES.md — LM Studio Installation](./RUNTIMES.md#lm-studio-installation). No CLI/headless mode has been published for Bionic itself.
+- A coding/productivity agent built specifically for open-weight models — repo-aware code edits with inline diffs, shell commands, document/spreadsheet generation, MCP and connected-app support (e.g. Notion), voice input
+- Install: download from [lmstudio.ai](https://lmstudio.ai/) (macOS, Windows, Linux), or via winget on Windows: `winget install --id ElementLabs.Bionic --exact`
+- Named model recommendations: GLM 5.2 and Kimi K2.7/K3 Code for its "Code Projects" mode
+- **Local LLMs:** fully supported and the main point — runs on the existing LM Studio runtime (MLX + llama.cpp under the hood), so any model already documented in [RUNTIMES.md](./RUNTIMES.md) works; can also reach a model on another machine via "LM Link", or use LM Studio's cloud with a stated zero-data-retention policy for models too large to run locally
+- You can keep using `lms`/LM Studio's own server alongside Bionic for lower-level configuration — they aren't mutually exclusive
+
 **Kilo Code:**
 - Extension ID: search "Kilo Code" in Marketplace / Open VSX
 - Same underlying agent, config, and sessions as [Kilo Code CLI](./CLI.md#kilo-code-cli)
