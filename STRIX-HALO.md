@@ -292,6 +292,8 @@ A 16GB Mac Mini M4 and this 128GB Strix Halo box are a genuinely useful pair, bu
 
 **For the Mac Mini's own setup** — installing MLX, sizing its GPU memory ceiling, model recommendations for 16GB, and exposing it to the network — see the dedicated [MAC-MINI-M4.md](./MAC-MINI-M4.md). The rest of this section covers how the two machines fit together; that document covers the Mac side in the same depth this one covers Strix Halo.
 
+**Adding a third, weaker machine to the mix** (e.g. an older Nvidia laptop) — see [ORCHESTRATION.md](./ORCHESTRATION.md), which extends the three options below to a three-machine fleet and covers wiring all of them into Hermes Agent and DeepSeek Harness at once.
+
 ### Option 1: More Agents, No Extra Tooling (Recommended Starting Point)
 
 If what you actually want is "more machines for the agents to run on," you already have that the moment both boxes are each running their own model server:

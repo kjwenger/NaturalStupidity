@@ -1297,6 +1297,8 @@ For the full list of available model IDs, visit the [Mammouth AI API documentati
 - **`UNKNOWN_MODEL`** — Select a configured model, or add the missing model id to the custom provider's `models` list.
 - **Fetching available models returns 401** — Check the key. Discovery calls the OpenAI-compatible `GET /models`; enter models by hand for endpoints (including some Ollama versions) that don't provide it.
 - **Fetching available models reports neither a `data` array nor a `models` object** — The endpoint's listing format isn't one discovery reads. Enter the models by hand instead.
+
+**Registering more than one local machine at once**, and delegating a subtask to a specific machine's model at inference time via the subagent system — see [ORCHESTRATION.md — DeepSeek Harness Across Three Machines](./ORCHESTRATION.md#deepseek-harness-across-three-machines).
 - **The gateway refuses every request although the key and URL are right** — Its request shape differs from OpenAI's. Start with `compat.supportsDeveloperRole: false` and `compat.maxTokensField: max_tokens` on the route.
 - **Only reasoning models fail** — pi-ai sends their system prompt as the `developer` role, which the gateway rejects. Set `compat.supportsDeveloperRole: false`.
 
@@ -1826,6 +1828,8 @@ Mammouth AI supports models from multiple providers — for example `claude-sonn
 - **`hermes` picks up the wrong config or credentials** — Pass `--ignore-user-config` to skip `~/.hermes/config.yaml` (credentials in `.env` still load), or `--safe-mode` to disable all customizations while debugging.
 
 For the full guide, see the upstream [LLM and Model Providers](https://hermes-agent.nousresearch.com/docs/integrations/providers/) and [Local Models](https://hermes-agent.nousresearch.com/docs/user-guide/local-models) documentation.
+
+**Registering more than one local machine at once** (e.g. a big box and a small companion box) — see [ORCHESTRATION.md — Hermes Agent Across Three Machines](./ORCHESTRATION.md#hermes-agent-across-three-machines), including the auxiliary task-slot mechanism for pointing cheap bookkeeping tasks at a smaller model.
 
 ## Kilo Code CLI
 

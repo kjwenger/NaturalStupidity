@@ -1,0 +1,40 @@
+# litellm_config.yaml
+# Run with: litellm --config litellm_config.yaml --port 4000
+# Unifies your three machines behind one OpenAI-compatible endpoint: http://localhost:4000/v1
+#
+# Replace hostnames/ports/model ids with your actual values. To find a server's
+# real model id, curl its /v1/models endpoint, e.g.:
+#   curl http://strix-halo.local:8080/v1/models
+
+model_list:
+  # --- Strix Halo (128GB unified) — the heavy reasoning model ---
+  - model_name: strix-heavy
+    litellm_params:
+      model: openai/qwen2.5-72b-instruct        # must match what the server reports
+      api_base: http://strix-halo.local:8080/v1  # llama.cpp/vLLM server on the Strix Halo box
+      api_key: "not-needed"
+
+  # --- Mac Mini M4 (16GB unified) — mid-size, MLX-served ---
+  - model_name: mac-mid
+    litellm_params:
+      model: openai/qwen2.5-14b-instruct-4bit
+      api_base: http://mac-mini.local:8081/v1     # mlx_lm.server or LM Studio MLX engine
+      api_key: "not-needed"
+
+  # --- MSI GS63 (GTX 1060, 6GB VRAM) — fast/cheap tasks ---
+  - model_name: laptop-fast
+    litellm_params:
+      model: openai/llama-3.1-8b-instruct-q4
+      api_base: http://msi-laptop.local:8082/v1   # llama.cpp with partial GPU offload
+      api_key: "not-needed"
+
+# Optional but recommended: if the Strix Halo box is busy/down, fall back down
+# the chain instead of hard-failing.
+router_settings:
+  routing_strategy: simple-shuffle
+  fallbacks:
+    - strix-heavy: ["mac-mid", "laptop-fast"]
+  num_retries: 2
+
+general_settings:
+  master_key: sk-local-anything   # any string; both harnesses just need *a* key to send

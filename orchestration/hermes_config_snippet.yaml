@@ -1,0 +1,57 @@
+# Merge this into ~/.hermes/config.yaml
+# (Hermes' real schema — verified against the current Nous Research docs.)
+#
+# Two ways to use this file:
+#   A) Point Hermes at the LiteLLM router (one entry, gets you fallback/load-balancing)
+#   B) Point Hermes at all three machines directly as named custom providers
+#      (gives you the /model triple-syntax to flip machines by hand, and lets you
+#      assign specific machines to specific auxiliary tasks)
+# Below does both: LiteLLM as the main route, direct machine routes kept as options.
+
+providers:
+  local-router:                       # option A — via LiteLLM
+    api: http://localhost:4000/v1
+    api_key: sk-local-anything        # must match litellm_config.yaml's master_key
+
+  strix:                              # option B — direct machine routes
+    api: http://strix-halo.local:8080/v1
+    # api_key omitted — Hermes uses "no-key-required" for keyless local servers
+
+  mac:
+    api: http://mac-mini.local:8081/v1
+
+  laptop:
+    api: http://msi-laptop.local:8082/v1
+
+model:
+  default: strix-heavy                # model id as your server/LiteLLM reports it
+  provider: custom:local-router       # main agent loop runs on the Strix Halo route
+
+# Auxiliary tasks (session titles, context compression, etc.) default to your main
+# model unless overridden here — point the cheap/fast tasks at the laptop or Mac Mini
+# so they don't compete with the main model for throughput.
+#
+# NOTE: the exact key names below (`title`, `compression`) are not independently
+# confirmed against your installed Hermes version — other sourcing found similar
+# but not identical names (e.g. `title_generation`). Check against
+# https://github.com/NousResearch/hermes-agent/blob/main/website/docs/user-guide/configuring-models.md
+# at your installed version before relying on this section.
+auxiliary:
+  title:
+    provider: custom:laptop
+    model: llama-3.1-8b-instruct-q4
+  compression:
+    provider: custom:mac
+    model: qwen2.5-14b-instruct-4bit
+
+# If the main route is unreachable, fall down this chain before giving up.
+fallback_providers:
+  - provider: custom:mac
+    model: qwen2.5-14b-instruct-4bit
+  - provider: custom:laptop
+    model: llama-3.1-8b-instruct-q4
+
+# Mid-session manual switching once the above is in config.yaml:
+#   /model custom:strix:qwen2.5-72b-instruct
+#   /model custom:mac:qwen2.5-14b-instruct-4bit
+#   /model custom:laptop:llama-3.1-8b-instruct-q4

@@ -7,6 +7,7 @@ Playground for all things Artificial Intelligence
 - [Local LLM Runtimes](#local-llm-runtimes)
 - [Strix Halo + ROCm Setup](#strix-halo--rocm-setup)
 - [Mac Mini M4 Setup](#mac-mini-m4-setup)
+- [Multi-Machine LLM Orchestration](#multi-machine-llm-orchestration)
 - [Cloud LLM Providers](#cloud-llm-providers)
 - [AI CLI Tools](#ai-cli-tools)
 - [AI IDE Plugins](#ai-ide-plugins)
@@ -19,6 +20,8 @@ Playground for all things Artificial Intelligence
 ## [Strix Halo + ROCm Setup](STRIX-HALO.md)
 
 ## [Mac Mini M4 Setup](MAC-MINI-M4.md)
+
+## [Multi-Machine LLM Orchestration](ORCHESTRATION.md)
 
 ## [Cloud LLM Providers](PROVIDERS.md)
 

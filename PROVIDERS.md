@@ -652,6 +652,8 @@ LiteLLM is especially useful for tools that natively speak only the Anthropic fo
 
 For more information, visit the [LiteLLM GitHub repository](https://github.com/BerriAI/litellm) and [LiteLLM documentation](https://docs.litellm.ai/).
 
+**Using LiteLLM to unify several local machines' model servers behind one endpoint** (rather than cloud backends) — see [ORCHESTRATION.md — Unifying Behind One Endpoint](./ORCHESTRATION.md#unifying-behind-one-endpoint-litellm).
+
 ---
 
 ## AWS Bedrock
