@@ -25,7 +25,7 @@ llm-pi-ai:
       displayName: Mac Mini (mid)
       apiKeyEnv: MAC_API_KEY
       api: openai-completions
-      baseURL: http://mac-mini.local:8081/v1
+      baseURL: http://mac-mini.local:8080/v1
       compat:
         supportsDeveloperRole: false
         maxTokensField: max_tokens
@@ -39,7 +39,7 @@ llm-pi-ai:
       displayName: MSI Laptop (fast)
       apiKeyEnv: LAPTOP_API_KEY
       api: openai-completions
-      baseURL: http://msi-laptop.local:8082/v1
+      baseURL: http://msi-laptop.local:8080/v1
       compat:
         supportsDeveloperRole: false
         maxTokensField: max_tokens

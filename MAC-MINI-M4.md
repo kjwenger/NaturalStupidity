@@ -46,11 +46,11 @@ sudo sysctl iogpu.wired_limit_mb=0
 
 macOS's own default already grants the GPU roughly 75% of total RAM (~12GB on a 16GB Mac). Published guidance for larger Macs recommends leaving 8-16GB of headroom for the OS — that doesn't scale down linearly to a 16GB machine (you'd have nothing left for the GPU at all), so here the practical range is much narrower:
 
-| Profile | GPU allocation | Host headroom | `iogpu.wired_limit_mb` |
-|---|---|---|---|
-| Default (no tuning needed) | ~12 GB | ~4 GB | *(leave unset)* |
-| Balanced | 13 GB | 3 GB | `13312` |
-| Dedicated (this Mac does little else) | 14 GB | 2 GB | `14336` |
+| Profile                               | GPU allocation | Host headroom | `iogpu.wired_limit_mb` |
+|---------------------------------------|----------------|---------------|------------------------|
+| Default (no tuning needed)            | ~12 GB         | ~4 GB         | *(leave unset)*        |
+| Balanced                              | 13 GB          | 3 GB          | `13312`                |
+| Dedicated (this Mac does little else) | 14 GB          | 2 GB          | `14336`                |
 
 Given the [recommended models](#recommended-models-for-a-16gb-mac-mini) for this machine run comfortably inside the default ~12GB, **most people won't need to change this at all** — reach for Balanced or Dedicated only if you want extra room for a longer context window.
 
@@ -97,11 +97,11 @@ See [Making the Mac Mini Available to Harnesses](#making-the-mac-mini-available-
 
 Keep total model footprint at roughly 60% of unified memory (~9-10GB) to leave safe room for macOS, an editor, a browser, and the KV cache during longer agent loops — this machine runs *up to* ~13B parameters at 4-bit without complaint, but the sweet spot for agentic/coding use is smaller:
 
-| Model | Size loaded (approx.) | Notes |
-|---|---|---|
-| `mlx-community/Qwen3.5-9B-4bit` | ~5.6 GB | Widely recommended default for this RAM tier; ~17-22 tok/s on M4. |
-| Ornith 1.0 9B (MLX build) | ~5.6 GB | Purpose-built for agentic coding (multi-step planning, tool calls, state across a task); similar footprint and throughput to Qwen3.5-9B — worth comparing directly against it for your workflow. |
-| A 7-8B class model (Q4) | ~4-5 GB | Fastest option (~28-35 tok/s reported), if you want more headroom for context/other apps over raw capability. |
+| Model                           | Size loaded (approx.) | Notes                                                                                                                                                                                            |
+|---------------------------------|-----------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `mlx-community/Qwen3.5-9B-4bit` | ~5.6 GB               | Widely recommended default for this RAM tier; ~17-22 tok/s on M4.                                                                                                                                |
+| Ornith 1.0 9B (MLX build)       | ~5.6 GB               | Purpose-built for agentic coding (multi-step planning, tool calls, state across a task); similar footprint and throughput to Qwen3.5-9B — worth comparing directly against it for your workflow. |
+| A 7-8B class model (Q4)         | ~4-5 GB               | Fastest option (~28-35 tok/s reported), if you want more headroom for context/other apps over raw capability.                                                                                    |
 
 **What doesn't fit:** the [Qwen3.8-27B](./STRIX-HALO.md#recommended-models-for-a-128gb-strix-halo) model this repo recommends for the Strix Halo box needs far more than 16GB even at a 4-bit quant — this Mac is not the machine for that model. That asymmetry is exactly the point; see [Working with BosGameM5](#working-with-bosgamem5-strix-halo) below.
 

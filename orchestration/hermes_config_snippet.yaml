@@ -18,10 +18,10 @@ providers:
     # api_key omitted — Hermes uses "no-key-required" for keyless local servers
 
   mac:
-    api: http://mac-mini.local:8081/v1
+    api: http://mac-mini.local:8080/v1
 
   laptop:
-    api: http://msi-laptop.local:8082/v1
+    api: http://msi-laptop.local:8080/v1
 
 model:
   default: strix-heavy                # model id as your server/LiteLLM reports it

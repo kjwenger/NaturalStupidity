@@ -43,7 +43,7 @@ ExecStart=/home/<your-username>/llama.cpp/build/bin/llama-server \
 # ExecStart=/home/<your-username>/llama.cpp/build/bin/llama-server \
 #   --jinja -c 16384 -ngl 20 \
 #   -m /home/<your-username>/models/llama-3.1-8b-instruct-Q4_K_M.gguf \
-#   --host 0.0.0.0 --port 8082
+#   --host 0.0.0.0 --port 8080
 
 Restart=on-failure
 RestartSec=5

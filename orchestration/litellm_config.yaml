@@ -18,14 +18,14 @@ model_list:
   - model_name: mac-mid
     litellm_params:
       model: openai/qwen2.5-14b-instruct-4bit
-      api_base: http://mac-mini.local:8081/v1     # mlx_lm.server or LM Studio MLX engine
+      api_base: http://mac-mini.local:8080/v1     # mlx_lm.server or LM Studio MLX engine
       api_key: "not-needed"
 
   # --- MSI GS63 (GTX 1060, 6GB VRAM) — fast/cheap tasks ---
   - model_name: laptop-fast
     litellm_params:
       model: openai/llama-3.1-8b-instruct-q4
-      api_base: http://msi-laptop.local:8082/v1   # llama.cpp with partial GPU offload
+      api_base: http://msi-laptop.local:8080/v1   # llama.cpp with partial GPU offload
       api_key: "not-needed"
 
 # Optional but recommended: if the Strix Halo box is busy/down, fall back down

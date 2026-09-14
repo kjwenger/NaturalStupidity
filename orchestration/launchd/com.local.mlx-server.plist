@@ -35,7 +35,7 @@
         <string>--host</string>
         <string>0.0.0.0</string>
         <string>--port</string>
-        <string>8081</string>
+        <string>8080</string>
     </array>
     <key>RunAtLoad</key>
     <true/>

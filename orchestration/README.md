@@ -31,7 +31,7 @@ of real tool calls, which breaks both Hermes and DSH.
 ```bash
 pip install mlx-lm
 mlx_lm.server --model mlx-community/Qwen2.5-14B-Instruct-4bit \
-  --host 0.0.0.0 --port 8081
+  --host 0.0.0.0 --port 8080
 ```
 (llama.cpp with Metal also works here if you'd rather keep one server type
 across all three machines — just point at a GGUF instead.)
@@ -40,7 +40,7 @@ across all three machines — just point at a GGUF instead.)
 ```bash
 ./llama-server --jinja -c 16384 -ngl 20 \
   -m models/llama-3.1-8b-instruct-Q4_K_M.gguf \
-  --host 0.0.0.0 --port 8082
+  --host 0.0.0.0 --port 8080
 ```
 `-ngl 20` (not 99) — 6GB VRAM can't hold all layers of an 8B model; tune this
 down further if you see OOM, or up if you have headroom. No `-fa` here —
