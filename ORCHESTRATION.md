@@ -28,11 +28,11 @@ This document ties together the per-machine setup guides already in this repo �
 
 ## The Three Machines at a Glance
 
-| Machine | Memory | GPU compute | Best-fit role | Runtime |
-|---|---|---|---|---|
-| Strix Halo (this repo's BosGameM5) | 128GB unified (112-124GB usable, see [STRIX-HALO.md — Sizing the GTT Aperture](./STRIX-HALO.md#sizing-the-gtt-aperture-for-128gb)) | Radeon 8060S, gfx1151, ROCm/Vulkan | The heavy reasoning model — 27B-120B class, see [STRIX-HALO.md — Recommended Models](./STRIX-HALO.md#recommended-models-for-a-128gb-strix-halo) | llama.cpp (ROCm/HIP), vLLM |
-| Mac Mini M4 | 16GB unified (~12GB to GPU by default, see [MAC-MINI-M4.md — Sizing for 16GB](./MAC-MINI-M4.md#sizing-for-16gb)) | Apple GPU, Metal via MLX | The fast small model — 7-9B class, see [MAC-MINI-M4.md — Recommended Models](./MAC-MINI-M4.md#recommended-models-for-a-16gb-mac-mini) | MLX, Ollama, LM Studio |
-| MSI GS63 VR laptop | 6GB dedicated VRAM (GTX 1060) + system RAM | GTX 1060, Pascal, CUDA compute capability 6.1 | The weakest link for reasoning; genuinely useful for embeddings, STT, or a small 7-8B model with partial offload — see below | llama.cpp (CUDA) |
+| Machine                            | Memory                                                                                                                             | GPU compute                                   | Best-fit role                                                                                                                                   | Runtime                    |
+|------------------------------------|------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------|
+| Strix Halo (this repo's BosGameM5) | 128GB unified (112-124GB usable, see [STRIX-HALO.md — Sizing the GTT Aperture](./STRIX-HALO.md#sizing-the-gtt-aperture-for-128gb)) | Radeon 8060S, gfx1151, ROCm/Vulkan            | The heavy reasoning model — 27B-120B class, see [STRIX-HALO.md — Recommended Models](./STRIX-HALO.md#recommended-models-for-a-128gb-strix-halo) | llama.cpp (ROCm/HIP), vLLM |
+| Mac Mini M4                        | 16GB unified (~12GB to GPU by default, see [MAC-MINI-M4.md — Sizing for 16GB](./MAC-MINI-M4.md#sizing-for-16gb))                   | Apple GPU, Metal via MLX                      | The fast small model — 7-9B class, see [MAC-MINI-M4.md — Recommended Models](./MAC-MINI-M4.md#recommended-models-for-a-16gb-mac-mini)           | MLX, Ollama, LM Studio     |
+| MSI GS63 VR laptop                 | 6GB dedicated VRAM (GTX 1060) + system RAM                                                                                         | GTX 1060, Pascal, CUDA compute capability 6.1 | The weakest link for reasoning; genuinely useful for embeddings, STT, or a small 7-8B model with partial offload — see below                    | llama.cpp (CUDA)           |
 
 This is the same "match workload to machine" idea [STRIX-HALO.md](./STRIX-HALO.md#combining-with-a-second-machine-eg-a-mac-mini) already lays out for the Strix Halo + Mac Mini pair, extended to a third, much weaker box. The GTX 1060's 6GB is not a rounding error the way the Mac Mini's 16GB is next to Strix Halo's 128GB — it's a genuinely different, more constrained profile (Pascal, no tensor cores, dedicated-not-unified VRAM), so it gets its own section below rather than just a row in someone else's table.
 
@@ -68,10 +68,10 @@ If a model doesn't fully fit in 6GB, lower `-ngl` (number of layers offloaded to
 
 ### Recommended Models for 6GB
 
-| Model | Quant | Notes |
-|---|---|---|
-| A 7-8B general model (Qwen2.5-7B/Qwen3-8B class) | Q4_K_M | The realistic ceiling for full GPU offload at 6GB with a modest context window; matches the "fastest option" row already given for the Mac Mini in [MAC-MINI-M4.md](./MAC-MINI-M4.md#recommended-models-for-a-16gb-mac-mini), just on a slower card. |
-| A 13-14B model | Q3_K / partial offload | Fits only with some layers pushed to CPU (`-ngl` below full layer count) — noticeably slower; only worth it if you specifically need that model's capability and can tolerate the speed. |
+| Model                                            | Quant                  | Notes                                                                                                                                                                                                                                                |
+|--------------------------------------------------|------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| A 7-8B general model (Qwen2.5-7B/Qwen3-8B class) | Q4_K_M                 | The realistic ceiling for full GPU offload at 6GB with a modest context window; matches the "fastest option" row already given for the Mac Mini in [MAC-MINI-M4.md](./MAC-MINI-M4.md#recommended-models-for-a-16gb-mac-mini), just on a slower card. |
+| A 13-14B model                                   | Q3_K / partial offload | Fits only with some layers pushed to CPU (`-ngl` below full layer count) — noticeably slower; only worth it if you specifically need that model's capability and can tolerate the speed.                                                             |
 
 Don't expect this machine to carry serious agentic reasoning load — the same caution [STRIX-HALO.md](./STRIX-HALO.md#combining-with-a-second-machine-eg-a-mac-mini) gives about not pooling a 16GB Mac's memory into a 128GB box applies even harder here.
 
