@@ -13,6 +13,11 @@
     * [Option 1: Three Independent Lanes](#option-1-three-independent-lanes)
     * [Option 2: Asymmetric Task Routing via Named Providers](#option-2-asymmetric-task-routing-via-named-providers)
     * [Option 3: Model Sharding — Why Not Here](#option-3-model-sharding--why-not-here)
+  * [Starting and Supervising the Fleet](#starting-and-supervising-the-fleet)
+    * [Should This Be Ansible?](#should-this-be-ansible)
+    * [systemd (Strix Halo and the GS63 — Both Linux)](#systemd-strix-halo-and-the-gs63--both-linux)
+    * [launchd (Mac Mini)](#launchd-mac-mini)
+    * [The Fleet Script](#the-fleet-script)
   * [Unifying Behind One Endpoint: LiteLLM](#unifying-behind-one-endpoint-litellm)
   * [Hermes Agent Across Three Machines](#hermes-agent-across-three-machines)
     * [Auxiliary Task Slots](#auxiliary-task-slots)
@@ -131,6 +136,38 @@ Which task goes where is then a manual `/model` switch or a per-task config choi
 - `rpc-server` has no authentication (same caveat as in STRIX-HALO.md) — three machines on the same trusted network is a larger attack surface than two.
 
 Reach for this only if you have one specific model that genuinely doesn't fit even on Strix Halo alone — for everyday use, [Option 1](#option-1-three-independent-lanes) or [Option 2](#option-2-asymmetric-task-routing-via-named-providers) will serve better.
+
+## Starting and Supervising the Fleet
+
+The [`orchestration/`](./orchestration/) bundle's raw `llama-server`/`mlx_lm.server` commands are fine for a one-off test in a foreground terminal or tmux session, but they don't answer "how do these come back after a reboot or a crash" — and per [STRIX-HALO.md's own warning](./STRIX-HALO.md#troubleshooting-and-gotchas), a backgrounded shell you then close is actively the wrong way to try (it orphans the process still holding the GPU, the port, and the model in memory). The right fix isn't a better way to launch it over SSH — it's not launching it over SSH at all: each machine should supervise its own server as a native background service, the same way [MAC-MINI-M4.md](./MAC-MINI-M4.md#making-it-persistent) already uses a `launchd` LaunchDaemon to persist the `iogpu.wired_limit_mb` setting.
+
+### Should This Be Ansible?
+
+Not at three machines. Ansible's real value is **idempotent config management** — "ensure this service file exists, is enabled, and is running" (rerun-safe), plus one inventory targeting heterogeneous hosts — and that pays for itself once you're also pushing config changes to all three regularly (an updated `litellm_config.yaml`, a new model path, a kernel-parameter change). Just to *start* three servers, that's overhead a one-time service file per machine plus a short SSH fan-out script for restart/status already covers, with no new dependency. Reach for Ansible later if the fleet grows past three or you find yourself editing all three machines' configs often — not for this step.
+
+### systemd (Strix Halo and the GS63 — Both Linux)
+
+Both machines being Linux means both get the same unit shape — [`orchestration/systemd/llama-server.service`](./orchestration/systemd/llama-server.service) is one template, copied to `/etc/systemd/system/llama-server.service` on each with the marked `ExecStart` block swapped:
+
+- **Strix Halo** needs `Environment="ROCM_HOME=..."` and `Environment="HSA_OVERRIDE_GFX_VERSION=11.5.1"` in the unit — per [STRIX-HALO.md — Building llama.cpp for gfx1151](./STRIX-HALO.md#building-llamacpp-for-gfx1151), these have to be set in *every* shell that runs `llama-server`, systemd's included, or ROCm won't recognize the gfx1151 device.
+- **GS63** needs neither ROCm variable, and must not pass `--flash-attn on` — see [No Flash Attention on This Card](#no-flash-attention-on-this-card).
+
+These are **system** units (not `--user`), so they start at boot with no login session and no `loginctl enable-linger` dance — manage them with `sudo systemctl enable --now llama-server`, `sudo systemctl restart llama-server`, etc.
+
+### launchd (Mac Mini)
+
+[`orchestration/launchd/com.local.mlx-server.plist`](./orchestration/launchd/com.local.mlx-server.plist) is the same idea for `mlx_lm.server`, installed as a LaunchDaemon:
+
+```bash
+sudo cp com.local.mlx-server.plist /Library/LaunchDaemons/
+sudo launchctl bootstrap system /Library/LaunchDaemons/com.local.mlx-server.plist
+```
+
+One gotcha this plist calls out inline: a LaunchDaemon runs as **root with a minimal `PATH`**, so a bare `mlx_lm.server` in `ProgramArguments` won't resolve the way it does in your interactive shell — use the full path from `which mlx_lm.server` (Homebrew's default is `/opt/homebrew/bin`; a venv install lives under that venv's `bin/` instead). Restart after a config change with `sudo launchctl kickstart -k system/com.local.mlx-server`; fully stop it with `sudo launchctl bootout system/com.local.mlx-server` — note that unloads the job (including `KeepAlive` supervision) entirely, so bringing it back needs `bootstrap` again, not `kickstart`.
+
+### The Fleet Script
+
+[`orchestration/fleet.sh`](./orchestration/fleet.sh) is the thin remote-control layer on top of the above — `./fleet.sh {start|stop|restart|status}` fans an SSH command out to all three hosts. It assumes the service files above are already installed; it's not a substitute for them, and it needs passwordless `sudo` scoped to these specific commands on each host (a narrow `/etc/sudoers.d` entry, not blanket `NOPASSWD`) or you'll get an interactive password prompt per host, per run.
 
 ## Unifying Behind One Endpoint: LiteLLM
 
@@ -254,7 +291,7 @@ The bundle's model choices (`qwen2.5-72b-instruct` on Strix Halo, `qwen2.5-14b-i
 
 ## Bring-Up Order
 
-1. Bring up each machine's model server first, independently, and confirm each one answers `curl http://<ip>:<port>/v1/models` before wiring anything else to it.
+1. Install each machine's model server as a supervised service (see [Starting and Supervising the Fleet](#starting-and-supervising-the-fleet)), independently, and confirm each one answers `curl http://<ip>:<port>/v1/models` before wiring anything else to it.
 2. Confirm [Option 1](#option-1-three-independent-lanes) works — point one harness instance at each endpoint by hand.
 3. Add [Option 2](#option-2-asymmetric-task-routing-via-named-providers)'s named-provider config to whichever harness you're using, and confirm `/model` switching reaches all three.
 4. Only then add LiteLLM in front, if you want one URL instead of three. Test the proxy against each backend individually (`model_name` per machine) before pointing a harness at it.
@@ -275,5 +312,7 @@ The bundle's model choices (`qwen2.5-72b-instruct` on Strix Halo, `qwen2.5-14b-i
 - [NousResearch/hermes-agent issue #32704 — Capability-Based Multi-Model Routing](https://github.com/NousResearch/hermes-agent/issues/32704) — confirmation that automatic task-aware routing across models is a feature request, not a shipped capability.
 - [deepseek-ai/deepseek-harness — docs/architecture.md](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/architecture.md) and [docs/subsystems/subagent.md](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/subsystems/subagent.md) — the subagent capability seam, named providers (`spawn`, `fork`, `claude-code`, `codex`), and the `agentOptions` provider/model override mechanism.
 - This repo's own [STRIX-HALO.md](./STRIX-HALO.md), [MAC-MINI-M4.md](./MAC-MINI-M4.md), [CLI.md](./CLI.md), and [PROVIDERS.md](./PROVIDERS.md) — the two-machine patterns, per-harness config schemas, and LiteLLM setup this document extends to three machines rather than restating from scratch.
+- [ss64.com — launchctl](https://ss64.com/mac/launchctl.html) and community `launchctl` references — the modern `bootstrap`/`bootout`/`kickstart` syntax and `system`/`gui/$UID` domain distinction used in [Starting and Supervising the Fleet](#starting-and-supervising-the-fleet).
+- Community reports on ROCm environment variables under systemd (e.g. `HSA_OVERRIDE_GFX_VERSION` needing an explicit unit-file `Environment=` line, not just shell inheritance) — cross-checked against this repo's own [STRIX-HALO.md — Building llama.cpp for gfx1151](./STRIX-HALO.md#building-llamacpp-for-gfx1151), which already calls out the same requirement.
 
 This document was assembled from the above sources and cross-checked against this repo's existing per-machine and per-harness documentation; none of it was independently run on an actual GS63/GTX 1060 laptop by the author. Treat the GS63-specific commands and model recommendations as a well-sourced starting point to verify on your own hardware, and treat the Hermes auxiliary-slot and DeepSeek Harness subagent sections as pointers to the right upstream docs to check at whatever version you install, not copy-pasteable guarantees — both projects are moving fast enough that exact keys and APIs may have shifted since this was written.

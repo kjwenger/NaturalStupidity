@@ -1,0 +1,52 @@
+# orchestration/systemd/llama-server.service
+#
+# One template, two machines (Strix Halo and the GS63 — both Linux). Copy to
+# /etc/systemd/system/llama-server.service on each and adjust the marked
+# lines. This is a SYSTEM unit (not `--user`), so it starts at boot with no
+# login session and no `loginctl enable-linger` needed; manage it with
+# `sudo systemctl ...`, not `systemctl --user ...`.
+#
+# Install:
+#   sudo cp llama-server.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now llama-server
+#
+# See ORCHESTRATION.md#starting-and-supervising-the-fleet for the reasoning
+# behind running this as a service instead of a backgrounded shell.
+
+[Unit]
+Description=llama.cpp server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=<your-username>                    # runs as you, not root, so it can see your models/build
+WorkingDirectory=/home/<your-username>/llama.cpp
+
+# --- Strix Halo ONLY: ROCm needs these in every shell that runs llama-server,
+# systemd's included — see STRIX-HALO.md#building-llamacpp-for-gfx1151.
+# Delete both lines on the GS63 (plain CUDA build, no ROCm involved). ---
+Environment="ROCM_HOME=/opt/rocm-7.2.2"
+Environment="HSA_OVERRIDE_GFX_VERSION=11.5.1"
+
+# --- Strix Halo (128GB, heavy model) — keep this ExecStart, delete the GS63 one below. ---
+ExecStart=/home/<your-username>/llama.cpp/build/bin/llama-server \
+  --jinja -c 65536 -ngl 99 --flash-attn on \
+  -m /home/<your-username>/models/qwen2.5-72b-instruct-Q4_K_M.gguf \
+  --host 0.0.0.0 --port 8080
+
+# --- GS63 (6GB, small model) — use this ExecStart instead, delete the one above.
+# No ROCm Environment= lines needed. No --flash-attn: this card's compute
+# capability (6.1) is below what Flash Attention requires (>=7.5) — see
+# ORCHESTRATION.md#no-flash-attention-on-this-card.
+# ExecStart=/home/<your-username>/llama.cpp/build/bin/llama-server \
+#   --jinja -c 16384 -ngl 20 \
+#   -m /home/<your-username>/models/llama-3.1-8b-instruct-Q4_K_M.gguf \
+#   --host 0.0.0.0 --port 8082
+
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

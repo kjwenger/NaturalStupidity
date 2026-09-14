@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  orchestration/launchd/com.local.mlx-server.plist
+
+  Install:
+    sudo cp com.local.mlx-server.plist /Library/LaunchDaemons/
+    sudo launchctl bootstrap system /Library/LaunchDaemons/com.local.mlx-server.plist
+
+  Restart after a config change:
+    sudo launchctl kickstart -k system/com.local.mlx-server
+
+  Stop (fully unloads it — KeepAlive included; needs `bootstrap` again to
+  bring it back, not `kickstart`):
+    sudo launchctl bootout system/com.local.mlx-server
+
+  See ORCHESTRATION.md#starting-and-supervising-the-fleet for why this needs
+  to be a LaunchDaemon rather than the raw `mlx_lm.server` command.
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.local.mlx-server</string>
+    <key>ProgramArguments</key>
+    <array>
+        <!-- Full path required: a LaunchDaemon runs as root with a minimal
+             PATH, so a bare "mlx_lm.server" will not resolve the way it does
+             in your interactive shell. Find the real path with
+             `which mlx_lm.server` in the shell you installed it from
+             (Homebrew's default is /opt/homebrew/bin; a venv install will be
+             somewhere under that venv's bin/ instead), and use that. -->
+        <string>/opt/homebrew/bin/mlx_lm.server</string>
+        <string>--model</string>
+        <string>mlx-community/Qwen2.5-14B-Instruct-4bit</string>
+        <string>--host</string>
+        <string>0.0.0.0</string>
+        <string>--port</string>
+        <string>8081</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>/tmp/mlx-server.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/mlx-server.err</string>
+</dict>
+</plist>

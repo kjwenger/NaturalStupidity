@@ -3,6 +3,9 @@
 For the reasoning behind these files — verified upstream sourcing, the CUDA-13/Pascal and Flash-Attention caveats for the GTX 1060 route, and how far Hermes' auxiliary slots and DSH's subagent delegation actually go today — see [../ORCHESTRATION.md](../ORCHESTRATION.md#a-ready-to-run-starter-bundle). That document also flags two things to fix here before a first run: drop `-fa` from the GS63/GTX-1060 `llama-server` command below (that card doesn't support Flash Attention), and double-check the `auxiliary.*` key names in `hermes_config_snippet.yaml` against whatever Hermes version you have installed.
 
 Files in this bundle:
+- `systemd/llama-server.service` — supervised-service template for Strix Halo and the GS63 (both Linux)
+- `launchd/com.local.mlx-server.plist` — supervised-service template for the Mac Mini
+- `fleet.sh` — SSH fan-out script to start/stop/restart/check all three once the above are installed
 - `litellm_config.yaml` — unifying router in front of all three machines
 - `hermes_config_snippet.yaml` — merge into `~/.hermes/config.yaml`
 - `dsh_settings_snippet.yaml` — merge into `~/.dsh/settings.yaml`
@@ -11,6 +14,8 @@ Replace every hostname/port/model-id placeholder with your real values before
 starting. Get exact model ids by curling each server's `/v1/models` once it's up.
 
 ## 1. Start a model server on each machine
+
+**For anything beyond a quick manual test**, install these as supervised services instead of running the raw commands below in a terminal you might close — use `systemd/llama-server.service` (Strix Halo, GS63) and `launchd/com.local.mlx-server.plist` (Mac Mini), then `fleet.sh` to control all three at once. See [../ORCHESTRATION.md#starting-and-supervising-the-fleet](../ORCHESTRATION.md#starting-and-supervising-the-fleet) for the full reasoning and install steps. The raw commands below are still useful for a first-time smoke test before wrapping them in a service file.
 
 **Strix Halo (128GB unified) — heavy model, llama.cpp with Vulkan (or ROCm if
 your build supports it):**
