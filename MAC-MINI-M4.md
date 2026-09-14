@@ -12,6 +12,10 @@
   * [Making the Mac Mini Available to Harnesses](#making-the-mac-mini-available-to-harnesses)
   * [Working with BosGameM5 (Strix Halo)](#working-with-bosgamem5-strix-halo)
   * [Alternative Runtimes: Ollama and LM Studio](#alternative-runtimes-ollama-and-lm-studio)
+  * [Using the Neural Engine (ANE)](#using-the-neural-engine-ane)
+    * [Why MLX Won't Get You There](#why-mlx-wont-get-you-there)
+    * [Core AI: Apple's New Framework — Not a Local Server](#core-ai-apples-new-framework--not-a-local-server)
+    * [What's Actually Usable Today: whisper.cpp's Core ML Encoder](#whats-actually-usable-today-whispercpps-core-ml-encoder)
   * [Troubleshooting and Gotchas](#troubleshooting-and-gotchas)
   * [Sources](#sources)
 <!-- TOC -->
@@ -139,6 +143,46 @@ Both work identically on a Mac Mini as on any other machine — see [RUNTIMES.md
 
 MLX generally edges out both in raw throughput on Apple Silicon (Apple's own framework, no translation layer), but Ollama/LM Studio's GUI and simpler model management may be worth the small performance gap for a machine you're not optimizing to the last token/sec.
 
+## Using the Neural Engine (ANE)
+
+This M4 also has a 16-core **Apple Neural Engine**, separate from the GPU everything above targets. Short version: it won't make your chat model faster, and there's no off-the-shelf way to point a harness at it — but it's a real, mature win for one specific job this machine already does.
+
+### Why MLX Won't Get You There
+
+**MLX does not use the ANE at all** — Apple's own framework targets CPU and GPU (via Metal) only. This isn't a missing feature you can flip on; it's the framework's design. So nothing in [Installing MLX](#installing-mlx) or [Running a Model](#running-a-model) above ever touches the Neural Engine, regardless of model or flags.
+
+### Core AI: Apple's New Framework — Not a Local Server
+
+Apple's WWDC 2026 announcement, **Core AI**, is the actual successor to Core ML for running transformers/LLMs on-device, and it does reach the ANE — supporting both custom PyTorch model conversion and Apple's own pre-optimized open-source models, up to 70B-class with reasoning. Two things temper how useful that is for this document's purposes:
+
+- **It's a Swift API embedded in an app, not a local server.** Unlike everything else in [RUNTIMES.md](./RUNTIMES.md) (MLX, Ollama, LM Studio), there's no daemon to install that exposes an OpenAI-compatible endpoint — using Core AI means writing (or finding someone else's) a small Swift app that wraps it and exposes HTTP itself. That's a real development project, not a runtime you `brew install`.
+- **Apple's own benchmarks favor the GPU path over the ANE path even within Core AI itself** — one published comparison showed Core AI's GPU compute at 181 tok/s versus its own ANE compute at 49 tok/s on the same device. Core ML's ANE path was slower still (39 tok/s). So even if you did build a Core AI wrapper, don't expect the ANE route within it to beat MLX on the GPU for raw chat throughput — the pattern holds across Apple's own frameworks, not just against MLX specifically.
+
+Given how new this is (three months old as of this writing) and that Apple's announcement doesn't clearly state a minimum chip generation, treat Mac Mini M4 support as unconfirmed until you check Apple's current developer documentation directly — this is bleeding-edge enough that it may be gated to M5 or newer.
+
+### What's Actually Usable Today: whisper.cpp's Core ML Encoder
+
+The one mature, directly-installable ANE win on this machine: **[whisper.cpp](https://github.com/ggml-org/whisper.cpp)'s Core ML backend** for its encoder, reported at **more than 3x faster than CPU-only**. This is a good fit specifically because this machine is already a reasonable candidate for transcription duty in a multi-machine setup:
+
+```bash
+# Python deps for the one-time conversion step
+pip install ane_transformers openai-whisper coremltools
+xcode-select --install
+
+# Convert a GGML whisper model to an ANE-targeted Core ML model
+./models/generate-coreml-model.sh base.en
+# produces models/ggml-base.en-encoder.mlmodelc
+
+# Build whisper.cpp with Core ML support
+cmake -B build -DWHISPER_COREML=1
+cmake --build build -j --config Release
+```
+
+Notes:
+- Python 3.11 is recommended; macOS Sonoma (14) or newer avoids some transcription-hallucination issues seen on older macOS versions.
+- The **first run after conversion is slow** — the ANE service compiles the Core ML model to a device-specific format on first use. Subsequent runs are fast.
+- This only accelerates the **encoder**; it's still the right lever to pull, since encoding is the expensive half of Whisper inference.
+
 ## Troubleshooting and Gotchas
 
 - **A 9B model loads fine but the machine feels sluggish under a long agent session.** You're likely hitting memory pressure from KV cache growth over a long conversation, not the model weights themselves — reduce `--max-tokens`/context length, or see [Raising the GPU Memory Ceiling](#raising-the-gpu-memory-ceiling) for a small bump.
@@ -148,6 +192,9 @@ MLX generally edges out both in raw throughput on Apple Silicon (Apple's own fra
 
 ## Sources
 
+- [InfoQ — Apple Launches Core AI for Apple-Silicon Optimized On-Device Generative AI](https://www.infoq.com/news/2026/06/apple-core-ai-wwdc/) — Core AI's scope, Swift-API-only deployment model, and its relationship to Core ML and MLX.
+- [Contra Collective — GPU vs Apple Neural Engine for Local LLM Inference on M5 Max: Why the Runtimes Skip the ANE](https://contracollective.com/blog/gpu-vs-apple-neural-engine-local-llm-inference-m5-max-2026) and the MLBoy/Medium Core AI vs. MLX benchmark — the GPU-beats-ANE throughput numbers cited above (181 vs. 49 vs. 39 tok/s across Core AI/Core ML paths).
+- [ggml-org/whisper.cpp README](https://github.com/ggml-org/whisper.cpp) — the Core ML/ANE encoder setup commands, Python dependencies, and the first-run ANE-compile behavior.
 - [ivanopcode/devnote-override-macos-metal-vram-cap](https://github.com/ivanopcode/devnote-override-macos-metal-vram-cap) — `iogpu.wired_limit_mb` command, persistence caveats, safe headroom guidance.
 - [modelpiper.com — iogpu.wired_limit_mb on Mac](https://modelpiper.com/blog/iogpu-wired-limit-mb-mac) and [Peddals Blog — Optimizing VRAM Settings for Local LLM on macOS](https://blog.peddals.com/en/fine-tune-vram-size-of-mac-for-llm/) — cross-checks on default GPU memory percentage and tuning approach.
 - [LM Studio — Serve on Local Network](https://lmstudio.ai/docs/developer/core/server/serve-on-network) and [LM Studio — Authentication](https://lmstudio.ai/docs/developer/core/authentication) — `lms server start --bind`, and the auth option mlx-lm's server lacks.

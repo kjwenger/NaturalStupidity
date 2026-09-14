@@ -24,6 +24,11 @@
     * [Option 2: Asymmetric Task Routing (Small Model on the Mac, Big Model on Strix Halo)](#option-2-asymmetric-task-routing-small-model-on-the-mac-big-model-on-strix-halo)
     * [Option 3: Model Sharding Across Both Machines (llama.cpp RPC)](#option-3-model-sharding-across-both-machines-llamacpp-rpc)
   * [vLLM on ROCm (for Concurrent/Throughput Workloads)](#vllm-on-rocm-for-concurrentthroughput-workloads)
+  * [Using the NPU (XDNA2)](#using-the-npu-xdna2)
+    * [Requirements](#requirements)
+    * [Installing FastFlowLM via Lemonade](#installing-fastflowlm-via-lemonade)
+    * [What the NPU Is Actually Good For Here](#what-the-npu-is-actually-good-for-here)
+    * [Rougher, More Experimental Alternatives](#rougher-more-experimental-alternatives)
   * [Troubleshooting and Gotchas](#troubleshooting-and-gotchas)
   * [Sources](#sources)
 <!-- TOC -->
@@ -43,7 +48,7 @@ This matters because it's the whole reason "how much VRAM do I have" is a *kerne
    Many Strix Halo boards, including BOSGAME's M5, expose this as **Advanced → GFX Configuration → iGPU Configuration → UMA_SPECIFIED**, which then unlocks a **UMA Frame Buffer Size** slider — on a 128GB board this typically tops out at **96GB**. That 96GB ceiling is a *fixed, static* carve-out aimed at Windows (where AMD Adrenalin's own "Variable Graphics Memory" slider works the same way, also capped around 96GB on this class of hardware) — it permanently reserves that much RAM for the GPU whether you're using it or not, and 96GB is the hard maximum the BIOS will ever hand out, full stop.
 
    **On Linux this setting works against you.** Leave `UMA_SPECIFIED` off entirely (back to `Auto`, or the smallest explicit option if `Auto` isn't offered) and let the kernel's TTM/GTT mechanism do the real allocation instead, in [Kernel / GRUB Configuration](#kernel--grub-configuration) below — it can exceed the BIOS's 96GB ceiling (up to ~124GB is realistic, see the sizing table below), costs nothing when idle since it's demand-mapped rather than permanently reserved, and — per AMD's own ROCm docs — carries no performance penalty versus a BIOS-reserved framebuffer, because it's all the same physical LPDDR5X either way.
-2. **IOMMU:** leave enabled unless you have a specific reason not to. Fully disabling it (`amd_iommu=off`) is reported to give a small (~6%) throughput bump on some setups, but it also disables IOMMU-based isolation. A middle ground some ROCm/vLLM setups use instead is **IOMMU passthrough** (`iommu=pt`, set at the kernel/GRUB level below) — keeps IOMMU nominally on while avoiding most of the translation overhead. Pick disable-entirely only if this box is a dedicated inference appliance you don't otherwise care about isolating.
+2. **IOMMU:** leave enabled unless you have a specific reason not to. Fully disabling it (`amd_iommu=off`) is reported to give a small (~6%) throughput bump on some setups, but it also disables IOMMU-based isolation **and the NPU** — the `amdxdna` driver refuses to initialize without IOMMU (it needs carveout memory that only exists when IOMMU is on), so `amd_iommu=off` and [using the NPU](#using-the-npu-xdna2) below are mutually exclusive. A middle ground some ROCm/vLLM setups use instead is **IOMMU passthrough** (`iommu=pt`, set at the kernel/GRUB level below) — keeps IOMMU nominally on (so the NPU still works) while avoiding most of the translation overhead. This is also what the GRUB line in [Kernel / GRUB Configuration](#kernel--grub-configuration) below already uses, so if you've followed this document's own setup, the NPU's IOMMU requirement is already satisfied. Pick disable-entirely only if this box is a dedicated inference appliance you don't otherwise care about isolating — and don't plan to use the NPU.
 3. **TDP / power mode:** optional — some guides bump this to 85W for sustained inference throughput on APUs that ship with a lower default.
 
 ## Kernel / GRUB Configuration
@@ -403,6 +408,56 @@ Notes:
 - First request after starting the server is slow (Triton kernel compilation); subsequent requests use the cache at `~/.cache/vllm/`.
 - This exposes the same OpenAI-compatible `/v1/chat/completions` API as everything else in [RUNTIMES.md](./RUNTIMES.md) — point any tool from [CLI.md](./CLI.md) at `http://localhost:8000/v1`.
 
+## Using the NPU (XDNA2)
+
+Strix Halo's die also carries a **50 TOPS XDNA2 NPU**, entirely separate from the Radeon 8060S iGPU everything above this section targets. Working Linux LLM inference on it is genuinely new — the first end-to-end path shipped in **Lemonade 10.0, March 2026** — so treat this section as further ahead of the stability curve than anything else in this document.
+
+**Set expectations correctly first:** the NPU does not make your main model faster. It's a separate, much smaller compute unit optimized for sustained low-power inference, not raw throughput — the iGPU remains the right tool for the [heavy models this document already recommends](#recommended-models-for-a-128gb-strix-halo). What the NPU is actually for is covered in [What the NPU Is Actually Good For Here](#what-the-npu-is-actually-good-for-here) below, and it's a smaller, more specific win than "faster chat."
+
+### Requirements
+
+- **Kernel 7.0+** with the in-tree `amdxdna` driver, or `amdxdna-dkms` as a backport on an older kernel. Check yours the same way as the GTT sizing section above: `uname -r`.
+- **NPU firmware ≥ 1.1.0.0.** Verify with `cat /sys/bus/pci/drivers/amdxdna/*/fw_version` once the driver is loaded.
+- **IOMMU enabled** — see the updated note in [BIOS Configuration](#bios-configuration) above. If you've followed this document's own GRUB line (`iommu=pt`), you already satisfy this; `amd_iommu=off` disables the NPU outright (and can break mobile suspend on hardware that has it), so that ~6% throughput bump isn't free if you want the NPU too.
+
+### Installing FastFlowLM via Lemonade
+
+[Lemonade](./RUNTIMES.md#lemonade-installation) (already covered in RUNTIMES.md) is the practical entry point — its NPU backend is powered by **FastFlowLM (`flm`)**. On Ubuntu:
+
+```bash
+sudo add-apt-repository ppa:lemonade-team/stable
+sudo apt update
+sudo apt install libxrt-npu2 amdxdna-dkms
+sudo reboot
+
+# Install the flm package (get the current .deb from the FastFlowLM/Lemonade releases)
+sudo apt install ./<flm_package.deb>
+```
+
+Validate the driver and firmware:
+```bash
+flm validate
+```
+A working setup reports the device (`/dev/accel/accel0`) and firmware version directly. Then confirm Lemonade itself sees the NPU:
+```bash
+lemonade backends
+```
+
+Exact `flm`/`lemonade` model-pull commands and NPU-specific model naming are moving fast enough that they're not worth freezing into this document — check `flm --help` and `lemonade list` on your installed version rather than trusting a copy-pasted model name here.
+
+### What the NPU Is Actually Good For Here
+
+The one concrete capability worth calling out: FastFlowLM supports a **multi-instance mode**, running an LLM, audio transcription, and embeddings **concurrently on the NPU** — meaning those smaller, secondary workloads don't have to compete with your main model for the iGPU's memory bandwidth or compute at all. Concretely, that's a genuine alternative to [sending embeddings/STT work to the GS63](./ORCHESTRATION.md#the-more-realistic-role-embeddings-and-speech-to-text) in the three-machine setup — you can keep that work local to Strix Halo's NPU instead, with zero network hop, and leave the iGPU fully dedicated to the heavy model. Which is better depends on whether you'd rather spend a network round-trip or a slice of this one box's power budget — both are legitimate.
+
+### Rougher, More Experimental Alternatives
+
+Community projects exist below Lemonade/FastFlowLM's level of polish, in case you want to go further:
+
+- A **llama.cpp fork with an XDNA2 NPU backend** offloads matrix-multiply operations to the NPU via XRT kernel dispatch, falling back to CPU for everything else — a genuinely different, non-mainline fork (same category of risk this document already flags for the [community ROCmFP4 ggml fork](#models-built-or-tuned-specifically-for-this-hardware): giving up the officially-maintained llama.cpp build, smaller community, no guarantee of staying current).
+- A **from-scratch Rust inference engine using hand-written AIE kernels** (via the open MLIR-AIE/IRON stack) runs transformer and conv models on the NPU directly — the most "close to the metal" option, and correspondingly the least turnkey.
+
+Both are worth knowing exist; neither is where to start if your goal is "get something working today" — that's Lemonade/FastFlowLM above.
+
 ## Troubleshooting and Gotchas
 
 - **`rocm-smi` shows ~1 GiB VRAM and you're worried the setup is broken.** It isn't — see [The Unified Memory Model](#the-unified-memory-model-read-this-first). Check `/sys/module/ttm/parameters/pages_limit` instead (see [Sizing the GTT Aperture](#sizing-the-gtt-aperture-for-128gb) for the verification command).
@@ -415,6 +470,10 @@ Notes:
 
 ## Sources
 
+- [lemonade-server.ai — Running LLMs on Linux with FastFlowLM](https://lemonade-server.ai/flm_npu_linux.html) — the Linux NPU install steps, kernel/firmware requirements, and the IOMMU requirement.
+- [Phoronix — Lemonade 10.0.1 Improves Setup Process for AMD Ryzen AI NPUs on Linux](https://www.phoronix.com/news/Lemonade-10.0.1) and [DeepWiki — lemonade-sdk NPU Support](https://deepwiki.com/lemonade-sdk/lemonade/7.4-npu-support) — Lemonade 10.0's March 2026 Linux NPU milestone and FastFlowLM's multi-instance (LLM + transcription + embeddings) mode.
+- Linux kernel mailing list patches for `accel/amdxdna` carveout memory support — the IOMMU-off-disables-the-NPU behavior and the `iommu=pt` workaround.
+- [BrandedTamarasu-glitch/OllamaAMDNPU](https://github.com/BrandedTamarasu-glitch/OllamaAMDNPU) and [atassis/xdna-engine](https://github.com/atassis/xdna-engine) — the community llama.cpp-fork and from-scratch Rust/MLIR-AIE alternatives mentioned as rougher options.
 - [RepoCad — quantization deep-dive (YouTube)](https://www.youtube.com/watch?v=vW0KY_8z4q0&list=PLIVW7clnv28ov8Dg_4JKH0oXNRM5jwGI1&index=16) — the numeric-representation/algorithm/container/kernel framework and the KV-cache math in this document are drawn from and cross-checked against this video.
 - [JustVugg/colibri](https://github.com/JustVugg/colibri) — the disk-streaming MoE inference engine, model requirements table, and GPU backend support.
 - [ggml-org/llama.cpp discussion #20856 — Known-Good Strix Halo ROCm + llama.cpp Stack](https://github.com/ggml-org/llama.cpp/discussions/20856) — `GGML_HIP_NO_VMM`, `GGML_HIP_MMQ_MFMA`, and the `-dio` runtime flag.
