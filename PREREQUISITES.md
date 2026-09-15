@@ -12,6 +12,12 @@
   * [pnpm](#pnpm)
   * [Bun](#bun)
   * [UV CLI](#uv-cli)
+  * [Hugging Face Hub CLI (`hf`)](#hugging-face-hub-cli-hf)
+    * [Authentication (hf)](#authentication-hf)
+    * [Downloading Models Directly (hf)](#downloading-models-directly-hf)
+    * [Discovering Models (hf)](#discovering-models-hf)
+    * [Managing the Local Cache (hf)](#managing-the-local-cache-hf)
+    * [Connecting to Claude Code and Other Agents (hf)](#connecting-to-claude-code-and-other-agents-hf)
 <!-- TOC -->
 
 ## Node.js Installation
@@ -197,3 +203,131 @@ uv tool install --native-tls --python python3.12 cecli-dev
 **Note on Local LLMs:**
 
 `uv` is a development tool and package manager; it does not connect to Large Language Models (LLMs) directly. You can use `uv` to install other AI CLI tools (like Aider-CE as shown above), and then configure those tools to use local LLMs according to their own documentation.
+
+## Hugging Face Hub CLI (`hf`)
+
+Nearly every tool in [RUNTIMES.md](./RUNTIMES.md) pulls models from the Hugging Face Hub under the hood (LM Studio, Ollama, MLX, llama.cpp's `-hf` shorthand, Unsloth, [Magnitude](./RUNTIMES.md#magnitude-installation)) — but none of them expose the Hub's own CLI directly. `hf` (the successor to the older `huggingface-cli` name, shipped by the `huggingface_hub` Python package) is worth having installed on its own for three things this repo's other tools don't cover: authenticating once for every gated repo, downloading or filtering a specific file/quant without going through a runtime's own UI, and managing the shared local cache that all of the above tools read from and write to.
+
+**Standalone installer (recommended — also installs an agent Skill, see [below](#connecting-to-claude-code-and-other-agents-hf)):**
+```bash
+# macOS/Linux
+curl -LsSf https://hf.co/cli/install.sh | bash
+
+# Windows
+powershell -ExecutionPolicy ByPass -c "irm https://hf.co/cli/install.ps1 | iex"
+```
+
+**No install (uvx, always latest, isolated):**
+```bash
+uvx hf auth login
+uvx hf download ...
+```
+
+**pip (ships with the core package):**
+```bash
+pip install -U "huggingface_hub"
+```
+
+**Homebrew:**
+```bash
+brew install hf
+```
+
+Keep it updated (detects how it was installed and runs the matching update path):
+```bash
+hf update
+```
+
+### Authentication (hf)
+
+Several models this repo references (Llama, Gemma) are gated and need a logged-in session to download:
+```bash
+hf auth login
+```
+This opens a browser device-code flow by default and saves the resulting token locally. To authenticate non-interactively (scripts, CI) instead, pass a token directly:
+```bash
+hf auth login --token $HF_TOKEN --add-to-git-credential
+```
+Check who you're logged in as, or log out, with:
+```bash
+hf auth whoami
+hf auth logout
+```
+
+### Downloading Models Directly (hf)
+
+Useful when you want one specific quant/file rather than whatever a runtime's own downloader grabs:
+```bash
+# An entire repo
+hf download HuggingFaceH4/zephyr-7b-beta
+
+# Just the files you actually need — e.g. one GGUF quant out of a multi-file repo
+hf download unsloth/Qwen3.8-27B-GGUF --include "*UD-Q6_K_XL*"
+
+# A specific revision/branch/tag
+hf download bigcode/the-stack --repo-type dataset --revision v1.1
+
+# Preview what would download (size, file count) without fetching anything
+hf download openai-community/gpt2 --dry-run
+```
+By default, files land in the same shared cache every other tool in this document reads from (`$HF_HOME`/`$HF_HUB_CACHE`, see [Managing the Local Cache](#managing-the-local-cache-hf) below) — pass `--local-dir <path>` instead if you want a plain directory of files, git-checkout style.
+
+### Discovering Models (hf)
+
+Directly relevant to this repo's recurring "which model/quant fits my hardware" question:
+```bash
+# Only models a given runtime can actually run
+hf models ls --apps llama.cpp
+
+# Filter by parameter count
+hf models ls --num-parameters min:6B,max:32B
+
+# Skip anything gated
+hf models ls --no-gated --author Qwen
+
+# Read a model's card (README) without opening a browser
+hf models card unsloth/Qwen3.8-27B-GGUF --text
+```
+
+### Managing the Local Cache (hf)
+
+Every tool in [RUNTIMES.md](./RUNTIMES.md) that pulls from the Hub shares the same on-disk cache — this is the one place to see and reclaim space across all of them at once, which matters given how large some of the models discussed in this repo are (e.g. Colibri's models running [hundreds of GB on disk](./RUNTIMES.md#colibri-installation)):
+```bash
+# See what's cached and how large, aggregated by repo
+hf cache ls
+
+# Drill into individual snapshots, filtered by size
+hf cache ls --filter "size>30g" --revisions
+
+# Remove a specific cached repo (prompts for confirmation; --dry-run to preview, --yes to skip the prompt)
+hf cache rm model/LiquidAI/LFM2-VL-1.6B
+
+# Reclaim space from detached/unreferenced revisions and leftover partial (.incomplete) downloads
+hf cache prune
+
+# Validate a cached model's files against the Hub's checksums
+hf cache verify deepseek-ai/DeepSeek-OCR
+```
+The cache location is controlled by the `HF_HOME`/`HF_HUB_CACHE` environment variables (defaulting to `~/.cache/huggingface/hub`) — the same variables [Magnitude](./RUNTIMES.md#magnitude-installation) already checks (Unsloth Studio also scans a Hugging Face cache, per its [own section above](./RUNTIMES.md#sharing-already-downloaded-lm-studio-models-with-unsloth-studio), but that section doesn't confirm it honors these same variables — check `hf env`'s output against Unsloth's actual behavior before assuming they'll agree). Pointing this cache at a larger disk (or a shared network volume) benefits at least Magnitude and `hf` itself at once. Run `hf env` to see your current settings when filing a bug report against any of these tools — it prints the resolved cache paths, token status, and library versions in one block.
+
+### Connecting to Claude Code and Other Agents (hf)
+
+`hf` ships an installable agent Skill that teaches a coding harness to search, inspect, and download from the Hub directly rather than you doing it by hand and pasting results back in. The standalone installer above installs it globally by default (pass `--exclude-skill` to skip); to add it by hand, or scope it to one project:
+```bash
+# Global, for Codex/Cursor/OpenCode/any agent reading ~/.agents/skills
+hf skills add --global
+
+# Global, specifically for Claude CLI
+hf skills add --claude --global
+
+# Project-scoped instead of global — drop --global from either command above
+hf skills add --claude
+```
+For [Claude CLI](./CLI.md#claude-cli) specifically, the plugin-marketplace route is an alternative to the standalone installer:
+```
+/plugin marketplace add huggingface/skills
+/plugin install hf-cli@huggingface/skills
+```
+`hf update` refreshes an already-installed Skill (never re-adds one you removed); `hf skills update -g` does the same on its own without a full CLI update.
+
+For the complete command reference, see the [Hugging Face Hub CLI guide](https://huggingface.co/docs/huggingface_hub/guides/cli) and the [CLI for AI Agents guide](https://huggingface.co/docs/hub/agents-cli).

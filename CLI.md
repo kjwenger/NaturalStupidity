@@ -726,6 +726,8 @@ claude --settings ~/.claude/mammouth-settings.json
 
 **Note:** This is an advanced configuration that relies on a third-party proxy. For Mammouth AI model IDs (e.g., `gpt-4.1`, `claude-sonnet-4-6`, `mistral`), see the [Mammouth AI API documentation](https://info.mammouth.ai/docs/api-quick-start/).
 
+**Searching and downloading models from within Claude Code itself:** see [PREREQUISITES.md — Connecting to Claude Code and Other Agents](./PREREQUISITES.md#connecting-to-claude-code-and-other-agents-hf) for the Hugging Face Hub CLI's installable agent Skill (`hf skills add --claude`), which lets Claude Code search, inspect, and download Hub models/datasets directly instead of you doing it by hand.
+
 ## Cline CLI
 
 [Cline](https://cline.bot/cli) is the terminal counterpart to the popular Cline VS Code extension — one of the most-starred open-source coding agents (~67k GitHub stars). The CLI is fully scriptable/headless: pipe a `git diff` into it for an automated review, wire it into GitHub Actions, or drive it with `--json` output for programmatic parsing.

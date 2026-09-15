@@ -996,7 +996,7 @@ magnitude models status
 magnitude models load <model-id>
 magnitude models stop
 ```
-It also discovers GGUF files already sitting in your Hugging Face Hub cache (checks `HF_HUB_CACHE`, `HUGGINGFACE_HUB_CACHE`, `HF_HOME`, `XDG_CACHE_HOME` in that order, falling back to `~/.cache/huggingface/hub`) — models you've already downloaded for another tool don't need re-fetching.
+It also discovers GGUF files already sitting in your Hugging Face Hub cache (checks `HF_HUB_CACHE`, `HUGGINGFACE_HUB_CACHE`, `HF_HOME`, `XDG_CACHE_HOME` in that order, falling back to `~/.cache/huggingface/hub`) — models you've already downloaded for another tool don't need re-fetching. See [PREREQUISITES.md — Hugging Face Hub CLI](./PREREQUISITES.md#hugging-face-hub-cli-hf) for managing that shared cache directly (`hf cache ls/rm/prune`) across every tool in this document, not just Magnitude.
 
 ### OpenAI- and Anthropic-Compatible API (Magnitude)
 
