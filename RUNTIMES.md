@@ -55,6 +55,12 @@
     * [Running Models / OpenAI-Compatible API (Colibri)](#running-models--openai-compatible-api-colibri)
   * [FreeToken Installation](#freetoken-installation)
     * [Running Models / OpenAI-Compatible API (FreeToken)](#running-models--openai-compatible-api-freetoken)
+  * [Magnitude Installation](#magnitude-installation)
+    * [Service Management (Magnitude)](#service-management-magnitude)
+    * [Models and Catalog (Magnitude)](#models-and-catalog-magnitude)
+    * [OpenAI- and Anthropic-Compatible API (Magnitude)](#openai--and-anthropic-compatible-api-magnitude)
+    * [Connecting to Harnesses (Magnitude)](#connecting-to-harnesses-magnitude)
+    * [What's Unconfirmed](#whats-unconfirmed)
 <!-- TOC -->
 
 ## LM Studio Installation
@@ -956,3 +962,66 @@ curl http://127.0.0.1:1919/v1/chat/completions \
 It also exposes an Anthropic-compatible endpoint alongside the OpenAI one, per the project's own description — check `docs/cli.md` in the repo for exact routes if you're on supported (NVIDIA) hardware and want to wire it into [Claude CLI](./CLI.md#claude-cli).
 
 Apache 2.0 licensed. For more information, visit the [FreeToken GitHub repository](https://github.com/FlashML-org/FreeToken).
+
+## Magnitude Installation
+
+[Magnitude](https://magnitude.dev/) (Apache 2.0, [github.com/magnitudedev/magnitude](https://github.com/magnitudedev/magnitude)) is a local inference server built in Rust on top of llama.cpp. Its pitch is automating the busywork this whole document otherwise walks through by hand: it profiles your chip, memory, and bandwidth, ranks the model catalog by fit for your hardware, then downloads, tunes, and serves whichever model you pick — loading it into memory on the first request and unloading it again when idle or when the machine needs the RAM back.
+
+```bash
+npm i -g @magnitudedev/cli
+# or: bun add -g @magnitudedev/cli / pnpm add -g @magnitudedev/cli / yarn global add @magnitudedev/cli
+magnitude setup
+```
+
+`magnitude setup` registers a background service that starts at login (see below) and walks you through picking your first model.
+
+### Service Management (Magnitude)
+
+```bash
+magnitude service install
+magnitude service start
+magnitude service status
+magnitude service stop
+magnitude service uninstall
+```
+This is the same problem this repo's own [`orchestration/systemd/` and `orchestration/launchd/`](./ORCHESTRATION.md#starting-and-supervising-the-fleet) files solve by hand for `llama-server`/`mlx_lm.server` — Magnitude manages its own service registration instead of you writing a unit file.
+
+### Models and Catalog (Magnitude)
+
+```bash
+magnitude catalog list
+magnitude catalog pull <model-id>
+magnitude catalog remove <model-id>
+magnitude models status
+magnitude models load <model-id>
+magnitude models stop
+```
+It also discovers GGUF files already sitting in your Hugging Face Hub cache (checks `HF_HUB_CACHE`, `HUGGINGFACE_HUB_CACHE`, `HF_HOME`, `XDG_CACHE_HOME` in that order, falling back to `~/.cache/huggingface/hub`) — models you've already downloaded for another tool don't need re-fetching.
+
+### OpenAI- and Anthropic-Compatible API (Magnitude)
+
+The service listens on loopback:
+```
+OpenAI-compatible:    http://127.0.0.1:10100/inference/v1
+Anthropic-compatible: http://127.0.0.1:10100/inference/anthropic
+```
+The Anthropic-compatible route is genuinely useful — it means [Claude CLI](./CLI.md#claude-cli) can point at Magnitude directly on the same machine with no [LiteLLM translation proxy](./PROVIDERS.md#litellm) needed, unlike most other OpenAI-only runtimes in this document.
+
+### Connecting to Harnesses (Magnitude)
+
+```bash
+magnitude connections add <harness> [--set-model <model-id>] [--install-skill]
+magnitude connections sync [harness]
+magnitude connections list
+magnitude connections remove <harness>
+```
+Documented harnesses: Pi, OpenCode, Hermes, OpenClaw, Codex, [Claude CLI](./CLI.md#claude-cli), Oh My Pi, and Cline — covering [several entries already in CLI.md](./CLI.md). Note per Magnitude's own docs: "Codex and Claude Code connections depend on the Magnitude background service" being up.
+
+### What's Unconfirmed
+
+> **⚠️ Verify these against your own hardware before relying on this document's other per-machine setups over it.**
+> - **Network binding isn't documented either way.** The service listens on `127.0.0.1`; nothing in the published docs confirms whether it can bind to `0.0.0.0` for LAN access from another machine. If it can't, Magnitude is a same-box tool — useful as a drop-in for a single machine's server, but [this repo's three-machine setup](./ORCHESTRATION.md) would still need its LiteLLM router in front, same architecture as today, just with Magnitude swapped in for the hand-run `llama-server`/`mlx_lm.server` processes.
+> - **AMD/ROCm depth for Strix Halo-class hardware is unclear.** Magnitude's own site claims AMD GPU support; the technical docs available at time of writing only explicitly name "Metal or CUDA" as detected acceleration. Whether that extends properly to gfx1151/ROCm (or falls back to Vulkan, or CPU) isn't spelled out — check `magnitude models status` on your actual [Strix Halo box](./STRIX-HALO.md) before assuming GPU offload is happening.
+> - **No MLX on Apple Silicon.** Magnitude is llama.cpp everywhere, including Mac. This document's own [MLX section](#mlx-installation-macos-only) and [MAC-MINI-M4.md](./MAC-MINI-M4.md#alternative-runtimes-ollama-and-lm-studio) both note MLX edges out llama.cpp's Metal backend on Apple Silicon — so Magnitude on a memory-constrained 16GB Mac Mini specifically could be a step down from the MLX setup already recommended there, not an upgrade.
+
+For more information, visit [magnitude.dev](https://magnitude.dev/) and the [Magnitude documentation](https://docs.magnitude.dev/).

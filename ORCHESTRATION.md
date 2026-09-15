@@ -169,6 +169,8 @@ One gotcha this plist calls out inline: a LaunchDaemon runs as **root with a min
 
 [`orchestration/fleet.sh`](./orchestration/fleet.sh) is the thin remote-control layer on top of the above — `./fleet.sh {start|stop|restart|status}` fans an SSH command out to all three hosts. It assumes the service files above are already installed; it's not a substitute for them, and it needs passwordless `sudo` scoped to these specific commands on each host (a narrow `/etc/sudoers.d` entry, not blanket `NOPASSWD`) or you'll get an interactive password prompt per host, per run.
 
+**Worth watching:** [Magnitude](./RUNTIMES.md#magnitude-installation) bundles most of this section into one tool — hardware profiling, model download/selection, and its own service supervision (`magnitude service install/start`) in place of the systemd/launchd files above. It's not a drop-in replacement yet, though: whether it can bind beyond loopback for LAN access (needed for a networked three-machine setup at all) isn't documented either way, and its AMD/ROCm depth for Strix Halo specifically is unconfirmed. See [RUNTIMES.md's caveats](./RUNTIMES.md#whats-unconfirmed) before trying it in place of the setup above.
+
 ## Unifying Behind One Endpoint: LiteLLM
 
 [PROVIDERS.md — LiteLLM](./PROVIDERS.md#litellm) already covers installation and the general config shape for cloud backends (Anthropic, Bedrock). The same proxy works identically for local OpenAI-compatible servers — just point `litellm_params.api_base` at each machine instead of a cloud endpoint:
@@ -199,7 +201,7 @@ model_list:
 litellm --config ~/litellm-fleet.yaml --port 4000
 ```
 
-Every harness now points at one URL (`http://localhost:4000/v1`) and picks a machine by `model_name`, per [PROVIDERS.md — API Endpoint (LiteLLM)](./PROVIDERS.md#api-endpoint-litellm). This is also the piece that lets **Claude Code** — which speaks the Anthropic `/v1/messages` shape, not OpenAI's — reach any of these three local models: the same translation pattern already documented for [Claude with Mammouth AI](./CLI.md#using-claude-with-mammouth-ai) applies unchanged, just with `api_base` pointed at one of the three machines above instead of a cloud gateway.
+Every harness now points at one URL (`http://localhost:4000/v1`) and picks a machine by `model_name`, per [PROVIDERS.md — API Endpoint (LiteLLM)](./PROVIDERS.md#api-endpoint-litellm). This is also the piece that lets **Claude Code** — which speaks the Anthropic `/v1/messages` shape, not OpenAI's — reach any of these three local models: the same translation pattern already documented for [Claude with Mammouth AI](./CLI.md#using-claude-with-mammouth-ai) applies unchanged, just with `api_base` pointed at one of the three machines above instead of a cloud gateway. (If a given machine runs [Magnitude](./RUNTIMES.md#magnitude-installation) instead, this translation step isn't needed at all *for a harness running on that same machine* — Magnitude exposes an Anthropic-compatible route directly. It doesn't help Claude Code reach Magnitude on a *different* machine, though, since Magnitude's LAN-binding story is unconfirmed — see the caveat above.)
 
 LiteLLM itself can also do the availability-based part of "routing" — fallback chains and load balancing across the `model_list` entries — but that's routing by whether an endpoint is up, not by what a given task actually needs. For task-aware routing, see what Hermes Agent and DeepSeek Harness each actually offer below.
 
