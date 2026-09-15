@@ -17,6 +17,7 @@
     * [Downloading Models Directly (hf)](#downloading-models-directly-hf)
     * [Discovering Models (hf)](#discovering-models-hf)
     * [Managing the Local Cache (hf)](#managing-the-local-cache-hf)
+    * [Bridging Already-Downloaded LM Studio Models (hf)](#bridging-already-downloaded-lm-studio-models-hf)
     * [Connecting to Claude Code and Other Agents (hf)](#connecting-to-claude-code-and-other-agents-hf)
 <!-- TOC -->
 
@@ -309,6 +310,34 @@ hf cache prune
 hf cache verify deepseek-ai/DeepSeek-OCR
 ```
 The cache location is controlled by the `HF_HOME`/`HF_HUB_CACHE` environment variables (defaulting to `~/.cache/huggingface/hub`) — the same variables [Magnitude](./RUNTIMES.md#magnitude-installation) already checks (Unsloth Studio also scans a Hugging Face cache, per its [own section above](./RUNTIMES.md#sharing-already-downloaded-lm-studio-models-with-unsloth-studio), but that section doesn't confirm it honors these same variables — check `hf env`'s output against Unsloth's actual behavior before assuming they'll agree). Pointing this cache at a larger disk (or a shared network volume) benefits at least Magnitude and `hf` itself at once. Run `hf env` to see your current settings when filing a bug report against any of these tools — it prints the resolved cache paths, token status, and library versions in one block.
+
+### Bridging Already-Downloaded LM Studio Models (hf)
+
+If you already have models under `~/.lmstudio/models/<publisher>/<repo>/<file>.gguf` (LM Studio's own layout — see [LM Studio Installation](./RUNTIMES.md#lm-studio-installation)), neither `hf cache ls` nor [Magnitude's](./RUNTIMES.md#magnitude-installation) documented "discovers GGUF packages already sitting in your Hugging Face Hub cache" behavior will recognize them — both only look at the Hub's own content-addressed cache layout, which is a completely different shape:
+
+```
+models--<publisher>--<repo>/
+├── blobs/<hash>                                  # the actual file, named by its hash
+├── refs/main                                     # the commit hash for "main"
+└── snapshots/<commit-hash>/<file> -> ../../blobs/<hash>
+```
+
+[`scripts/bridge-lmstudio-to-hf-cache.sh`](../scripts/bridge-lmstudio-to-hf-cache.sh) builds that layout for every model already under `~/.lmstudio/models`, **without copying or re-downloading anything** — each blob is a symlink straight back to the real LM Studio file:
+
+```bash
+./scripts/bridge-lmstudio-to-hf-cache.sh --dry-run   # preview first
+./scripts/bridge-lmstudio-to-hf-cache.sh             # then actually bridge everything
+```
+
+It resolves each repo's real current commit hash via `huggingface_hub`'s `resolve_revision()` (one Hub API call per repo, needs network) so a *future* `hf download`/`hf_hub_download()`/`snapshot_download()` call for that same repo+revision recognizes the bridged entry and skips re-fetching, rather than just making `hf cache ls` cosmetically list it. Requires `python3` with `huggingface_hub` importable, or falls back to `uvx --from huggingface_hub` if `uv` is installed.
+
+Afterward, verify with `hf cache ls`, and check whether Magnitude picked it up with `magnitude catalog list` / `magnitude models status` — Magnitude's own docs don't spell out every detail of its scan, so this is worth confirming rather than assuming.
+
+**Worth being upfront about:** this hand-constructs cache internals that `huggingface_hub`'s own documentation describes as implementation detail (see the [manage-cache guide](https://huggingface.co/docs/huggingface_hub/guides/manage-cache)), not an officially supported "adopt an external file" API. It matches the documented layout as of this writing — verified against `scan_cache_dir()` reporting the bridged entries with no warnings — but isn't guaranteed stable across future `huggingface_hub` versions.
+
+**None of this is needed just to *run* these models** — `llama-server -m ~/.lmstudio/models/.../file.gguf` (or Ollama, or anything llama.cpp-based) works directly from that path exactly as-is. The cache format only matters for `hf`'s and Magnitude's own bookkeeping/dedup, not for serving.
+
+**If you'd rather make these models visible to Unsloth Studio instead** (or as well) — that's a much simpler plain directory symlink, since both apps already share the same `<publisher>/<repo>/<file>.gguf` layout: see [RUNTIMES.md — Sharing Already-Downloaded LM Studio Models with Unsloth Studio](./RUNTIMES.md#sharing-already-downloaded-lm-studio-models-with-unsloth-studio) and [`scripts/bridge-lmstudio-to-unsloth.sh`](../scripts/bridge-lmstudio-to-unsloth.sh) (macOS/Linux) / [`scripts/bridge-lmstudio-to-unsloth.ps1`](../scripts/bridge-lmstudio-to-unsloth.ps1) (Windows).
 
 ### Connecting to Claude Code and Other Agents (hf)
 

@@ -720,6 +720,8 @@ foreach ($pub in Get-ChildItem "$env:USERPROFILE\.lmstudio\models" -Directory) {
 
 A new publisher LM Studio hasn't downloaded from before needs the loop re-run once. Unsloth Studio's own docs note that GGUF models are **inference-only** — they won't show up as fine-tunable in the Fine-tuned tab, only in the chat/inference model picker, which is the same way LM Studio itself treats them.
 
+Both loops above are also available as ready-to-run, idempotent scripts — [`scripts/bridge-lmstudio-to-unsloth.sh`](../scripts/bridge-lmstudio-to-unsloth.sh) (macOS/Linux) and [`scripts/bridge-lmstudio-to-unsloth.ps1`](../scripts/bridge-lmstudio-to-unsloth.ps1) (Windows, junction-based) — see [`scripts/README.md`](../scripts/README.md). (If you'd rather bridge LM Studio models into `hf`'s and [Magnitude's](#magnitude-installation) cache instead, that needs an actual format conversion, not a plain symlink — see [PREREQUISITES.md — Bridging Already-Downloaded LM Studio Models](./PREREQUISITES.md#bridging-already-downloaded-lm-studio-models-hf).)
+
 ### Fine-Tuning (Training) — the One Thing This Tool Does That the Others Can't
 
 Every other runtime in this document (LM Studio, Ollama, MLX, EXO, Lemonade, llama.cpp, vLLM) is **inference-only** — they run models, they don't train them. Unsloth is the exception, and it's the reason to actually install it rather than treat it as a third redundant way to serve GGUFs you already run through LM Studio or llama.cpp.
