@@ -60,6 +60,7 @@
     * [Models and Catalog (Magnitude)](#models-and-catalog-magnitude)
     * [OpenAI- and Anthropic-Compatible API (Magnitude)](#openai--and-anthropic-compatible-api-magnitude)
     * [Connecting to Harnesses (Magnitude)](#connecting-to-harnesses-magnitude)
+    * [Confirmed on Real Hardware: Discovery Doesn't Adopt Arbitrary Local GGUFs](#confirmed-on-real-hardware-discovery-doesnt-adopt-arbitrary-local-ggufs)
     * [What's Unconfirmed](#whats-unconfirmed)
 <!-- TOC -->
 
@@ -1019,11 +1020,31 @@ magnitude connections remove <harness>
 ```
 Documented harnesses: Pi, OpenCode, Hermes, OpenClaw, Codex, [Claude CLI](./CLI.md#claude-cli), Oh My Pi, and Cline — covering [several entries already in CLI.md](./CLI.md). Note per Magnitude's own docs: "Codex and Claude Code connections depend on the Magnitude background service" being up.
 
+### Confirmed on Real Hardware: Discovery Doesn't Adopt Arbitrary Local GGUFs
+
+Tested directly on this repo's own GS63 (GTX 1060 6GB), Magnitude 0.0.14, after bridging 7 already-downloaded LM Studio models into the exact Hugging Face cache path the running service was configured with (confirmed via `systemctl --user status magnitude.service` showing `--hf-cache /home/<user>/.cache/huggingface/hub`) and independently verifying the bridge itself was well-formed (`huggingface_hub`'s own `scan_cache_dir()` found all 7 repos, zero warnings — see [PREREQUISITES.md — Bridging Already-Downloaded LM Studio Models](./PREREQUISITES.md#bridging-already-downloaded-lm-studio-models-hf)):
+
+```
+magnitude catalog status
+  Discovery: Complete - 0 models found
+  Assessment: Complete - 59 of 59 models assessed
+
+magnitude catalog list
+  No catalog models are compatible with this computer.
+```
+
+Two real findings, not just an unverified doc claim:
+
+- **"Discovers GGUF packages already in your Hugging Face Hub cache" does not mean "any valid GGUF you already have."** It found zero of 7 correctly-bridged, structurally-valid community models (`lmstudio-community`, `tensorblock`, `allenai`, official `Qwen` repos). The most likely explanation, based on `magnitude docs cli`'s own description ("`catalog` owns model discovery... reviewed model choices"), is that discovery specifically means *"one of Magnitude's own curated catalog entries that happens to already be cached,"* not general-purpose adoption of whatever GGUFs you point it at. `RUST_LOG=debug` on the systemd service produced no relevant log output to confirm this further — Magnitude ships as a closed-source binary, so this is inference from behavior, not a verified root cause.
+- **None of Magnitude's 59 catalog models were compatible with this hardware at all** (a GTX 1060 6GB card plus a 15GB-RAM Intel iGPU host) — independent of anything bridged. If your hardware is below whatever floor Magnitude's catalog targets, `catalog list` and `catalog recommendations` will come back empty regardless of what's in your Hugging Face cache.
+
+**Practical upshot:** the bridging script in [PREREQUISITES.md](./PREREQUISITES.md#bridging-already-downloaded-lm-studio-models-hf) still delivers its `hf`-side benefit reliably (visible in `hf cache ls`, skips re-download on a future `hf download` for the same repo) — that part doesn't depend on Magnitude at all. Don't expect it to also make Magnitude usable with your existing LM Studio downloads, and don't assume Magnitude's catalog has anything for hardware in this class until `magnitude catalog list` says otherwise on your actual machine.
+
 ### What's Unconfirmed
 
-> **⚠️ Verify these against your own hardware before relying on this document's other per-machine setups over it.**
+> **⚠️ Verify these against your own hardware before relying on this document's other per-machine setups over it.** (The GS63 finding above is now confirmed, not just flagged — these three are still genuinely open.)
 > - **Network binding isn't documented either way.** The service listens on `127.0.0.1`; nothing in the published docs confirms whether it can bind to `0.0.0.0` for LAN access from another machine. If it can't, Magnitude is a same-box tool — useful as a drop-in for a single machine's server, but [this repo's three-machine setup](./ORCHESTRATION.md) would still need its LiteLLM router in front, same architecture as today, just with Magnitude swapped in for the hand-run `llama-server`/`mlx_lm.server` processes.
-> - **AMD/ROCm depth for Strix Halo-class hardware is unclear.** Magnitude's own site claims AMD GPU support; the technical docs available at time of writing only explicitly name "Metal or CUDA" as detected acceleration. Whether that extends properly to gfx1151/ROCm (or falls back to Vulkan, or CPU) isn't spelled out — check `magnitude models status` on your actual [Strix Halo box](./STRIX-HALO.md) before assuming GPU offload is happening.
+> - **AMD/ROCm depth for Strix Halo-class hardware is unclear.** Magnitude's own site claims AMD GPU support; the technical docs available at time of writing only explicitly name "Metal or CUDA" as detected acceleration. Whether that extends properly to gfx1151/ROCm (or falls back to Vulkan, or CPU) isn't spelled out — check `magnitude models status` on your actual [Strix Halo box](./STRIX-HALO.md) before assuming GPU offload is happening. Given the GS63 finding above, also don't assume the catalog has anything compatible for that hardware either until `magnitude catalog list` confirms it.
 > - **No MLX on Apple Silicon.** Magnitude is llama.cpp everywhere, including Mac. This document's own [MLX section](#mlx-installation-macos-only) and [MAC-MINI-M4.md](./MAC-MINI-M4.md#alternative-runtimes-ollama-and-lm-studio) both note MLX edges out llama.cpp's Metal backend on Apple Silicon — so Magnitude on a memory-constrained 16GB Mac Mini specifically could be a step down from the MLX setup already recommended there, not an upgrade.
 
 For more information, visit [magnitude.dev](https://magnitude.dev/) and the [Magnitude documentation](https://docs.magnitude.dev/).
