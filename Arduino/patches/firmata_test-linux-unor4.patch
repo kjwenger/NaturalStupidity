@@ -1,5 +1,5 @@
 diff --git a/firmata_test.cpp b/firmata_test.cpp
-index 55103d8..634ce0e 100644
+index 55103d8..b948947 100644
 --- a/firmata_test.cpp
 +++ b/firmata_test.cpp
 @@ -30,6 +30,11 @@
@@ -14,15 +14,28 @@ index 55103d8..634ce0e 100644
  typedef struct {
  	uint8_t mode;
  	uint8_t analog_channel;
-@@ -72,6 +77,7 @@ BEGIN_EVENT_TABLE(MyFrame,wxFrame)
+@@ -66,12 +71,20 @@ wxMenu *port_menu;
+ #define ANALOG_MAPPING_QUERY    0x69
+ #define ANALOG_MAPPING_RESPONSE 0x6A
+ #define REPORT_FIRMWARE         0x79 // report name and version of the firmware
++#define LED_MATRIX_DATA         0x01 // user-defined, see sketches/ConfigurableFirmataR4
++#define LED_MATRIX_SET_FRAME    0x00
++#define LED_MATRIX_QUERY_FRAME  0x01
++#define LED_MATRIX_FRAME_REPORT 0x02
++#define LED_MATRIX_SET_PIXEL    0x03
++#define ID_SHOW_MATRIX          6000
+ 
+ 
+ BEGIN_EVENT_TABLE(MyFrame,wxFrame)
  	EVT_MENU(wxID_ABOUT, MyFrame::OnAbout)
  	EVT_MENU(wxID_EXIT, MyFrame::OnQuit)
  	EVT_MENU_RANGE(9000, 9999, MyFrame::OnPort)
 +	EVT_MENU_RANGE(7000, 7099, MyFrame::OnBaud)
++	EVT_MENU(ID_SHOW_MATRIX, MyFrame::OnShowMatrix)
  	EVT_CHOICE(-1, MyFrame::OnModeChange)
  	EVT_IDLE(MyFrame::OnIdle)
  	EVT_TOGGLEBUTTON(-1, MyFrame::OnToggleButton)
-@@ -89,15 +95,21 @@ MyFrame::MyFrame( wxWindow *parent, wxWindowID id, const wxString &title,
+@@ -89,15 +102,25 @@ MyFrame::MyFrame( wxWindow *parent, wxWindowID id, const wxString &title,
  	#ifdef LOG_MSG_TO_WINDOW
  	wxLog::SetActiveTarget(new wxLogWindow(this, "Debug Messages"));
  	#endif
@@ -42,11 +55,35 @@ index 55103d8..634ce0e 100644
 +		if (baud_rates[i] == baud_rate) menu->Check(7000 + i, true);
 +	}
 +	menubar->Append(menu, "Baud");
++	menu = new wxMenu;
++	menu->Append(ID_SHOW_MATRIX, "LED Matrix", "");
++	menu->Enable(ID_SHOW_MATRIX, false);
++	menubar->Append(menu, "View");
 +	SetMenuBar(menubar);
  	CreateStatusBar(1);
  
  	scroll = new wxScrolledWindow(this);
-@@ -348,15 +360,33 @@ void MyFrame::OnSliderDrag(wxScrollEvent &event)
+@@ -105,6 +128,7 @@ MyFrame::MyFrame( wxWindow *parent, wxWindowID id, const wxString &title,
+ 	grid = new wxFlexGridSizer(0, 3, 4, 4);
+ 	scroll->SetSizer(grid);
+ 
++	matrix = NULL;
+ 	init_data();
+ #if 0
+ 	// For testing only, add many controls so something
+@@ -119,6 +143,11 @@ MyFrame::MyFrame( wxWindow *parent, wxWindowID id, const wxString &title,
+ 
+ void MyFrame::init_data(void)
+ {
++	if (matrix) {
++		matrix->Destroy();
++		matrix = NULL;
++		GetMenuBar()->Enable(ID_SHOW_MATRIX, false);
++	}
+ 	grid->Clear(true);
+ 	grid->SetRows(0);
+ 	for (int i=0; i < 128; i++) {
+@@ -348,15 +377,33 @@ void MyFrame::OnSliderDrag(wxScrollEvent &event)
  void MyFrame::OnPort(wxCommandEvent &event)
  {
  	int id = event.GetId();
@@ -82,11 +119,195 @@ index 55103d8..634ce0e 100644
  	if (port.Is_open()) {
  		printf("port is open\n");
  		firmata_name = "";
+@@ -538,6 +585,10 @@ void MyFrame::DoMessage(void)
+ 			buf[len++] = START_SYSEX;
+ 			buf[len++] = CAPABILITY_QUERY; // read capabilities
+ 			buf[len++] = END_SYSEX;
++			buf[len++] = START_SYSEX;
++			buf[len++] = LED_MATRIX_DATA; // LED matrix, if any
++			buf[len++] = LED_MATRIX_QUERY_FRAME;
++			buf[len++] = END_SYSEX;
+ 			for (int i=0; i<16; i++) {
+ 				buf[len++] = 0xC0 | i;  // report analog
+ 				buf[len++] = 1;
+@@ -576,6 +627,21 @@ void MyFrame::DoMessage(void)
+ 				port.Write(buf, len);
+ 				tx_count += len;
+ 			}
++		} else if (parse_buf[1] == LED_MATRIX_DATA && parse_count >= 6
++		  && parse_buf[2] == LED_MATRIX_FRAME_REPORT) {
++			int cols = parse_buf[3], rows = parse_buf[4];
++			int packed = (cols * rows + 6) / 7;
++			if (cols < 1 || rows < 1 || parse_count < 6 + packed) return;
++			if (matrix && (matrix->Cols() != cols || matrix->Rows() != rows)) {
++				matrix->Destroy();
++				matrix = NULL;
++			}
++			if (!matrix) {
++				matrix = new MatrixFrame(this, cols, rows);
++				GetMenuBar()->Enable(ID_SHOW_MATRIX, true);
++				matrix->Show(true);
++			}
++			matrix->SetLeds(parse_buf + 5);
+ 		} else if (parse_buf[1] == ANALOG_MAPPING_RESPONSE) {
+ 			int pin=0;
+ 			for (int i=2; i<parse_count-1; i++) {
+@@ -605,6 +671,122 @@ void MyFrame::OnAbout( wxCommandEvent &event )
+     dialog.ShowModal();
+ }
+ 
++void MyFrame::Send(const uint8_t *buf, int len)
++{
++	port.Write(buf, len);
++	tx_count += len;
++	UpdateStatus();
++}
++
++void MyFrame::OnShowMatrix(wxCommandEvent &event)
++{
++	if (matrix) {
++		matrix->Show(true);
++		matrix->Raise();
++	}
++}
++
++
++//------------------------------------------------------------------------------
++// MatrixFrame
++//------------------------------------------------------------------------------
++
++MatrixFrame::MatrixFrame(MyFrame *owner, int cols, int rows) :
++    wxFrame(owner, -1, "LED Matrix", wxDefaultPosition, wxDefaultSize,
++      wxDEFAULT_FRAME_STYLE | wxFRAME_FLOAT_ON_PARENT),
++    owner(owner), cols(cols), rows(rows)
++{
++	wxPanel *panel = new wxPanel(this);
++	wxBoxSizer *top = new wxBoxSizer(wxVERTICAL);
++	wxGridSizer *grid = new wxGridSizer(rows, cols, 2, 2);
++	for (int i=0; i < cols * rows; i++) {
++		wxToggleButton *led = new wxToggleButton(panel, -1, "",
++		  wxDefaultPosition, wxSize(28, 28));
++		led->SetToolTip(wxString::Format("LED %d (row %d, column %d)",
++		  i, i / cols, i % cols));
++		led->Bind(wxEVT_TOGGLEBUTTON, &MatrixFrame::OnLed, this);
++		leds.push_back(led);
++		grid->Add(led, 0, wxEXPAND);
++	}
++	top->Add(grid, 1, wxEXPAND | wxALL, 6);
++	wxBoxSizer *buttons = new wxBoxSizer(wxHORIZONTAL);
++	wxButton *clear = new wxButton(panel, -1, "Clear");
++	wxButton *all = new wxButton(panel, -1, "All on");
++	wxButton *invert = new wxButton(panel, -1, "Invert");
++	clear->Bind(wxEVT_BUTTON, [this](wxCommandEvent &) { OnFill(false, false); });
++	all->Bind(wxEVT_BUTTON, [this](wxCommandEvent &) { OnFill(true, false); });
++	invert->Bind(wxEVT_BUTTON, [this](wxCommandEvent &) { OnFill(false, true); });
++	buttons->Add(clear, 0, wxRIGHT, 4);
++	buttons->Add(all, 0, wxRIGHT, 4);
++	buttons->Add(invert, 0);
++	top->Add(buttons, 0, wxALIGN_CENTER | wxBOTTOM, 6);
++	panel->SetSizer(top);
++	top->SetSizeHints(this);
++	Bind(wxEVT_CLOSE_WINDOW, &MatrixFrame::OnClose, this);
++}
++
++void MatrixFrame::SetLed(int i, bool on)
++{
++	leds[i]->SetValue(on);
++	leds[i]->SetLabel(on ? wxString::FromUTF8("\u25CF") : wxString(""));
++}
++
++// packed: one bit per LED, 7 per byte (LED i = byte i/7, bit i%7)
++void MatrixFrame::SetLeds(const uint8_t *packed)
++{
++	for (int i=0; i < cols * rows; i++) {
++		SetLed(i, packed[i / 7] & (1 << (i % 7)));
++	}
++}
++
++void MatrixFrame::SendFrame(void)
++{
++	uint8_t buf[4 + 128] = {START_SYSEX, LED_MATRIX_DATA, LED_MATRIX_SET_FRAME};
++	int len = 3, packed = (cols * rows + 6) / 7;
++	for (int b=0; b < packed; b++) {
++		uint8_t byte = 0;
++		for (int bit=0; bit < 7 && b * 7 + bit < cols * rows; bit++) {
++			if (leds[b * 7 + bit]->GetValue()) byte |= 1 << bit;
++		}
++		buf[len++] = byte;
++	}
++	buf[len++] = END_SYSEX;
++	owner->Send(buf, len);
++}
++
++void MatrixFrame::OnLed(wxCommandEvent &event)
++{
++	for (int i=0; i < cols * rows; i++) {
++		if (leds[i] != event.GetEventObject()) continue;
++		bool on = leds[i]->GetValue();
++		SetLed(i, on);
++		uint8_t buf[6] = {START_SYSEX, LED_MATRIX_DATA, LED_MATRIX_SET_PIXEL,
++		  (uint8_t)i, (uint8_t)on, END_SYSEX};
++		owner->Send(buf, 6);
++		return;
++	}
++}
++
++void MatrixFrame::OnFill(bool on, bool invert)
++{
++	for (int i=0; i < cols * rows; i++) {
++		SetLed(i, invert ? !leds[i]->GetValue() : on);
++	}
++	SendFrame();
++}
++
++// Closing only hides the window; View > LED Matrix brings it back
++void MatrixFrame::OnClose(wxCloseEvent &event)
++{
++	if (event.CanVeto()) {
++		event.Veto();
++		Hide();
++	} else {
++		event.Skip();
++	}
++}
++
++
+ void MyFrame::OnQuit( wxCommandEvent &event )
+ {
+      Close( true );
 diff --git a/firmata_test.h b/firmata_test.h
-index 4b22f21..ebe4fa9 100644
+index 4b22f21..cf6feb1 100644
 --- a/firmata_test.h
 +++ b/firmata_test.h
-@@ -57,6 +57,8 @@ private:
+@@ -8,6 +8,7 @@
+ #include <wx/wx.h>
+ #include <wx/tglbtn.h>
+ #include <stdint.h>
++#include <vector>
+ 
+ 
+ //#define LOG_MSG_TO_STDOUT
+@@ -30,6 +31,8 @@ const int ID_MENU = 10000;
+ // MyFrame
+ //----------------------------------------------------------------------------
+ 
++class MatrixFrame;
++
+ class MyFrame: public wxFrame
+ {
+ public:
+@@ -37,7 +40,10 @@ public:
+         const wxPoint& pos = wxDefaultPosition,
+         const wxSize& size = wxDefaultSize,
+         long style = wxDEFAULT_FRAME_STYLE );
++	void Send(const uint8_t *buf, int len);
+ private:
++	MatrixFrame *matrix;
++	void OnShowMatrix(wxCommandEvent &event);
+ 	wxFlexGridSizer *grid;
+ 	wxScrolledWindow *scroll;
+ 	int parse_count;
+@@ -57,6 +63,8 @@ private:
  	void OnCloseWindow(wxCloseEvent &event);
  	void OnSize(wxSizeEvent &event);
  	void OnPort(wxCommandEvent &event);
@@ -95,6 +316,34 @@ index 4b22f21..ebe4fa9 100644
  	void OnToggleButton(wxCommandEvent &event);
  	void OnSliderDrag(wxScrollEvent &event);
  	void OnModeChange(wxCommandEvent &event);
+@@ -64,6 +72,27 @@ private:
+ };
+ 
+ 
++// LED matrix (e.g. Arduino UNO R4 WiFi), driven through the user-defined
++// sysex command 0x01 implemented by sketches/ConfigurableFirmataR4
++class MatrixFrame: public wxFrame
++{
++public:
++	MatrixFrame(MyFrame *owner, int cols, int rows);
++	int Cols(void) { return cols; }
++	int Rows(void) { return rows; }
++	void SetLeds(const uint8_t *packed);
++private:
++	MyFrame *owner;
++	int cols, rows;
++	std::vector<wxToggleButton *> leds;
++	void SetLed(int i, bool on);
++	void SendFrame(void);
++	void OnLed(wxCommandEvent &event);
++	void OnFill(bool on, bool invert);
++	void OnClose(wxCloseEvent &event);
++};
++
++
+ class MyMenu: public wxMenu
+ {
+ public:
 diff --git a/serial.cpp b/serial.cpp
 index 2680fb0..a739bfb 100644
 --- a/serial.cpp

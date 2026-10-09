@@ -14,6 +14,7 @@ and where the copies in this directory stand.
 - [Solution](#solution)
 - [Local Copies in This Directory](#local-copies-in-this-directory)
 - [Verification](#verification)
+- [LED Matrix Support](#led-matrix-support)
 - [Firmata Test GUI](#firmata-test-gui) ([Testing Guide](#testing-guide))
 - [Work Log](#work-log)
 - [Sources](#sources)
@@ -45,9 +46,10 @@ arduino-cli core install arduino:renesas_uno@1.6.0
 arduino-cli lib install --no-deps "Adafruit Unified Sensor@1.1.15" \
   "DHT sensor library@1.4.7" "Servo@1.3.0"
 
-# 4. Flash ConfigurableFirmata (115200 baud) and run the automated check
+# 4. Flash ConfigurableFirmata with LED matrix support (115200 baud)
+#    and run the automated check
 arduino-cli compile --upload -p /dev/ttyACM0 --fqbn arduino:renesas_uno:unor4wifi \
-  --library ConfigurableFirmata ConfigurableFirmata/examples/ConfigurableFirmata
+  --library ConfigurableFirmata sketches/ConfigurableFirmataR4
 tools/firmata_probe.py /dev/ttyACM0 115200    # ends with "RESULT: PASS"
 
 # 5. Build and start the GUI, then follow the Testing Guide
@@ -59,8 +61,11 @@ Only one program can hold `/dev/ttyACM0` at a time. Close firmata_test (or any
 serial monitor) before uploading or running the probe, or the upload fails with
 `Failed uploading: uploading error: exit status 1`.
 
-For StandardFirmata instead, flash with `--library Firmata
-Firmata/examples/StandardFirmata` and use 57600 baud (probe and GUI). The
+`sketches/ConfigurableFirmataR4` is the stock ConfigurableFirmata example plus
+the [LED matrix feature](#led-matrix-support). For the plain example, flash
+`ConfigurableFirmata/examples/ConfigurableFirmata` instead. For StandardFirmata,
+flash with `--library Firmata Firmata/examples/StandardFirmata` and use 57600
+baud (probe and GUI). The
 `Firmata/` copy is committed with its fix, so it needs no patch. Without step 2,
 the ConfigurableFirmata build still works but advertises PWM on the wrong pins
 (see [The Remaining Bug](#the-remaining-bug-pwm-over-reporting)).
@@ -227,6 +232,58 @@ pin 3. Results on 2026-10-09:
 Not yet verified: a real vvvv session, and PWM measured on a scope or with an LED
 on the `~` pins.
 
+## LED Matrix Support
+
+The UNO R4 WiFi has a 12 × 8 red LED matrix, driven by the RA4M1 through the
+`Arduino_LED_Matrix` library that ships with the board package. Standard Firmata
+has no message for it, so
+[`sketches/ConfigurableFirmataR4/LedMatrixFirmata.h`](sketches/ConfigurableFirmataR4/LedMatrixFirmata.h)
+adds one as a ConfigurableFirmata feature. It uses sysex command `0x01`, which
+the Firmata protocol reserves for user-defined commands.
+
+| Message | Bytes |
+|---|---|
+| Set frame | `F0 01 00 <14 bytes> F7` |
+| Query frame | `F0 01 01 F7` → reply `F0 01 02 <cols=12> <rows=8> <14 bytes> F7` |
+| Set one LED | `F0 01 03 <index 0–95> <0 or 1> F7` |
+
+- **LED index** = row × 12 + column. Row 0, column 0 is the top-left LED, using
+  the `Arduino_LED_Matrix` convention.
+- **Frame encoding:** Firmata data bytes carry 7 bits, so the 96 LEDs are packed
+  7 per byte. LED *i* is bit *i* % 7 of byte *i* / 7, giving 14 bytes.
+- **Presence detection:** a host sends the query. A reply means the firmware has
+  a matrix and reports its size; no reply means it has none.
+- **On/off only.** The library has no per-LED brightness.
+
+The sketch is the stock ConfigurableFirmata example with the feature added. It
+compiles the feature only for `ARDUINO_UNOR4_WIFI`, so the same sketch still
+builds for the R4 Minima and other boards. The matrix refresh timer starts only
+on the first matrix command. It can't take a PWM timer: the board package
+reserves the timer channels of exactly the `~` pins (3, 5, 6, 9, 10, 11) for PWM
+at boot, and the matrix library only takes channels that are still free.
+
+From any host, for example Python with pyserial:
+
+```python
+import serial
+
+def pack(leds):  # 96 booleans -> 14 bytes
+    out = bytearray(14)
+    for i, on in enumerate(leds):
+        if on:
+            out[i // 7] |= 1 << (i % 7)
+    return bytes(out)
+
+with serial.Serial("/dev/ttyACM0", 115200) as s:
+    border = [r in (0, 7) or c in (0, 11) for r in range(8) for c in range(12)]
+    s.write(b"\xF0\x01\x00" + pack(border) + b"\xF7")   # draw a border
+    s.write(bytes([0xF0, 0x01, 0x03, 5 * 12 + 6, 1, 0xF7]))  # LED at row 5, col 6 on
+```
+
+`tools/firmata_probe.py` checks the feature automatically. It draws a
+checkerboard, switches one LED off, clears the matrix, and verifies each step by
+reading the frame back.
+
 ## Firmata Test GUI
 
 [firmata_test](https://github.com/firmata/firmata_test) is the classic interactive
@@ -235,7 +292,7 @@ with a mode dropdown, output toggles, PWM sliders and live input values. It live
 in `tools/firmata_test` as a submodule. Upstream doesn't work with this board on
 current Linux, so
 [`patches/firmata_test-linux-unor4.patch`](patches/firmata_test-linux-unor4.patch)
-makes three changes:
+makes four changes:
 
 - **wxWidgets 3.2:** `wxMenuItem::GetLabel()` becomes `GetItemLabelText()`.
 - **Baud menu:** upstream hardcodes 57600. Choose 57600 (StandardFirmata) or
@@ -246,6 +303,13 @@ makes three changes:
   full firmware report with DTR on. Without this change the window stays empty
   (status shows `Tx:3 Rx:0`). Boards that do reset on DTR still work, because they
   send the firmware report after booting and firmata_test waits for it.
+- **LED Matrix window:** after the firmware report, firmata_test also sends the
+  [matrix query](#led-matrix-support). If the board answers, a separate
+  **LED Matrix** window opens with a 12 × 8 grid of toggle buttons plus
+  **Clear**, **All on** and **Invert**. Each click is sent to the board at once
+  (single-LED message for a click, whole frame for the buttons). Closing the
+  window only hides it; **View → LED Matrix** brings it back. Boards without the
+  feature never answer, so for them nothing changes.
 
 Build and run:
 
@@ -278,6 +342,10 @@ a step fails, stop there.
   **L** LED next to the USB port switches on and off.
 - **Analog inputs:** pins 14–19 (A0–A5) show changing `A0: …` values. Pins with
   nothing connected drift randomly, and touching one makes it jump. That's normal.
+- **LED matrix** (needs `sketches/ConfigurableFirmataR4`): the **LED Matrix**
+  window opens by itself. Click the top-left cell and the top-left LED of the
+  matrix lights up (USB connector on the left). **All on**, **Invert** and
+  **Clear** change the whole matrix at once.
 
 **2. With one jumper wire (male-to-male)**
 
@@ -307,8 +375,8 @@ filter. Use the LED instead.
 firmata_test only knows input, output, analog, PWM, servo and pullup.
 ConfigurableFirmata's I2C, SPI, DHT sensor and frequency-counting features don't
 appear in its menus, which doesn't mean they're broken. Testing those needs a
-script or a host such as vvvv. The board's LED matrix and WiFi aren't reachable
-through Firmata at all.
+script or a host such as vvvv. The board's WiFi isn't reachable through Firmata
+at all.
 
 If everything in steps 1 and 2 behaves as described, digital I/O, pullups,
 analog input and the serial link through the ESP32 bridge are all working.
@@ -335,9 +403,16 @@ Step 3 confirms PWM and servo on real hardware.
 5. **GUI.** Added `tools/firmata_test` as a submodule and fixed it for wxWidgets
    3.2, configurable baud and DTR handling
    (`patches/firmata_test-linux-unor4.patch`). Confirmed working interactively.
+6. **Reproducibility.** Switched the ConfigurableFirmata submodule to HTTPS,
+   pinned all versions, added the [Quick Start](#quick-start-from-a-fresh-clone),
+   and ran it end to end from a clean clone with SSH disabled; the probe passed.
+7. **LED matrix.** Added the `LedMatrixFirmata` feature and the
+   `sketches/ConfigurableFirmataR4` sketch, a matrix check in
+   `tools/firmata_probe.py`, and the LED Matrix window in firmata_test (same
+   patch). The probe's checkerboard, single-LED and clear readbacks pass.
 
-The board was left running ConfigurableFirmata 3.4 (with the PWM patch) at
-115200 baud.
+The board was left running `sketches/ConfigurableFirmataR4` (ConfigurableFirmata
+3.4 with the PWM patch and the LED matrix feature) at 115200 baud.
 
 ## Sources
 

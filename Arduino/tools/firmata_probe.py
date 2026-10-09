@@ -43,6 +43,50 @@ def read_messages(ser, seconds):
     return msgs
 
 
+LED_MATRIX = 0x01  # user-defined sysex, see sketches/ConfigurableFirmataR4
+
+
+def pack_frame(leds):
+    """96 LED booleans -> 14 bytes, 7 bits each (LED i = byte i//7, bit i%7)."""
+    out = bytearray((len(leds) + 6) // 7)
+    for i, on in enumerate(leds):
+        if on:
+            out[i // 7] |= 1 << (i % 7)
+    return bytes(out)
+
+
+def query_matrix(ser):
+    """Return (cols, rows, leds) or None if the firmware has no LED matrix."""
+    ser.write(bytes([0xF0, LED_MATRIX, 0x01, 0xF7]))
+    for m in read_messages(ser, 0.5):
+        if m[0] == "sysex" and m[1] == LED_MATRIX and m[2][:1] == b"\x02":
+            cols, rows, packed = m[2][1], m[2][2], m[2][3:]
+            leds = [bool(packed[i // 7] >> (i % 7) & 1) for i in range(cols * rows)]
+            return cols, rows, leds
+    return None
+
+
+def test_matrix(ser):
+    """Checkerboard, read back, toggle one LED, clear. Returns True/False/None."""
+    found = query_matrix(ser)
+    if found is None:
+        print("LED matrix: not present")
+        return None
+    cols, rows, _ = found
+    checker = [(i // cols + i % cols) % 2 == 0 for i in range(cols * rows)]
+    ser.write(bytes([0xF0, LED_MATRIX, 0x00]) + pack_frame(checker) + bytes([0xF7]))
+    time.sleep(0.5)
+    ok = query_matrix(ser)[2] == checker
+    ser.write(bytes([0xF0, LED_MATRIX, 0x03, 0, 0, 0xF7]))  # LED 0 off
+    expected = [False] + checker[1:]
+    ok = ok and query_matrix(ser)[2] == expected
+    time.sleep(0.5)
+    ser.write(bytes([0xF0, LED_MATRIX, 0x00]) + pack_frame([False] * cols * rows) + bytes([0xF7]))
+    ok = ok and not any(query_matrix(ser)[2])
+    print(f"LED matrix: {cols}x{rows}, checkerboard/pixel/clear readback {'ok' if ok else 'MISMATCH'}")
+    return ok
+
+
 def main():
     ok = True
     is_configurable = False
@@ -128,6 +172,10 @@ def main():
             print("FAIL: no pin state response")
             ok = False
         ser.write(bytes([0xE3, 0, 0]))
+
+        if test_matrix(ser) is False:
+            print("FAIL: LED matrix readback")
+            ok = False
 
     print("RESULT:", "PASS" if ok else "FAIL")
     return 0 if ok else 1
