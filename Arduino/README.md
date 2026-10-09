@@ -21,6 +21,9 @@ Firmata on the Arduino UNO R4 WiFi (and R3 / R4 Minima), with vvvv as the host.
 
 ## [Firmata on the UNO R4 WiFi](FIRMATA.md)
 
+To reproduce the setup from a fresh clone, follow the
+[Quick Start](FIRMATA.md#quick-start-from-a-fresh-clone).
+
 In short: neither Firmata library's latest release fully supports the UNO R4.
 The failures come from `Boards.h` (a macro clash with the Renesas core, then PWM
 over-reporting), not from the ESP32-S3 USB-serial bridge. With the local fix,

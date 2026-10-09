@@ -5,6 +5,7 @@ and where the copies in this directory stand.
 
 ## Table of Contents
 
+- [Quick Start from a Fresh Clone](#quick-start-from-a-fresh-clone)
 - [Hardware](#hardware)
 - [Upstream Versions](#upstream-versions)
 - [The UNO R4 Problem](#the-uno-r4-problem)
@@ -16,6 +17,53 @@ and where the copies in this directory stand.
 - [Firmata Test GUI](#firmata-test-gui) ([Testing Guide](#testing-guide))
 - [Work Log](#work-log)
 - [Sources](#sources)
+
+## Quick Start from a Fresh Clone
+
+Tested on Ubuntu with an UNO R4 WiFi on `/dev/ttyACM0`. The versions below are
+the ones verified on 2026-10-09, pinned so that later releases can't change the
+results.
+
+```bash
+# 1. Clone, then initialize only the two Arduino submodules
+git clone https://github.com/kjwenger/NaturalStupidity.git
+cd NaturalStupidity
+git submodule update --init Arduino/ConfigurableFirmata Arduino/tools/firmata_test
+cd Arduino
+
+# 2. Apply the local fixes to the submodules
+git -C ConfigurableFirmata apply ../patches/ConfigurableFirmata-unor4-pwm-pins.patch
+git -C tools/firmata_test apply ../../patches/firmata_test-linux-unor4.patch
+
+# 3. One-time machine setup (log out and back in afterwards for dialout)
+sudo usermod -aG dialout "$USER"
+sudo apt-get install -y libwxgtk3.2-dev build-essential python3-serial
+curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh \
+  | BINDIR=$HOME/.local/bin sh -s 1.5.1
+arduino-cli core update-index
+arduino-cli core install arduino:renesas_uno@1.6.0
+arduino-cli lib install --no-deps "Adafruit Unified Sensor@1.1.15" \
+  "DHT sensor library@1.4.7" "Servo@1.3.0"
+
+# 4. Flash ConfigurableFirmata (115200 baud) and run the automated check
+arduino-cli compile --upload -p /dev/ttyACM0 --fqbn arduino:renesas_uno:unor4wifi \
+  --library ConfigurableFirmata ConfigurableFirmata/examples/ConfigurableFirmata
+tools/firmata_probe.py /dev/ttyACM0 115200    # ends with "RESULT: PASS"
+
+# 5. Build and start the GUI, then follow the Testing Guide
+make -C tools/firmata_test WXCONFIG=wx-config
+tools/firmata_test/firmata_test
+```
+
+Only one program can hold `/dev/ttyACM0` at a time. Close firmata_test (or any
+serial monitor) before uploading or running the probe, or the upload fails with
+`Failed uploading: uploading error: exit status 1`.
+
+For StandardFirmata instead, flash with `--library Firmata
+Firmata/examples/StandardFirmata` and use 57600 baud (probe and GUI). The
+`Firmata/` copy is committed with its fix, so it needs no patch. Without step 2,
+the ConfigurableFirmata build still works but advertises PWM on the wrong pins
+(see [The Remaining Bug](#the-remaining-bug-pwm-over-reporting)).
 
 ## Hardware
 
@@ -143,21 +191,14 @@ On the R4, advertise PWM only on the six pins labelled `~` on the board: 3, 5,
 
 ## Verification
 
-Setup: `arduino-cli` 1.5.1 in `~/.local/bin` and the `arduino:renesas_uno` 1.6.0
-core. ConfigurableFirmata also needs the `DHT sensor library` and `Servo`
-libraries. The user must be in the `dialout` group to open `/dev/ttyACM0`.
-Membership takes effect at the next login. Until then, wrap serial commands in
+Setup: as in the [Quick Start](#quick-start-from-a-fresh-clone): `arduino-cli`
+1.5.1, the `arduino:renesas_uno` 1.6.0 core, and the `Servo` 1.3.0,
+`DHT sensor library` 1.4.7 and `Adafruit Unified Sensor` 1.1.15 libraries. The
+user must be in the `dialout` group to open `/dev/ttyACM0`. Membership takes
+effect at the next login. Until then, wrap serial commands in
 `sg dialout -c "…"`.
 
 ```bash
-# One-time setup
-curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh \
-  | BINDIR=$HOME/.local/bin sh
-sudo usermod -aG dialout "$USER"
-arduino-cli core update-index
-arduino-cli core install arduino:renesas_uno
-arduino-cli lib install "DHT sensor library" Servo
-
 # StandardFirmata (57600 baud)
 arduino-cli compile --upload -p /dev/ttyACM0 --fqbn arduino:renesas_uno:unor4wifi \
   --library Firmata Firmata/examples/StandardFirmata
@@ -210,7 +251,7 @@ Build and run:
 
 ```bash
 sudo apt-get install -y libwxgtk3.2-dev build-essential
-git submodule update --init Arduino/tools/firmata_test
+git submodule update --init Arduino/tools/firmata_test   # from the repo root
 cd Arduino/tools/firmata_test
 git apply ../../patches/firmata_test-linux-unor4.patch
 make WXCONFIG=wx-config

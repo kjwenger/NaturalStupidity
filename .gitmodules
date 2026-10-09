@@ -4,7 +4,7 @@
 	branch = main
 [submodule "Arduino/ConfigurableFirmata"]
 	path = Arduino/ConfigurableFirmata
-	url = git@github.com:firmata/ConfigurableFirmata.git
+	url = https://github.com/firmata/ConfigurableFirmata.git
 [submodule "Arduino/tools/firmata_test"]
 	path = Arduino/tools/firmata_test
 	url = https://github.com/firmata/firmata_test.git
