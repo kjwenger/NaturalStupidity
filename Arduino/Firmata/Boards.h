@@ -470,11 +470,9 @@ writePort(port, value, bitmask):  Write an 8 bit port.
 #define VERSION_BLINK_PIN       13
 #define IS_PIN_DIGITAL(p)       ((p) >= 2 && (p) <= 19)
 #define IS_PIN_ANALOG(p)        ((p) >= 14 && (p) < 14 + TOTAL_ANALOG_PINS)
-// 25.03.: #define IS_PIN_PWM(p)           digitalPinHasPWM(p)
-#define ARDUINO_IS_PIN_PWM(x)   (((x & PIN_USE_MASK) ==  PIN_PWM_GPT) || ((x & PIN_USE_MASK) ==  PIN_PWM_AGT))
-#define ARDUINO_digitalPinHasPWM(p) (ARDUINO_IS_PIN_PWM(getPinCfgs(p, PIN_CFG_REQ_PWM)[0]))
-#define IS_PIN_PWM(p)           ARDUINO_digitalPinHasPWM(p)
-// Ende Kommentierung und Ergaenzung 25.03.
+// Only the pins labelled ~ on the board. The core's digitalPinHasPWM() reports
+// every pin with a GPT/AGT channel, including D0/D1 (Serial1).
+#define IS_PIN_PWM(p)           ((p) == 3 || (p) == 5 || (p) == 6 || (p) == 9 || (p) == 10 || (p) == 11)
 #define IS_PIN_SERVO(p)         (IS_PIN_DIGITAL(p) && (p) - 2 < MAX_SERVOS)
 #define IS_PIN_I2C(p)           ((p) == 18 || (p) == 19)
 #define IS_PIN_SPI(p)           ((p) == SS || (p) == MOSI || (p) == MISO || (p) == SCK)

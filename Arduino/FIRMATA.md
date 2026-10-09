@@ -9,8 +9,10 @@ and where the copies in this directory stand.
 - [Upstream Versions](#upstream-versions)
 - [The UNO R4 Problem](#the-uno-r4-problem)
 - [Is the ESP32-S3 Serial Bridge to Blame?](#is-the-esp32-s3-serial-bridge-to-blame)
+- [The Remaining Bug: PWM Over-Reporting](#the-remaining-bug-pwm-over-reporting)
+- [Solution](#solution)
 - [Local Copies in This Directory](#local-copies-in-this-directory)
-- [Next Steps](#next-steps)
+- [Verification](#verification)
 - [Sources](#sources)
 
 ## Hardware
@@ -93,46 +95,94 @@ No evidence says so. An earlier analysis here claimed that `Serial` on the R4 Wi
   Other serial sketches work through the bridge without special setup.
 - The same failures were reported on the **R4 Minima**, which has no ESP32.
 
-One loose end: a forum user reported in 2025-05 that ConfigurableFirmata 3.3.0
-worked on the Minima but **not** on the WiFi. The thread never resolved why. The
-bridge is the obvious hardware difference, but a WiFi-specific pin-definition
-problem would explain it just as well, and both #168 and #182 have landed since.
-Only a test on real hardware can settle it.
+A forum user reported in 2025-05 that ConfigurableFirmata 3.3.0 worked on the
+Minima but **not** on the WiFi, and the thread never resolved why. A test on the
+attached board (2026-10-09, renesas_uno core 1.6.0) settles it for current code.
+Both StandardFirmata and ConfigurableFirmata 3.4 complete the full handshake
+(version, firmware, capabilities, analog mapping), drive digital outputs, and
+stream analog reports through the stock ESP32-S3 bridge. **The bridge works.** See
+[Verification](#verification).
+
+## The Remaining Bug: PWM Over-Reporting
+
+With the build fixes in place, one defect remained in **both** libraries. They
+advertised PWM on 16 pins: 0–13, 18 and 19. Pins 0 and 1 even showed up as
+"PWM only", although they are `Serial1` and excluded from digital I/O. Both
+libraries passed the core's `digitalPinHasPWM()` through unfiltered, and on the
+RA4M1 that returns true for every pin with a GPT/AGT timer channel in the pin mux
+table. A host that trusts the capability response offers PWM on pins the board
+doesn't label as PWM.
+
+## Solution
+
+On the R4, advertise PWM only on the six pins labelled `~` on the board: 3, 5,
+6, 9, 10 and 11. This is the same set as the UNO R3, so R3-era host patches
+(vvvv included) keep working, and it drops the dependency on the core's internal
+`IS_PIN_PWM` / `PIN_PWM_GPT` macros that caused the original build breakage.
+
+- **`Firmata/Boards.h`**: `IS_PIN_PWM(p)` is now the explicit pin list. It
+  replaces the "25.03." `ARDUINO_digitalPinHasPWM` workaround.
+- **`ConfigurableFirmata/`**: the same change to `FIRMATA_IS_PIN_PWM(p)` in
+  `src/utility/Boards.h`. The submodule tracks upstream, so the change lives in
+  [`patches/ConfigurableFirmata-unor4-pwm-pins.patch`](patches/ConfigurableFirmata-unor4-pwm-pins.patch).
+  Re-apply it after a fresh clone or a submodule update:
+
+  ```bash
+  git -C ConfigurableFirmata apply ../patches/ConfigurableFirmata-unor4-pwm-pins.patch
+  ```
 
 ## Local Copies in This Directory
 
 | Path | Version | R4 state |
 |---|---|---|
-| `Firmata/` | 2.5.9 plus development-branch R4 support | `Firmata/Boards.h` (R4 section around line 459) contains the PR #520 fix by hand, marked with "25.03." comments. `Boards_h.old` / `Boards_h.new` are earlier edit snapshots. |
-| `ConfigurableFirmata/` | Git submodule on upstream head, 3.4.0 | Includes PR #155, #168 and #182, so it is as current as upstream. |
+| `Firmata/` | 2.5.9 plus development-branch R4 support | Builds and works on the R4 WiFi with the PWM fix above. `Boards_h.old` / `Boards_h.new` are earlier edit snapshots. |
+| `ConfigurableFirmata/` | Git submodule on upstream head, 3.4.0 | Includes PR #155, #168 and #182. Works on the R4 WiFi once the patch in `patches/` is applied. |
 | `Firmata_README.md` | Instructions in German | Describes a Firmata **2.5.7** with an extended `Boards.h` that works on the UNO R3, R4 Minima and R4 WiFi with vvvv beta and gamma as host. |
 
-On paper, both libraries are as fixed as anything upstream offers. **Neither has
-been verified on the attached board yet.**
+## Verification
 
-## Next Steps
+Setup: `arduino-cli` 1.5.1 in `~/.local/bin` and the `arduino:renesas_uno` 1.6.0
+core. ConfigurableFirmata also needs the `DHT sensor library` and `Servo`
+libraries. The user must be in the `dialout` group to open `/dev/ttyACM0`.
+Membership takes effect at the next login. Until then, wrap serial commands in
+`sg dialout -c "…"`.
 
-1. Install `arduino-cli` and the Renesas core:
+```bash
+# One-time setup
+curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh \
+  | BINDIR=$HOME/.local/bin sh
+sudo usermod -aG dialout "$USER"
+arduino-cli core update-index
+arduino-cli core install arduino:renesas_uno
+arduino-cli lib install "DHT sensor library" Servo
 
-   ```bash
-   arduino-cli core update-index
-   arduino-cli core install arduino:renesas_uno
-   ```
+# StandardFirmata (57600 baud)
+arduino-cli compile --upload -p /dev/ttyACM0 --fqbn arduino:renesas_uno:unor4wifi \
+  --library Firmata Firmata/examples/StandardFirmata
+tools/firmata_probe.py /dev/ttyACM0 57600
 
-2. Flash ConfigurableFirmata from the submodule:
+# ConfigurableFirmata (115200 baud)
+arduino-cli compile --upload -p /dev/ttyACM0 --fqbn arduino:renesas_uno:unor4wifi \
+  --library ConfigurableFirmata ConfigurableFirmata/examples/ConfigurableFirmata
+tools/firmata_probe.py /dev/ttyACM0 115200
+```
 
-   ```bash
-   arduino-cli compile --upload -p /dev/ttyACM0 \
-     --fqbn arduino:renesas_uno:unor4wifi \
-     --library ConfigurableFirmata ConfigurableFirmata/examples/ConfigurableFirmata
-   ```
+[`tools/firmata_probe.py`](tools/firmata_probe.py) is a minimal Firmata host that
+needs only `pyserial`. It checks protocol version, firmware name, capabilities,
+analog mapping, an LED blink on pin 13, analog reporting on A0, and PWM mode on
+pin 3. Results on 2026-10-09:
 
-   Check the baud rate first. `Firmata.begin(115200)` in the sketch must match the host.
-3. Connect with a Firmata host (vvvv, or `pyfirmata2` / `telemetrix` for a quick
-   check) and confirm the handshake and the reported pin capabilities.
-4. Repeat with `Firmata/examples/StandardFirmata` (`--library Firmata`).
-5. If either fails only on the WiFi and not on the Minima, look at the ESP32
-   bridge. Update its firmware with `unor4wifi-updater` and retest.
+| Check | StandardFirmata 2.5 | ConfigurableFirmata 3.4 |
+|---|---|---|
+| Handshake through the ESP32-S3 bridge | Pass | Pass |
+| PWM pins before the fix | 0–13, 18, 19 | 0–13, 18, 19 |
+| PWM pins after the fix | 3, 5, 6, 9, 10, 11 | 3, 5, 6, 9, 10, 11 |
+| Analog pins / mapping | 14–19 → A0–A5 | 14–19 → A0–A5 |
+| Pin 13 output, A0 reporting | Pass | Pass |
+| PWM on pin 3 | Mode PWM, value 128 | Mode PWM. ConfigurableFirmata never stores PWM values in its pin state, so the value reads back as 0 on any board. |
+
+Not yet verified: a real vvvv session, and PWM measured on a scope or with an LED
+on the `~` pins.
 
 ## Sources
 
