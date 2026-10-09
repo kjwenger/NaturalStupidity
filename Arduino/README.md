@@ -13,9 +13,10 @@ Firmata on the Arduino UNO R4 WiFi (and R3 / R4 Minima), with vvvv as the host.
 | `Firmata/` | Standard Firmata 2.5.9 with a hand-patched `Boards.h` for the UNO R4 |
 | `ConfigurableFirmata/` | Git submodule of [firmata/ConfigurableFirmata](https://github.com/firmata/ConfigurableFirmata) |
 | `Firmata_README.md` | Installation instructions (German) for the patched Firmata with vvvv |
-| `FIRMATA.md` | UNO R4 compatibility analysis: upstream versions, root cause, fix, verification |
-| `patches/` | Local fixes for the `ConfigurableFirmata` submodule |
+| `FIRMATA.md` | UNO R4 compatibility analysis: upstream versions, root cause, fix, verification, test GUI, work log |
+| `patches/` | Local fixes for the `ConfigurableFirmata` and `firmata_test` submodules |
 | `tools/firmata_probe.py` | Minimal Firmata host for testing a flashed board (needs `pyserial`) |
+| `tools/firmata_test/` | Submodule of [firmata/firmata_test](https://github.com/firmata/firmata_test), the interactive pin-testing GUI (see `FIRMATA.md`) |
 | `Copilot.AI/` | Earlier GitHub Copilot session notes. Abandoned and kept only as history. |
 
 ## [Firmata on the UNO R4 WiFi](FIRMATA.md)

@@ -13,6 +13,8 @@ and where the copies in this directory stand.
 - [Solution](#solution)
 - [Local Copies in This Directory](#local-copies-in-this-directory)
 - [Verification](#verification)
+- [Firmata Test GUI](#firmata-test-gui)
+- [Work Log](#work-log)
 - [Sources](#sources)
 
 ## Hardware
@@ -184,6 +186,66 @@ pin 3. Results on 2026-10-09:
 Not yet verified: a real vvvv session, and PWM measured on a scope or with an LED
 on the `~` pins.
 
+## Firmata Test GUI
+
+[firmata_test](https://github.com/firmata/firmata_test) is the classic interactive
+tester. It shows one row per pin, built from the board's capability response,
+with a mode dropdown, output toggles, PWM sliders and live input values. It lives
+in `tools/firmata_test` as a submodule. Upstream doesn't work with this board on
+current Linux, so
+[`patches/firmata_test-linux-unor4.patch`](patches/firmata_test-linux-unor4.patch)
+makes three changes:
+
+- **wxWidgets 3.2:** `wxMenuItem::GetLabel()` becomes `GetItemLabelText()`.
+- **Baud menu:** upstream hardcodes 57600. Choose 57600 (StandardFirmata) or
+  115200 (ConfigurableFirmata). Changing the rate while connected reopens the port.
+- **DTR/RTS raised on open:** upstream's Linux `Serial::Open()` lowers DTR and RTS
+  so classic Arduinos don't reset. The UNO R4 WiFi's ESP32-S3 USB bridge sends
+  **nothing** to the host while DTR is low. Tested: 0 bytes back with DTR off, a
+  full firmware report with DTR on. Without this change the window stays empty
+  (status shows `Tx:3 Rx:0`). Boards that do reset on DTR still work, because they
+  send the firmware report after booting and firmata_test waits for it.
+
+Build and run:
+
+```bash
+sudo apt-get install -y libwxgtk3.2-dev build-essential
+git submodule update --init Arduino/tools/firmata_test
+cd Arduino/tools/firmata_test
+git apply ../../patches/firmata_test-linux-unor4.patch
+make WXCONFIG=wx-config
+./firmata_test
+```
+
+Pick the baud rate under **Baud** first, then the port (`/dev/ttyACM0`) under
+**Port**. The pin rows appear once the firmware name arrives. Verified on
+2026-10-09 with the UNO R4 WiFi running ConfigurableFirmata 3.4 at 115200 baud.
+
+## Work Log
+
+2026-10-09, UNO R4 WiFi on `/dev/ttyACM0`:
+
+1. **Research.** Checked the upstream versions and R4 issues, PRs and forum
+   threads (see [Upstream Versions](#upstream-versions) and
+   [The UNO R4 Problem](#the-uno-r4-problem)).
+2. **Machine setup.** Added the user to `dialout`, installed `arduino-cli` 1.5.1
+   in `~/.local/bin`, the `arduino:renesas_uno` 1.6.0 core, the
+   `DHT sensor library` and `Servo` libraries, and `libwxgtk3.2-dev` for
+   firmata_test.
+3. **First hardware test.** Flashed ConfigurableFirmata and StandardFirmata. Both
+   handshake and run I/O through the ESP32-S3 bridge, which ruled out the bridge
+   theory. Both over-reported PWM pins.
+4. **PWM fix.** Restricted PWM to pins 3, 5, 6, 9, 10 and 11 in `Firmata/Boards.h`
+   and in the ConfigurableFirmata submodule
+   (`patches/ConfigurableFirmata-unor4-pwm-pins.patch`). Retested both libraries
+   with `tools/firmata_probe.py`; both pass.
+5. **GUI.** Added `tools/firmata_test` as a submodule and fixed it for wxWidgets
+   3.2, configurable baud and DTR handling
+   (`patches/firmata_test-linux-unor4.patch`). Confirmed working interactively.
+
+The board was left running ConfigurableFirmata 3.4 (with the PWM patch) at
+115200 baud.
+
 ## Sources
 
 - [firmata/arduino releases](https://github.com/firmata/arduino/releases)
@@ -195,3 +257,4 @@ on the `~` pins.
 - [ConfigurableFirmata PR #182: Fix interrupts on the Uno R4](https://github.com/firmata/ConfigurableFirmata/pull/182)
 - [Arduino Forum: Firmata via USB on UNO R4 WiFi](https://forum.arduino.cc/t/firmata-via-usb-on-uno-r4-wifi/1383790)
 - [Arduino Forum: Adding Arduino R4 WiFi to Firmata Boards.h](https://forum.arduino.cc/t/adding-arduino-r4-wifi-to-firmata-board-h-file/1247689)
+- [firmata/firmata_test](https://github.com/firmata/firmata_test)
