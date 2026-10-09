@@ -13,7 +13,7 @@ and where the copies in this directory stand.
 - [Solution](#solution)
 - [Local Copies in This Directory](#local-copies-in-this-directory)
 - [Verification](#verification)
-- [Firmata Test GUI](#firmata-test-gui)
+- [Firmata Test GUI](#firmata-test-gui) ([Testing Guide](#testing-guide))
 - [Work Log](#work-log)
 - [Sources](#sources)
 
@@ -220,6 +220,58 @@ make WXCONFIG=wx-config
 Pick the baud rate under **Baud** first, then the port (`/dev/ttyACM0`) under
 **Port**. The pin rows appear once the firmware name arrives. Verified on
 2026-10-09 with the UNO R4 WiFi running ConfigurableFirmata 3.4 at 115200 baud.
+
+### Testing Guide
+
+Connect at **115200 / `/dev/ttyACM0`** and work through the steps in order. If
+a step fails, stop there.
+
+**1. Without wiring anything**
+
+- **Status bar:** shows `ConfigurableFirmata-3.4`, with `Tx:` and `Rx:` both
+  counting up. If `Rx` stays at 0, the board isn't answering (see the DTR note
+  above).
+- **Pin list:** starts at pin 2 and runs to 19. The PWM option appears only on
+  pins **3, 5, 6, 9, 10, 11**, which confirms the [PWM fix](#solution).
+- **LED on pin 13:** set pin 13 to **Output** and click its toggle. The orange
+  **L** LED next to the USB port switches on and off.
+- **Analog inputs:** pins 14–19 (A0–A5) show changing `A0: …` values. Pins with
+  nothing connected drift randomly, and touching one makes it jump. That's normal.
+
+**2. With one jumper wire (male-to-male)**
+
+- **Pullup input:** set pin 2 to **Pullup**; it reads **High**. Connect pin 2 to
+  **GND** and it switches to **Low**. Unplug the wire and it goes back to High.
+- **Output to input loopback:** set pin 7 to **Output** and pin 8 to **Input**,
+  then wire 7 to 8. Toggling pin 7 flips pin 8 between High and Low. This checks
+  digital output and input in one go.
+- **Analog readings:** on pin 14 (A0), wire A0 to **GND** for about 0, to
+  **3.3V** for about 675, and to **5V** for about 1023. Values within a few counts
+  are fine.
+
+**3. With an LED or a servo**
+
+- **PWM:** connect pin 9 → 220 Ω resistor → LED (long leg) → LED short leg →
+  GND. Set pin 9 to **PWM** and drag the slider; the LED fades smoothly. Repeat
+  on 3, 5, 6, 10 and 11.
+- **Servo:** connect the servo's signal wire to pin 9, power to 5V and ground to
+  GND. Set pin 9 to **Servo**; the slider moves it from 0 to 180°.
+
+Don't wire a PWM pin straight to A0 to check PWM. A0 samples the fast on/off
+signal and shows random-looking values unless you add a resistor-capacitor
+filter. Use the LED instead.
+
+**What firmata_test can't test**
+
+firmata_test only knows input, output, analog, PWM, servo and pullup.
+ConfigurableFirmata's I2C, SPI, DHT sensor and frequency-counting features don't
+appear in its menus, which doesn't mean they're broken. Testing those needs a
+script or a host such as vvvv. The board's LED matrix and WiFi aren't reachable
+through Firmata at all.
+
+If everything in steps 1 and 2 behaves as described, digital I/O, pullups,
+analog input and the serial link through the ESP32 bridge are all working.
+Step 3 confirms PWM and servo on real hardware.
 
 ## Work Log
 
