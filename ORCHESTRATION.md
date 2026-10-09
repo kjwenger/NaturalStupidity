@@ -23,6 +23,11 @@
     * [Auxiliary Task Slots](#auxiliary-task-slots)
   * [DeepSeek Harness Across Three Machines](#deepseek-harness-across-three-machines)
     * [Model-Directed Delegation via Subagents](#model-directed-delegation-via-subagents)
+  * [Remote Access: The LiteLLM Router on JoNAS](#remote-access-the-litellm-router-on-jonas)
+    * [How It's Wired](#how-its-wired)
+    * [Issuing and Revoking Keys](#issuing-and-revoking-keys)
+    * [Using It From Claude Code](#using-it-from-claude-code)
+    * [What to Tell a Friend](#what-to-tell-a-friend)
   * [A Ready-to-Run Starter Bundle](#a-ready-to-run-starter-bundle)
   * [Bring-Up Order](#bring-up-order)
   * [Troubleshooting and Gotchas](#troubleshooting-and-gotchas)
@@ -279,6 +284,66 @@ This is the piece that goes beyond a static per-task assignment. DeepSeek Harnes
 The `"spawn"` provider's start request accepts optional **provider/model overrides** (`SubagentStartRequest.agentOptions`, gated behind `SubagentCapabilities.agentOptions`) — meaning the *orchestrating model*, in the normal course of calling the subagent tool, can hand a subtask to a child agent running against a **different provider/model than its own**. Concretely, this is the mechanism that would let a Strix Halo-driven main agent delegate a quick lookup to the `mac-fast` or `gs63-embed` provider above, as a tool call it decides to make — genuine inference-time routing, not a fixed slot.
 
 Two honest caveats before building on this: it's a **TypeScript API contract** documented at the architecture level, not (as of this writing) a simple `settings.yaml` toggle with a worked example — expect to read `docs/subsystems/subagent.md` at whatever version you install and possibly write a small plugin to wire it up. And `dsh` is still a **developer preview** (per [CLI.md](./CLI.md#deepseek-harness-cli)), so treat this section as a pointer to the right mechanism, not a copy-pasteable recipe — verify the exact config surface against the version you install before depending on it.
+
+## Remote Access: The LiteLLM Router on JoNAS
+
+To use the fleet from outside the house — yourself, or a friend — the router lives on **JoNAS**, the always-on Raspberry Pi 4 NAS (its own repo, `../JoNAS`, stack `stacks/litellm/`), not on any of the GPU boxes. JoNAS already runs the pieces a public endpoint needs: **Caddy** with Let's Encrypt TLS, **ddns-updater** keeping `pornbach.ddns.net` / `pornbach.myddns.me` on the current public IP, and the FRITZ!Box port forwards. Being always on, it also answers with a clean error when a GPU box is asleep, instead of a connection timeout.
+
+Remote users get **an API key, never a machine account**: no SSH, no shell, nothing but inference routes.
+
+```
+client ──HTTPS :8443──► FRITZ!Box ──► JoNAS :443  Caddy  /litellm/* ──► litellm:4000 (+ Postgres)
+                                                                          │ per-person key, model
+                                                                          │ allowlist, rate limits
+                                                                          ▼
+                                                    BosGameM5 LM Studio :1234   (ufw: JoNAS only)
+                                                    Mac Mini :8080              (when enabled)
+```
+
+### How It's Wired
+
+- **FRITZ!Box**: external `8443/tcp` → JoNAS `443` (external 443 belongs to the Synology), external `80/tcp` → JoNAS `80` for Let's Encrypt. **Never forward** `1234`, `4000`, or any model server port.
+- **JoNAS**: `stacks/litellm/` runs LiteLLM + Postgres on the `edge` network; Caddy's `handle_path /litellm/*` block strips the prefix and proxies with `flush_interval -1` so streamed tokens aren't buffered. LAN clients can also use `http://192.168.178.17:4000` directly. Secrets live in JoNAS's gitignored `config/litellm.env`.
+- **BosGameM5**: LM Studio serves on all interfaces (`lms server start --bind 0.0.0.0`), but [`scripts/llm-firewall.sh`](./scripts/llm-firewall.sh) lets **only JoNAS** (`192.168.178.17`) reach `:1234` — LM Studio has no authentication of its own, so the rest of the LAN is denied. The script also turns on ufw generally (deny incoming; your LANs and Docker keep full access) and backs up `/etc/ufw` before each run.
+- The router's model list (JoNAS `stacks/litellm/litellm_config.yaml`) addresses backends by **LAN IP** — containers can't resolve mDNS `.local` names — so give each GPU box a fixed DHCP lease on the FRITZ!Box. Keep the list short: LM Studio loads models on demand, so every listed model is one a remote client can make BosGameM5 load.
+
+### Issuing and Revoking Keys
+
+```bash
+scripts/llm-guest-key.sh add alex                                   # all router models, 20 req/min, 2 at a time, no expiry
+scripts/llm-guest-key.sh add alex --models qwen3.8-27b --days 30    # one model, expires in 30 days
+scripts/llm-guest-key.sh list
+scripts/llm-guest-key.sh revoke alex
+```
+
+The script talks to `http://192.168.178.17:4000` and fetches the master key from JoNAS over key-based SSH, so it never sits on the client. `add` prints the key once together with the settings to send — use a private channel (Signal, etc.), not email. Revocation applies to the next request. There's no dollar budget (local tokens are free); `--rpm` and `--parallel` are what protect your own agents' share of the GPU.
+
+Verified: from outside (mobile network), a valid key gets `200` and only its allowed models; no key or a wrong key gets `401`; a disallowed model gets `403`; a guest key calling `/key/generate` gets `401`.
+
+### Using It From Claude Code
+
+`~/.claude/litellm-remote-ddns-net.json` and `~/.claude/litellm-remote-myddns-me.json` (mode 600, personal key `kjwenger-remote`) point Claude Code at the router:
+
+```json
+{ "env": {
+    "ANTHROPIC_BASE_URL": "https://pornbach.ddns.net:8443/litellm",
+    "ANTHROPIC_AUTH_TOKEN": "<key>",
+    "ANTHROPIC_MODEL": "qwen3.8-27b" } }
+```
+
+```bash
+claude --settings ~/.claude/litellm-remote-ddns-net.json
+```
+
+At home, `~/.claude/litellm-settings.json` (alias `claude-local`) keeps using the personal LiteLLM on BosGameM5's `localhost:4000`. Always resume a LiteLLM-backed session **with** its `--settings` file: without it, Claude Code sends the transcript to Anthropic's API, which rejects the empty thinking blocks local models leave behind (`each thinking block must contain thinking`).
+
+### What to Tell a Friend
+
+- **Privacy:** the router on JoNAS keeps who / which model / token counts / when (`turn_off_message_logging: true`) — not prompt or response text. **But LM Studio on BosGameM5 logs full prompts** to `~/.lmstudio/server-logs/` while its server setting `logSensitiveData` is on (the default seen here). Turn that off in LM Studio's server settings if you promise anyone more than "I could read it" — and either way, you control the boxes; say so plainly.
+- **Availability and speed:** it's up when BosGameM5 is, and slow when your own sessions are using the GPU — a long prompt can take minutes to start answering.
+- **Setup:** `OPENAI_API_BASE=https://pornbach.ddns.net:8443/litellm/v1` plus their key, or the Claude Code `env` block above.
+
+**Never** forward model server ports, give out SSH/desktop accounts, or expose `rpc-server` (no authentication at all). For admin access to LAN-only services from outside, JoNAS's WireGuard (`docs/VPN.md` there) is the right tool, not more port forwards.
 
 ## A Ready-to-Run Starter Bundle
 

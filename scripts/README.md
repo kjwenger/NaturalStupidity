@@ -3,9 +3,11 @@
 Small, standalone scripts referenced from this repo's documentation — each one is explained in context where it's linked from, not just here.
 
 - **`bridge-lmstudio-to-hf-cache.sh`** — adopts every model already downloaded by LM Studio into the Hugging Face Hub's own cache layout, without copying or re-downloading anything, so `hf cache ls` and Magnitude's HF-cache auto-discovery both recognize them. See [PREREQUISITES.md — Bridging Already-Downloaded LM Studio Models](../PREREQUISITES.md#bridging-already-downloaded-lm-studio-models-hf) for the full explanation and caveats.
+- **`fleet-check.sh`** — checks whether the three LLM fleet machines from [ORCHESTRATION.md](../ORCHESTRATION.md) are online, and prints each one's IP address, open LLM ports (8080, 1234, 50052, 52415) and real hostname (over key-based SSH, never prompting). It then lists mDNS-advertised hosts and ping-sweeps the local /24 subnet, so a machine whose name is wrong still turns up. You can override names with `STRIX_HOST`, `MAC_HOST` and `GS63_HOST`, and pass `--no-sweep` to skip the subnet scan.
+- **`llm-guest-key.sh`** — issue/list/revoke per-person API keys on the LiteLLM router on JoNAS (public at `https://pornbach.ddns.net:8443/litellm`). **`llm-firewall.sh`** — ufw for a GPU box serving that router: deny incoming, LANs and Docker allowed, model server port (LM Studio `:1234`) reachable from JoNAS only. See [ORCHESTRATION.md — Remote Access](../ORCHESTRATION.md#remote-access-the-litellm-router-on-jonas).
 - **`bridge-lmstudio-to-unsloth.sh`** (macOS/Linux) and **`bridge-lmstudio-to-unsloth.ps1`** (Windows) — symlinks (junctions on Windows) each LM Studio publisher folder into Unsloth Studio's model directory, since both use the same `<publisher>/<repo>/<file>.gguf` layout. See [RUNTIMES.md — Sharing Already-Downloaded LM Studio Models with Unsloth Studio](../RUNTIMES.md#sharing-already-downloaded-lm-studio-models-with-unsloth-studio).
 
-All three scripts:
+The three bridge scripts:
 - Are read-only with respect to your LM Studio files — they only ever create symlinks/junctions and small metadata files elsewhere, never touch or move anything under `~/.lmstudio/models`.
 - Support `--dry-run` (`-DryRun` for the PowerShell one) to preview what would happen first.
 - Are idempotent — safe to re-run after LM Studio downloads something new; already-bridged/linked entries are skipped, not redone (pass `--force` to `bridge-lmstudio-to-hf-cache.sh` to re-bridge a repo anyway).
