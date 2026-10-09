@@ -54,6 +54,13 @@ b = {"key_alias": name, "rpm_limit": int(rpm), "max_parallel_requests": int(para
 if models: b["models"] = models.split(",")
 if days: b["duration"] = days + "d"
 print(json.dumps(b))' "$name" "$models" "$rpm" "$parallel" "$days")
+    # Claude Code settings use the key's first model. Context windows are
+    # what LM Studio on BosGameM5 loads each model with.
+    cc_model="${models%%,*}"; cc_model="${cc_model:-qwen3.8-27b}"
+    case "$cc_model" in
+      gpt-oss-20b) cc_ctx=131072 ;;
+      *)           cc_ctx=262144 ;;
+    esac
     key=$(api POST /key/generate "$body" | python3 -c 'import json,sys; print(json.load(sys.stdin)["key"])')
     cat <<EOF
 Key for $name (shown once):
@@ -65,10 +72,21 @@ Send them this. OpenAI-compatible tools:
   export OPENAI_API_BASE=$PUBLIC_URL/v1
   export OPENAI_API_KEY=$key
 
-Claude Code (settings.json "env" block, or exported):
+Claude Code — save as e.g. ~/.claude/litellm-remote.json and run
+\`claude --settings ~/.claude/litellm-remote.json\`:
 
-  ANTHROPIC_BASE_URL=$PUBLIC_URL
-  ANTHROPIC_AUTH_TOKEN=$key
+{ "env": {
+    "ANTHROPIC_BASE_URL": "$PUBLIC_URL",
+    "ANTHROPIC_AUTH_TOKEN": "$key",
+    "ANTHROPIC_MODEL": "$cc_model",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "$cc_model",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "$cc_model",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "$cc_model",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "$cc_model",
+    "CLAUDE_CODE_MAX_CONTEXT_TOKENS": "$cc_ctx" } }
+
+(The alias lines keep Claude Code from asking for Claude models the key
+can't use; MAX_CONTEXT_TOKENS is the window LM Studio loads the model with.)
 EOF
     ;;
   list)
