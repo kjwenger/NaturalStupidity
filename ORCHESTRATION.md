@@ -117,11 +117,11 @@ providers:
       - id: qwen3.8-27b
 
   mac-fast:
-    baseUrl: http://<mac-mini-ip>:8080/v1
+    baseUrl: http://<mac-mini-ip>:1234/v1
     api: openai-completions
     apiKey: dummy
     models:
-      - id: qwen3.5-9b
+      - id: qwen3.8-9b-distill
 
   gs63-embed:
     baseUrl: http://<gs63-ip>:8080/v1
@@ -191,8 +191,8 @@ model_list:
 
   - model_name: mac-fast
     litellm_params:
-      model: openai/qwen3.5-9b
-      api_base: http://<mac-mini-ip>:8080/v1
+      model: openai/qwen3.8-9b-distill
+      api_base: http://<mac-mini-ip>:1234/v1
       api_key: dummy
 
   - model_name: gs63-embed
@@ -222,9 +222,9 @@ providers:
       transport: chat_completions
       default_model: qwen3.8-27b
     mac-fast:
-      api: http://<mac-mini-ip>:8080/v1
+      api: http://<mac-mini-ip>:1234/v1
       transport: chat_completions
-      default_model: qwen3.5-9b
+      default_model: qwen3.8-9b-distill
     gs63-embed:
       api: http://<gs63-ip>:8080/v1
       transport: chat_completions
@@ -243,7 +243,7 @@ auxiliary:
     provider: auto      # falls back to the main model
   vision:
     provider: custom
-    model: mac-fast:qwen3.5-9b   # only if it's a vision-capable build
+    model: mac-fast:qwen3.8-9b-distill   # only if it's a vision-capable build (this one isn't)
 ```
 
 This is a real, static, config-time assignment — it lets you point cheap bookkeeping tasks at the Mac Mini or the GS63 so Strix Halo's throughput isn't spent titling sessions, matching the "small model for cheap tasks, big model for real reasoning" split this repo already recommends elsewhere. **It is not automatic task-aware routing** — genuine "the harness decides which of your three machines suits this specific request" is an open feature request upstream ([NousResearch/hermes-agent#32704](https://github.com/NousResearch/hermes-agent/issues/32704)) rather than a shipped capability. Given how actively this project is developing, verify the exact task names and keys against the current version of that doc file before relying on them — the list above is illustrative, not exhaustive.
@@ -264,9 +264,9 @@ llm-pi-ai:
     mac-fast:
       apiKeyEnv: MAC_API_KEY
       api: openai-completions
-      baseURL: http://<mac-mini-ip>:8080/v1
+      baseURL: http://<mac-mini-ip>:1234/v1
       models:
-        - id: qwen3.5-9b
+        - id: qwen3.8-9b-distill
     gs63-embed:
       apiKeyEnv: GS63_API_KEY
       api: openai-completions
@@ -297,7 +297,7 @@ client ──HTTPS :8443──► FRITZ!Box ──► JoNAS :443  Caddy  /litell
                                                                           │ allowlist, rate limits
                                                                           ▼
                                                     BosGameM5 LM Studio :1234   (ufw: JoNAS only)
-                                                    Mac Mini :8080              (when enabled)
+                                                    Mac Mini LM Studio :1234     (qwen3.8-9b-distill)
 ```
 
 ### How It's Wired
@@ -305,6 +305,7 @@ client ──HTTPS :8443──► FRITZ!Box ──► JoNAS :443  Caddy  /litell
 - **FRITZ!Box**: external `8443/tcp` → JoNAS `443` (external 443 belongs to the Synology), external `80/tcp` → JoNAS `80` for Let's Encrypt. **Never forward** `1234`, `4000`, or any model server port.
 - **JoNAS**: `stacks/litellm/` runs LiteLLM + Postgres on the `edge` network; Caddy's `handle_path /litellm/*` block strips the prefix and proxies with `flush_interval -1` so streamed tokens aren't buffered. LAN clients can also use `http://192.168.178.17:4000` directly. Secrets live in JoNAS's gitignored `config/litellm.env`.
 - **BosGameM5**: LM Studio serves on all interfaces (`lms server start --bind 0.0.0.0`), but [`scripts/llm-firewall.sh`](./scripts/llm-firewall.sh) lets **only JoNAS** (`192.168.178.17`) reach `:1234` — LM Studio has no authentication of its own, so the rest of the LAN is denied. The script also turns on ufw generally (deny incoming; your LANs and Docker keep full access) and backs up `/etc/ufw` before each run.
+- **Mac Mini M4 (EmmFour)**: LM Studio on `192.168.178.71:1234` serves one model, `qwen3.8-9b-distill` (Q4_K_M GGUF, loaded with a 170000-token context) — 16GB holds only one model at a time. Unlike BosGameM5 there's **no firewall in front of it yet**: the macOS firewall is off and `:1234` is open to the whole LAN, not just JoNAS.
 - The router's model list (JoNAS `stacks/litellm/litellm_config.yaml`) addresses backends by **LAN IP** — containers can't resolve mDNS `.local` names — so give each GPU box a fixed DHCP lease on the FRITZ!Box. Keep the list short: LM Studio loads models on demand, so every listed model is one a remote client can make BosGameM5 load.
 
 ### Issuing and Revoking Keys
@@ -346,7 +347,7 @@ The first version of this file only had the first three lines. A friend using it
 
 It's a **warning, not an error**: the session runs, but Claude Code doesn't know the model's context window, so it assumes 200k. The extra lines fix that and one more problem:
 
-- **`CLAUDE_CODE_MAX_CONTEXT_TOKENS`** gives Claude Code the model's real window, as loaded in LM Studio on BosGameM5. This stops the warning and puts auto-compact at the right point. Use `262144` for `qwen3.8-27b` and `131072` for `gpt-oss-20b`. The second one matters more: that window is *smaller* than the assumed 200k, so without the setting a long session overflows instead of compacting.
+- **`CLAUDE_CODE_MAX_CONTEXT_TOKENS`** gives Claude Code the model's real window, as loaded in LM Studio on BosGameM5. This stops the warning and puts auto-compact at the right point. Use `262144` for `qwen3.8-27b`, `131072` for `gpt-oss-20b`, and `170000` for `qwen3.8-9b-distill` (as loaded in LM Studio on the Mac Mini). The second one matters more: that window is *smaller* than the assumed 200k, so without the setting a long session overflows instead of compacting.
 - **`ANTHROPIC_DEFAULT_{OPUS,SONNET,HAIKU}_MODEL` and `CLAUDE_CODE_SUBAGENT_MODEL`** send every request to the router model. Otherwise Claude Code asks for Claude-named models for background work and subagents, and the router turns those down because a guest key only allows its listed models.
 
 `scripts/llm-guest-key.sh add` prints this full block, with the model and window already filled in for the key's first allowed model.
@@ -370,7 +371,7 @@ Two things worth fixing before you run it as-is:
 - **`llama-server ... -fa` on the GS63 command in `orchestration/README.md`** — drop `-fa` (or leave it off) on that machine specifically. Per [No Flash Attention on This Card](#no-flash-attention-on-this-card) above, a GTX 1060's compute capability (6.1) is below the ≥7.5 Flash Attention requires; forcing it on hardware that doesn't support it will not give the intended speedup and, depending on your llama.cpp build, may warn or refuse to start rather than silently doing the right thing.
 - **The exact auxiliary-task key names in `hermes_config_snippet.yaml`** (`auxiliary.title`, `auxiliary.compression`) — these weren't independently confirmed against the same source as [Auxiliary Task Slots](#auxiliary-task-slots) above, which found similar but not identical names (e.g. `title_generation`). Check both against whatever version of [configuring-models.md](https://github.com/NousResearch/hermes-agent/blob/main/website/docs/user-guide/configuring-models.md) you actually have installed before assuming either is exactly right.
 
-The bundle's model choices (`qwen2.5-72b-instruct` on Strix Halo, `qwen2.5-14b-instruct-4bit` on the Mac Mini, `llama-3.1-8b-instruct-q4` on the GS63) are also a different, equally valid pick from this document's own [Recommended Models](#the-three-machines-at-a-glance) references — swap in whichever you've actually downloaded; the two aren't meant to match model-for-model.
+The bundle's model choices (`qwen2.5-72b-instruct` on Strix Halo, `qwen3.8-9b-distill` via LM Studio on the Mac Mini — the one actually in use, `llama-3.1-8b-instruct-q4` on the GS63) are also a different, equally valid pick from this document's own [Recommended Models](#the-three-machines-at-a-glance) references — swap in whichever you've actually downloaded; the two aren't meant to match model-for-model.
 
 ## Bring-Up Order
 

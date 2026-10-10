@@ -27,14 +27,15 @@ your build supports it):**
 `--jinja` is required — without it, tool calls come back as plain text instead
 of real tool calls, which breaks both Hermes and DSH.
 
-**Mac Mini M4 (16GB) — mid model, MLX for best memory efficiency:**
+**Mac Mini M4 (16GB) — `qwen3.8-9b-distill` via LM Studio (what's actually in use):**
 ```bash
-pip install mlx-lm
-mlx_lm.server --model mlx-community/Qwen2.5-14B-Instruct-4bit \
-  --host 0.0.0.0 --port 8080
+lms load qwen3.8-9b-distill --context-length 170000
+lms server start --bind 0.0.0.0     # serves on :1234
 ```
-(llama.cpp with Metal also works here if you'd rather keep one server type
-across all three machines — just point at a GGUF instead.)
+(`mlx_lm.server` with an MLX build, e.g. `mlx-community/Qwen3.5-9B-4bit` on
+port 8080, is the alternative — that's what `launchd/com.local.mlx-server.plist`
+and `fleet.sh` supervise. The LiteLLM/Hermes/DSH snippets here point at
+LM Studio's :1234 instead.)
 
 **MSI laptop (GTX 1060, 6GB) — small model, llama.cpp with partial GPU offload:**
 ```bash

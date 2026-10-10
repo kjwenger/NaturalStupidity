@@ -55,11 +55,12 @@ if models: b["models"] = models.split(",")
 if days: b["duration"] = days + "d"
 print(json.dumps(b))' "$name" "$models" "$rpm" "$parallel" "$days")
     # Claude Code settings use the key's first model. Context windows are
-    # what LM Studio on BosGameM5 loads each model with.
+    # what LM Studio on BosGameM5 / the Mac Mini loads each model with.
     cc_model="${models%%,*}"; cc_model="${cc_model:-qwen3.8-27b}"
     case "$cc_model" in
-      gpt-oss-20b) cc_ctx=131072 ;;
-      *)           cc_ctx=262144 ;;
+      gpt-oss-20b)        cc_ctx=131072 ;;
+      qwen3.8-9b-distill) cc_ctx=170000 ;;
+      *)                  cc_ctx=262144 ;;
     esac
     key=$(api POST /key/generate "$body" | python3 -c 'import json,sys; print(json.load(sys.stdin)["key"])')
     cat <<EOF

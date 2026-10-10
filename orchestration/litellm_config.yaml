@@ -14,11 +14,11 @@ model_list:
       api_base: http://strix-halo.local:8080/v1  # llama.cpp/vLLM server on the Strix Halo box
       api_key: "not-needed"
 
-  # --- Mac Mini M4 (16GB unified) — mid-size, MLX-served ---
+  # --- Mac Mini M4 (16GB unified) — the fast 9B, served by LM Studio ---
   - model_name: mac-mid
     litellm_params:
-      model: openai/qwen2.5-14b-instruct-4bit
-      api_base: http://mac-mini.local:8080/v1     # mlx_lm.server or LM Studio MLX engine
+      model: openai/qwen3.8-9b-distill
+      api_base: http://mac-mini.local:1234/v1     # LM Studio's server port
       api_key: "not-needed"
 
   # --- MSI GS63 (GTX 1060, 6GB VRAM) — fast/cheap tasks ---

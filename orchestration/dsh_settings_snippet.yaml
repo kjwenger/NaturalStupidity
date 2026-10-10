@@ -25,14 +25,14 @@ llm-pi-ai:
       displayName: Mac Mini (mid)
       apiKeyEnv: MAC_API_KEY
       api: openai-completions
-      baseURL: http://mac-mini.local:8080/v1
+      baseURL: http://mac-mini.local:1234/v1
       compat:
         supportsDeveloperRole: false
         maxTokensField: max_tokens
       models:
-        - id: qwen2.5-14b-instruct-4bit
-          name: Qwen2.5 14B (MLX)
-          contextWindow: 32768
+        - id: qwen3.8-9b-distill
+          name: Qwen3.8 9B (LM Studio)
+          contextWindow: 170000
           maxTokens: 4096
 
     laptop:

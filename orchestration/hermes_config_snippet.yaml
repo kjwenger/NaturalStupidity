@@ -18,7 +18,7 @@ providers:
     # api_key omitted — Hermes uses "no-key-required" for keyless local servers
 
   mac:
-    api: http://mac-mini.local:8080/v1
+    api: http://mac-mini.local:1234/v1
 
   laptop:
     api: http://msi-laptop.local:8080/v1
@@ -42,16 +42,16 @@ auxiliary:
     model: llama-3.1-8b-instruct-q4
   compression:
     provider: custom:mac
-    model: qwen2.5-14b-instruct-4bit
+    model: qwen3.8-9b-distill
 
 # If the main route is unreachable, fall down this chain before giving up.
 fallback_providers:
   - provider: custom:mac
-    model: qwen2.5-14b-instruct-4bit
+    model: qwen3.8-9b-distill
   - provider: custom:laptop
     model: llama-3.1-8b-instruct-q4
 
 # Mid-session manual switching once the above is in config.yaml:
 #   /model custom:strix:qwen2.5-72b-instruct
-#   /model custom:mac:qwen2.5-14b-instruct-4bit
+#   /model custom:mac:qwen3.8-9b-distill
 #   /model custom:laptop:llama-3.1-8b-instruct-q4
