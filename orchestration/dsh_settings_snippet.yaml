@@ -32,7 +32,7 @@ llm-pi-ai:
       models:
         - id: qwen3.8-9b-distill
           name: Qwen3.8 9B (LM Studio)
-          contextWindow: 170000
+          contextWindow: 140032
           maxTokens: 4096
 
     laptop:

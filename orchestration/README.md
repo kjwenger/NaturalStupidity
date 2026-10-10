@@ -29,7 +29,7 @@ of real tool calls, which breaks both Hermes and DSH.
 
 **Mac Mini M4 (16GB) — `qwen3.8-9b-distill` via LM Studio (what's actually in use):**
 ```bash
-lms load qwen3.8-9b-distill --context-length 170000
+lms load qwen3.8-9b-distill --context-length 140032   # 170000 fails with "Compute error." on 16GB
 lms server start --bind 0.0.0.0     # serves on :1234
 ```
 (`mlx_lm.server` with an MLX build, e.g. `mlx-community/Qwen3.5-9B-4bit` on

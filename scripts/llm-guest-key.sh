@@ -59,7 +59,7 @@ print(json.dumps(b))' "$name" "$models" "$rpm" "$parallel" "$days")
     cc_model="${models%%,*}"; cc_model="${cc_model:-qwen3.8-27b}"
     case "$cc_model" in
       gpt-oss-20b)        cc_ctx=131072 ;;
-      qwen3.8-9b-distill) cc_ctx=170000 ;;
+      qwen3.8-9b-distill) cc_ctx=140032 ;;
       *)                  cc_ctx=262144 ;;
     esac
     key=$(api POST /key/generate "$body" | python3 -c 'import json,sys; print(json.load(sys.stdin)["key"])')
