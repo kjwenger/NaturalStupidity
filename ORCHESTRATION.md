@@ -328,12 +328,28 @@ Verified: from outside (mobile network), a valid key gets `200` and only its all
 { "env": {
     "ANTHROPIC_BASE_URL": "https://pornbach.ddns.net:8443/litellm",
     "ANTHROPIC_AUTH_TOKEN": "<key>",
-    "ANTHROPIC_MODEL": "qwen3.8-27b" } }
+    "ANTHROPIC_MODEL": "qwen3.8-27b",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "qwen3.8-27b",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "qwen3.8-27b",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "qwen3.8-27b",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "qwen3.8-27b",
+    "CLAUDE_CODE_MAX_CONTEXT_TOKENS": "262144" } }
 ```
 
 ```bash
 claude --settings ~/.claude/litellm-remote-ddns-net.json
 ```
+
+The first version of this file only had the first three lines. A friend using it got this warning at startup:
+
+> "qwen3.8-27b" isn't described by this version's model catalog; … auto-compact keeps this session within 200k tokens (the context window it assumes) …
+
+It's a **warning, not an error**: the session runs, but Claude Code doesn't know the model's context window, so it assumes 200k. The extra lines fix that and one more problem:
+
+- **`CLAUDE_CODE_MAX_CONTEXT_TOKENS`** gives Claude Code the model's real window, as loaded in LM Studio on BosGameM5. This stops the warning and puts auto-compact at the right point. Use `262144` for `qwen3.8-27b` and `131072` for `gpt-oss-20b`. The second one matters more: that window is *smaller* than the assumed 200k, so without the setting a long session overflows instead of compacting.
+- **`ANTHROPIC_DEFAULT_{OPUS,SONNET,HAIKU}_MODEL` and `CLAUDE_CODE_SUBAGENT_MODEL`** send every request to the router model. Otherwise Claude Code asks for Claude-named models for background work and subagents, and the router turns those down because a guest key only allows its listed models.
+
+`scripts/llm-guest-key.sh add` prints this full block, with the model and window already filled in for the key's first allowed model.
 
 At home, `~/.claude/litellm-settings.json` (alias `claude-local`) keeps using the personal LiteLLM on BosGameM5's `localhost:4000`. Always resume a LiteLLM-backed session **with** its `--settings` file: without it, Claude Code sends the transcript to Anthropic's API, which rejects the empty thinking blocks local models leave behind (`each thinking block must contain thinking`).
 
@@ -341,7 +357,7 @@ At home, `~/.claude/litellm-settings.json` (alias `claude-local`) keeps using th
 
 - **Privacy:** the router on JoNAS keeps who / which model / token counts / when (`turn_off_message_logging: true`) — not prompt or response text. **But LM Studio on BosGameM5 logs full prompts** to `~/.lmstudio/server-logs/` while its server setting `logSensitiveData` is on (the default seen here). Turn that off in LM Studio's server settings if you promise anyone more than "I could read it" — and either way, you control the boxes; say so plainly.
 - **Availability and speed:** it's up when BosGameM5 is, and slow when your own sessions are using the GPU — a long prompt can take minutes to start answering.
-- **Setup:** `OPENAI_API_BASE=https://pornbach.ddns.net:8443/litellm/v1` plus their key, or the Claude Code `env` block above.
+- **Setup:** `OPENAI_API_BASE=https://pornbach.ddns.net:8443/litellm/v1` plus their key, or the complete Claude Code `env` block above (the model-alias and context-window lines included; without them they get the "isn't described by this version's model catalog" warning).
 
 **Never** forward model server ports, give out SSH/desktop accounts, or expose `rpc-server` (no authentication at all). For admin access to LAN-only services from outside, JoNAS's WireGuard (`docs/VPN.md` there) is the right tool, not more port forwards.
 
