@@ -1,7 +1,7 @@
 # Firmata on the Arduino UNO R4 WiFi
 
 Status as of 2026-10-09: what upstream ships, what actually broke on the UNO R4,
-and where the copies in this directory stand.
+and where the copies in this repository stand.
 
 ## Table of Contents
 
@@ -12,7 +12,7 @@ and where the copies in this directory stand.
 - [Is the ESP32-S3 Serial Bridge to Blame?](#is-the-esp32-s3-serial-bridge-to-blame)
 - [The Remaining Bug: PWM Over-Reporting](#the-remaining-bug-pwm-over-reporting)
 - [Solution](#solution)
-- [Local Copies in This Directory](#local-copies-in-this-directory)
+- [Local Copies in This Repository](#local-copies-in-this-repository)
 - [Verification](#verification)
 - [LED Matrix Support](#led-matrix-support)
 - [Firmata Test GUI](#firmata-test-gui) ([Testing Guide](#testing-guide))
@@ -26,11 +26,9 @@ the ones verified on 2026-10-09, pinned so that later releases can't change the
 results.
 
 ```bash
-# 1. Clone, then initialize only the two Arduino submodules
-git clone https://github.com/kjwenger/NaturalStupidity.git
-cd NaturalStupidity
-git submodule update --init Arduino/ConfigurableFirmata Arduino/tools/firmata_test
-cd Arduino
+# 1. Clone with the two submodules
+git clone --recurse-submodules https://github.com/kjwenger/Arduino-UNO-R4-WiFi-Firmata.git
+cd Arduino-UNO-R4-WiFi-Firmata
 
 # 2. Apply the local fixes to the submodules
 git -C ConfigurableFirmata apply ../patches/ConfigurableFirmata-unor4-pwm-pins.patch
@@ -186,13 +184,13 @@ On the R4, advertise PWM only on the six pins labelled `~` on the board: 3, 5,
   git -C ConfigurableFirmata apply ../patches/ConfigurableFirmata-unor4-pwm-pins.patch
   ```
 
-## Local Copies in This Directory
+## Local Copies in This Repository
 
 | Path | Version | R4 state |
 |---|---|---|
 | `Firmata/` | 2.5.9 plus development-branch R4 support | Builds and works on the R4 WiFi with the PWM fix above. `Boards_h.old` / `Boards_h.new` are earlier edit snapshots. |
 | `ConfigurableFirmata/` | Git submodule on upstream head, 3.4.0 | Includes PR #155, #168 and #182. Works on the R4 WiFi once the patch in `patches/` is applied. |
-| `Firmata_README.md` | Instructions in German | Describes a Firmata **2.5.7** with an extended `Boards.h` that works on the UNO R3, R4 Minima and R4 WiFi with vvvv beta and gamma as host. |
+| `Firmata/INSTALL.de.md` | Instructions in German | Describes a Firmata **2.5.7** with an extended `Boards.h` that works on the UNO R3, R4 Minima and R4 WiFi with vvvv beta and gamma as host. |
 
 ## Verification
 
@@ -315,8 +313,8 @@ Build and run:
 
 ```bash
 sudo apt-get install -y libwxgtk3.2-dev build-essential
-git submodule update --init Arduino/tools/firmata_test   # from the repo root
-cd Arduino/tools/firmata_test
+git submodule update --init tools/firmata_test   # from the repo root
+cd tools/firmata_test
 git apply ../../patches/firmata_test-linux-unor4.patch
 make WXCONFIG=wx-config
 ./firmata_test

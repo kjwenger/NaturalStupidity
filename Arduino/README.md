@@ -1,4 +1,4 @@
-# Arduino
+# Arduino-UNO-R4-WiFi-Firmata
 Firmata on the Arduino UNO R4 WiFi (and R3 / R4 Minima), with vvvv as the host.
 
 ## Table of Contents
@@ -12,7 +12,7 @@ Firmata on the Arduino UNO R4 WiFi (and R3 / R4 Minima), with vvvv as the host.
 |---|---|
 | `Firmata/` | Standard Firmata 2.5.9 with a hand-patched `Boards.h` for the UNO R4 |
 | `ConfigurableFirmata/` | Git submodule of [firmata/ConfigurableFirmata](https://github.com/firmata/ConfigurableFirmata) |
-| `Firmata_README.md` | Installation instructions (German) for the patched Firmata with vvvv |
+| `Firmata/INSTALL.de.md` | Installation instructions (German) for the patched Firmata with vvvv |
 | `FIRMATA.md` | UNO R4 compatibility analysis: upstream versions, root cause, fix, verification, test GUI, work log |
 | `sketches/ConfigurableFirmataR4/` | ConfigurableFirmata example plus the UNO R4 WiFi LED matrix feature (`LedMatrixFirmata.h`) |
 | `patches/` | Local fixes for the `ConfigurableFirmata` and `firmata_test` submodules |

@@ -1,0 +1,15 @@
+# arduino-cli / IDE build output
+build/
+*.elf
+*.bin
+*.hex
+*.map
+
+# Built firmata_test binary and objects
+tools/firmata_test/firmata_test
+*.o
+
+# Editors
+.idea/
+.vscode/
+*~
