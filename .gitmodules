@@ -2,9 +2,7 @@
 	path = MultiLingua
 	url = git@github.com:kjwenger/MultiLingua.git
 	branch = main
-[submodule "Arduino/ConfigurableFirmata"]
-	path = Arduino/ConfigurableFirmata
-	url = https://github.com/firmata/ConfigurableFirmata.git
-[submodule "Arduino/tools/firmata_test"]
-	path = Arduino/tools/firmata_test
-	url = https://github.com/firmata/firmata_test.git
+[submodule "Arduino"]
+	path = Arduino
+	url = https://github.com/kjwenger/Arduino-UNO-R4-WiFi-Firmata.git
+	branch = main

@@ -12,6 +12,7 @@ Playground for all things Artificial Intelligence
 - [AI CLI Tools](#ai-cli-tools)
 - [AI IDE Plugins](#ai-ide-plugins)
 - [AI Spec Tools](#ai-spec-tools)
+- [Arduino UNO R4 WiFi Firmata](#arduino-uno-r4-wifi-firmata)
 
 ## [Prerequisites](PREREQUISITES.md)
 
@@ -30,3 +31,7 @@ Playground for all things Artificial Intelligence
 ## [AI IDE Plugins](IDE.md)
 
 ## [AI Spec Tools](SPEC.md)
+
+## [Arduino UNO R4 WiFi Firmata](Arduino/README.md)
+
+Submodule: [kjwenger/Arduino-UNO-R4-WiFi-Firmata](https://github.com/kjwenger/Arduino-UNO-R4-WiFi-Firmata)
