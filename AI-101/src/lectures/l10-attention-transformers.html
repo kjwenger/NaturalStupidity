@@ -1,0 +1,69 @@
+<section class="unit lecture" id="l10" data-title="Attention & Transformers">
+  <p class="eyebrow">Lecture 10 · Week 10 · Part IV Modern AI systems</p>
+  <h1>Attention and Transformers</h1>
+  <p class="lede">One mechanism, attention, lets every position in a sequence look directly at every other. Built into the Transformer, it is the architecture behind every current language model.</p>
+
+  <div class="box"><h4>Learning objectives</h4><ul>
+    <li>Compute scaled dot-product attention by hand for a tiny example.</li>
+    <li>Explain multi-head attention, positional encodings and causal masking.</li>
+    <li>Draw a Transformer block and explain each component.</li>
+    <li>State the cost of attention in sequence length and its consequences.</li>
+  </ul></div>
+
+  <h2>10.1 Attention</h2>
+  <p>The idea: to compute a new representation for one position, take a weighted average of information from all positions, with weights that depend on how relevant each one is. Each position emits three vectors, computed by learned linear maps from its current representation: a <dfn data-g="qkv">query</dfn> \(q\) (what am I looking for?), a <em>key</em> \(k\) (what do I contain?) and a <em>value</em> \(v\) (what do I pass on?).</p>
+  <div class="env def"><span class="lbl">Definition 10.1 (Scaled dot-product attention)</span>
+    <p>For query, key and value matrices \(Q, K, V\) with one row per position and key dimension \(d_k\),</p>
+    \[ \mathrm{Attention}(Q,K,V) = \mathrm{softmax}\!\left(\frac{QK^\top}{\sqrt{d_k}}\right) V. \]
+    <p>Row \(i\) of the softmax matrix holds the <dfn data-g="attention">attention</dfn> weights of position \(i\) over all positions; they are non-negative and sum to 1.</p>
+  </div>
+  <p>Dividing by \(\sqrt{d_k}\) keeps the dot products from growing with the dimension, which would push the softmax into saturation where gradients vanish. When \(Q\), \(K\) and \(V\) all come from the same sequence it is called <dfn data-g="self-attention">self-attention</dfn>.</p>
+  <div class="env ex"><span class="lbl">Example 10.1 (Attention by hand)</span>
+    <p>Two positions with \(d_k = 2\). Query of position 1: \(q = (1, 0)\). Keys: \(k_1 = (1, 0)\), \(k_2 = (0, 1)\). Values: \(v_1 = (10, 0)\), \(v_2 = (0, 10)\).</p>
+    <p>Scores: \(q\cdot k_1/\sqrt2 = 0.707\), \(q \cdot k_2/\sqrt2 = 0\). Softmax: \(e^{0.707}/(e^{0.707}+1) = 0.67\) and \(0.33\). Output: \(0.67\,v_1 + 0.33\,v_2 = (6.7, 3.3)\). Position 1 attends mostly to itself because its query matches its own key.</p>
+  </div>
+  <p class="note"><b>Why "pronouns" is the classic example.</b> In "The animal didn't cross the street because it was too tired", a trained model's attention from "it" puts high weight on "animal". Swap "tired" for "wide" and the weight moves to "street".</p>
+
+  <h3>Multi-head attention</h3>
+  <p>One attention pattern can only express one kind of relation at a time. <dfn data-g="multi-head-attention">Multi-head attention</dfn> runs \(h\) attentions in parallel with separate, smaller projections (e.g. 32 heads of dimension 128 for a model width of 4,096), concatenates the results and projects them back. Different heads learn different relations: syntax, coreference, copying previous tokens. To save memory at inference time, many LLMs share keys and values between groups of query heads (<em>grouped-query attention</em>, GQA).</p>
+
+  <h3>Position</h3>
+  <p>Attention itself is order-blind: shuffle the input and the outputs shuffle the same way. Order must be injected via <dfn data-g="positional-encoding">positional encoding</dfn>. The original Transformer added sine and cosine waves of different frequencies to the embeddings. Current LLMs use <em>rotary position embeddings</em> (RoPE), which rotate queries and keys by an angle proportional to their position, so that the attention score depends on the <em>relative</em> distance. Extending RoPE (e.g. YaRN scaling) is how models reach context windows of hundreds of thousands of tokens.</p>
+
+  <h2>10.2 The Transformer block</h2>
+  <p>A <dfn data-g="transformer">Transformer</dfn> is a stack of identical blocks. In the "pre-norm" form used by today's LLMs, each block is</p>
+  \[ h' = h + \mathrm{MHA}(\mathrm{Norm}(h)), \qquad h'' = h' + \mathrm{FFN}(\mathrm{Norm}(h')). \]
+  <p>The attention sublayer mixes information <em>between</em> positions; the feed-forward network (an MLP applied to each position separately, typically 3–4× wider than the model) processes information <em>within</em> each position, and holds most of the parameters. Residual connections and normalisation (lectures 8–9) keep a stack of 30 to 100+ blocks trainable.</p>
+  <p>The original 2017 Transformer had an <em>encoder</em> (reads the whole input, bidirectional attention) and a <em>decoder</em> (generates output). Today there are three families:</p>
+  <ul>
+    <li><strong>Encoder-only</strong> (BERT): understanding tasks, classification, embeddings.</li>
+    <li><strong>Encoder–decoder</strong> (T5, the original): translation, summarisation.</li>
+    <li><strong>Decoder-only</strong> (GPT, Llama, Qwen, Claude): text generation. Uses <dfn data-g="causal-mask">causal masking</dfn>: position \(i\) may only attend to positions \(\le i\), implemented by setting the forbidden scores to \(-\infty\) before the softmax. This lets the model be trained on every next-token prediction in a sequence at once.</li>
+  </ul>
+  <h3>Mixture of experts</h3>
+  <p>A <dfn data-g="moe">mixture-of-experts</dfn> (MoE) layer replaces the single FFN with many expert FFNs and a small router that sends each token to only a few of them. A model can then have a very large total parameter count but use only a fraction per token: <code>qwen3-coder-30b-a3b</code> has 30 billion parameters, of which about 3 billion are active per token. It needs the memory of a 30B model but runs at roughly the speed of a 3B one.</p>
+
+  <h2>10.3 Cost</h2>
+  <p>Self-attention compares every position with every other: for sequence length \(n\) and width \(d\) it costs \(O(n^2 d)\) time, and the score matrix needs \(O(n^2)\) memory per head. Doubling the context quadruples the attention cost. Efficient implementations (FlashAttention) avoid storing the full matrix, but the quadratic compute remains, which is why long prompts are slow to process on your own hardware. In return, all positions are processed in parallel during training, which is what made training on trillions of tokens feasible.</p>
+
+  <div class="box"><h4>Summary</h4><ul>
+    <li>Attention is a softmax-weighted average of values, weighted by query–key similarity.</li>
+    <li>Multiple heads learn different relations; positional encodings (today RoPE) supply order.</li>
+    <li>A Transformer block is attention plus a per-position MLP, each wrapped in a residual connection with normalisation.</li>
+    <li>Decoder-only models with causal masking are the basis of LLMs; MoE makes them cheaper per token.</li>
+    <li>Attention costs grow quadratically with context length.</li>
+  </ul></div>
+
+  <h2>Exercises (Sheet 10)</h2>
+  <ol class="exercise">
+    <li data-n="10.1">Repeat example 10.1 for the query of position 2, \(q = (0, 2)\). <span class="pts">[3 pts]</span>
+      <details><summary>Solution</summary><div><p>Scores: 0 and 2/√2 ≈ 1.414. Softmax: 1/(1 + e^1.414) ≈ 0.20 and 0.80. Output 0.2·(10, 0) + 0.8·(0, 10) = (2, 8).</p></div></details></li>
+    <li data-n="10.2">Write down the 4×4 causal mask for a sequence of four tokens (0 = allowed, −∞ = forbidden). <span class="pts">[2 pts]</span>
+      <details><summary>Solution</summary><div><p>Rows are queries, columns keys: row 1: 0, −∞, −∞, −∞; row 2: 0, 0, −∞, −∞; row 3: 0, 0, 0, −∞; row 4: 0, 0, 0, 0. A lower-triangular pattern.</p></div></details></li>
+    <li data-n="10.3">Estimate the parameters of one Transformer block with width \(d = 4096\) and FFN width \(4d\), ignoring biases and norms. Then for 32 blocks. <span class="pts">[4 pts]</span>
+      <details><summary>Solution</summary><div><p>Attention: 4 matrices d×d = 4·16.8M ≈ 67M. FFN: 2 matrices d×4d = 8d² ≈ 134M. Per block ≈ 12d² ≈ 201M; 32 blocks ≈ 6.4B, plus the embedding table. That is roughly a 7B model.</p></div></details></li>
+    <li data-n="10.4">Processing a 32k-token prompt takes 40 s. Roughly how long would a 128k-token prompt take if attention dominated the cost? Why is the real figure lower? <span class="pts">[3 pts]</span>
+      <details><summary>Solution</summary><div><p>4× the length gives 16× the attention cost: about 640 s. In practice the FFN and projections (linear in n) take a large share, so the real slowdown lies between 4× and 16×.</p></div></details></li>
+  </ol>
+  <p><strong>Reading:</strong> [UDL] chapter 12; [JM] chapter 9; Vaswani et al. 2017.</p>
+</section>

@@ -1,0 +1,1045 @@
+[
+  {
+    "key": "a-star",
+    "term": "A* search",
+    "de": "A*-Suche",
+    "lecture": 2,
+    "definition": "Best-first search that expands the node with the lowest f(n) = g(n) + h(n), path cost so far plus heuristic estimate. Optimal with an admissible (tree search) or consistent (graph search) heuristic."
+  },
+  {
+    "key": "activation-function",
+    "term": "Activation function",
+    "de": "Aktivierungsfunktion",
+    "lecture": 8,
+    "definition": "Non-linear function applied to a neuron's weighted input, e.g. ReLU, sigmoid, tanh, GELU. Without it, stacked layers collapse into one linear map."
+  },
+  {
+    "key": "adam",
+    "term": "Adam",
+    "de": "Adam-Optimierer",
+    "lecture": 7,
+    "definition": "Optimiser that keeps running averages of gradients (momentum) and squared gradients, and scales each parameter's step accordingly. With decoupled weight decay (AdamW) it is the standard for training Transformers."
+  },
+  {
+    "key": "admissible",
+    "term": "Admissible heuristic",
+    "de": "zulässige Heuristik",
+    "lecture": 2,
+    "definition": "A heuristic that never overestimates the true cost to reach a goal: h(n) ≤ h*(n). Guarantees that A* tree search finds an optimal solution."
+  },
+  {
+    "key": "agent",
+    "term": "Agent",
+    "de": "Agent",
+    "lecture": 1,
+    "definition": "Anything that perceives its environment through sensors and acts on it through actuators."
+  },
+  {
+    "key": "agent-function",
+    "term": "Agent function",
+    "de": "Agentenfunktion",
+    "lecture": 1,
+    "definition": "The abstract mapping from percept sequences to actions that describes an agent's behaviour; implemented concretely by an agent program."
+  },
+  {
+    "key": "ai-winter",
+    "term": "AI winter",
+    "de": "KI-Winter",
+    "lecture": 1,
+    "definition": "A period of reduced funding and interest in AI after inflated expectations were not met; notably the mid-1970s and the late 1980s to early 1990s."
+  },
+  {
+    "key": "alignment",
+    "term": "Alignment",
+    "de": "Alignment, Ausrichtung",
+    "lecture": 14,
+    "definition": "The problem of making an AI system pursue the goals its designers and users actually intend, rather than a flawed proxy for them."
+  },
+  {
+    "key": "alpha-beta",
+    "term": "Alpha-beta pruning",
+    "de": "Alpha-Beta-Suche",
+    "lecture": 3,
+    "definition": "Optimisation of minimax that skips branches which cannot affect the final decision. Same result as minimax; with perfect move ordering it examines about b^(m/2) nodes instead of b^m."
+  },
+  {
+    "key": "arc-consistency",
+    "term": "Arc consistency",
+    "de": "Kantenkonsistenz",
+    "lecture": 3,
+    "definition": "In a CSP, the arc X → Y is consistent if every value of X has some compatible value of Y. The AC-3 algorithm removes values until all arcs are consistent."
+  },
+  {
+    "key": "artificial-intelligence",
+    "term": "Artificial intelligence",
+    "de": "Künstliche Intelligenz (KI)",
+    "lecture": 1,
+    "definition": "The study and construction of agents that act rationally, i.e. that choose actions expected to maximise a performance measure. Other definitions emphasise human-like thought or behaviour."
+  },
+  {
+    "key": "attention",
+    "term": "Attention",
+    "de": "Aufmerksamkeit",
+    "lecture": 10,
+    "definition": "Mechanism that computes a weighted average of value vectors, with weights given by the softmax of query–key similarities. Lets each position draw information directly from any other position."
+  },
+  {
+    "key": "autodiff",
+    "term": "Automatic differentiation",
+    "de": "automatisches Differenzieren",
+    "lecture": 8,
+    "definition": "Computing exact derivatives of a program by recording its elementary operations and applying the chain rule to them. Reverse-mode autodiff is backpropagation; PyTorch and JAX implement it."
+  },
+  {
+    "key": "backpropagation",
+    "term": "Backpropagation",
+    "de": "Fehlerrückführung, Backpropagation",
+    "lecture": 8,
+    "definition": "Algorithm that computes the gradient of the loss with respect to every weight of a network in one backward pass, by applying the chain rule layer by layer."
+  },
+  {
+    "key": "backtracking",
+    "term": "Backtracking search",
+    "de": "Backtracking-Suche",
+    "lecture": 3,
+    "definition": "Depth-first search for CSPs that assigns one variable at a time and backs up as soon as a constraint is violated."
+  },
+  {
+    "key": "bayesian-network",
+    "term": "Bayesian network",
+    "de": "Bayes-Netz",
+    "lecture": 5,
+    "definition": "Directed acyclic graph of random variables with a conditional probability table per node; compactly represents a joint distribution as the product of P(X | parents(X))."
+  },
+  {
+    "key": "bellman-equation",
+    "term": "Bellman equation",
+    "de": "Bellman-Gleichung",
+    "lecture": 12,
+    "definition": "Recursive equation for value functions: the value of a state equals the expected immediate reward plus the discounted value of the successor state, under the best (optimality form) or a given policy."
+  },
+  {
+    "key": "benchmark",
+    "term": "Benchmark",
+    "de": "Benchmark, Vergleichstest",
+    "lecture": 14,
+    "definition": "A standard dataset and metric for comparing models, e.g. MMLU, GSM8K, SWE-bench."
+  },
+  {
+    "key": "bfs",
+    "term": "Breadth-first search",
+    "de": "Breitensuche",
+    "lecture": 2,
+    "definition": "Uninformed search that expands the shallowest unexpanded node first (FIFO queue). Complete; optimal for equal step costs; O(b^d) time and memory."
+  },
+  {
+    "key": "bias-fairness",
+    "term": "Bias (fairness)",
+    "de": "Verzerrung, Voreingenommenheit",
+    "lecture": 14,
+    "definition": "Systematic unfair differences in a model's behaviour across groups of people, inherited from data, labels, proxy features or problem framing."
+  },
+  {
+    "key": "bias-variance",
+    "term": "Bias–variance trade-off",
+    "de": "Bias-Varianz-Dilemma",
+    "lecture": 6,
+    "definition": "Decomposition of expected test error into bias (error from wrong assumptions), variance (sensitivity to the training sample) and noise. More flexible models trade lower bias for higher variance."
+  },
+  {
+    "key": "bpe",
+    "term": "Byte-pair encoding",
+    "de": "Byte-Pair-Encoding",
+    "lecture": 11,
+    "definition": "Tokenisation algorithm that starts with single bytes and repeatedly merges the most frequent adjacent pair into a new token, until the vocabulary reaches a target size."
+  },
+  {
+    "key": "causal-mask",
+    "term": "Causal mask",
+    "de": "kausale Maske",
+    "lecture": 10,
+    "definition": "Attention mask that prevents each position from attending to later positions, by setting their scores to −∞. Used in decoder-only language models."
+  },
+  {
+    "key": "chain-of-thought",
+    "term": "Chain of thought",
+    "de": "Gedankenkette",
+    "lecture": 11,
+    "definition": "Intermediate reasoning steps a model writes out before its final answer. Reasoning models are trained with reinforcement learning to produce long chains of thought."
+  },
+  {
+    "key": "chunking",
+    "term": "Chunking",
+    "de": "Segmentierung",
+    "lecture": 13,
+    "definition": "Splitting documents into passages (chunks) for retrieval, typically a few hundred tokens long with some overlap."
+  },
+  {
+    "key": "cnf",
+    "term": "Conjunctive normal form",
+    "de": "konjunktive Normalform (KNF)",
+    "lecture": 4,
+    "definition": "A logical sentence written as a conjunction (AND) of clauses, each a disjunction (OR) of literals. Every propositional sentence has an equivalent CNF."
+  },
+  {
+    "key": "cnn",
+    "term": "Convolutional neural network",
+    "de": "faltendes neuronales Netz (CNN)",
+    "lecture": 9,
+    "definition": "Network that applies small learned filters across a grid input with shared weights, exploiting locality and translation invariance. The standard architecture for images before vision Transformers."
+  },
+  {
+    "key": "completeness",
+    "term": "Completeness",
+    "de": "Vollständigkeit",
+    "lecture": 2,
+    "definition": "A search algorithm is complete if it is guaranteed to find a solution whenever one exists."
+  },
+  {
+    "key": "conditional-probability",
+    "term": "Conditional probability",
+    "de": "bedingte Wahrscheinlichkeit",
+    "lecture": 5,
+    "definition": "P(A | B) = P(A, B) / P(B): the probability of A given that B is known to be true."
+  },
+  {
+    "key": "contamination",
+    "term": "Data contamination",
+    "de": "Datenkontamination",
+    "lecture": 14,
+    "definition": "Benchmark test items appearing in a model's training data, which inflates its scores."
+  },
+  {
+    "key": "context-window",
+    "term": "Context window",
+    "de": "Kontextfenster",
+    "lecture": 11,
+    "definition": "The maximum number of tokens a language model can take into account at once: prompt, conversation history and its own output together."
+  },
+  {
+    "key": "cosine-similarity",
+    "term": "Cosine similarity",
+    "de": "Kosinus-Ähnlichkeit",
+    "lecture": 9,
+    "definition": "cos(u, v) = u·v / (‖u‖‖v‖); similarity of two vectors' directions, from −1 to 1. The standard measure for comparing embeddings."
+  },
+  {
+    "key": "cross-entropy",
+    "term": "Cross-entropy loss",
+    "de": "Kreuzentropie",
+    "lecture": 6,
+    "definition": "Loss −log p̂(y): the negative log-probability the model assigns to the correct class or token. Minimising it is maximum likelihood estimation."
+  },
+  {
+    "key": "cross-validation",
+    "term": "Cross-validation",
+    "de": "Kreuzvalidierung",
+    "lecture": 6,
+    "definition": "Evaluation scheme that splits data into k folds, trains k times on k−1 folds and tests on the held-out fold, then averages the results."
+  },
+  {
+    "key": "csp",
+    "term": "Constraint satisfaction problem",
+    "de": "Constraint-Erfüllungsproblem",
+    "lecture": 3,
+    "definition": "Problem defined by variables, their domains and constraints on combinations of values; a solution assigns every variable a value satisfying all constraints."
+  },
+  {
+    "key": "decode",
+    "term": "Decode phase",
+    "de": "Dekodierphase",
+    "lecture": 11,
+    "definition": "The token-by-token generation phase of LLM inference. Each step reads all weights from memory, so speed is limited by memory bandwidth."
+  },
+  {
+    "key": "deep-learning",
+    "term": "Deep learning",
+    "de": "Deep Learning, tiefes Lernen",
+    "lecture": 1,
+    "definition": "Machine learning with neural networks of many layers that learn their own feature representations from raw data."
+  },
+  {
+    "key": "dfs",
+    "term": "Depth-first search",
+    "de": "Tiefensuche",
+    "lecture": 2,
+    "definition": "Uninformed search that expands the deepest node first (stack). Needs only O(bm) memory but is neither complete nor optimal in general."
+  },
+  {
+    "key": "dpo",
+    "term": "Direct preference optimisation",
+    "de": "Direct Preference Optimization (DPO)",
+    "lecture": 11,
+    "definition": "Alignment method that fine-tunes a model directly on pairs of preferred and rejected responses, without training a separate reward model."
+  },
+  {
+    "key": "dropout",
+    "term": "Dropout",
+    "de": "Dropout",
+    "lecture": 8,
+    "definition": "Regularisation technique that randomly sets a fraction of activations to zero during training."
+  },
+  {
+    "key": "embedding",
+    "term": "Embedding",
+    "de": "Einbettung",
+    "lecture": 9,
+    "definition": "A dense vector representation of a discrete item (token, word, sentence, image), learned so that similar items have nearby vectors."
+  },
+  {
+    "key": "entailment",
+    "term": "Entailment",
+    "de": "logische Folgerung",
+    "lecture": 4,
+    "definition": "KB ⊨ α: α is true in every model in which the knowledge base KB is true."
+  },
+  {
+    "key": "epoch",
+    "term": "Epoch",
+    "de": "Epoche",
+    "lecture": 7,
+    "definition": "One complete pass over the training data."
+  },
+  {
+    "key": "erm",
+    "term": "Empirical risk minimisation",
+    "de": "empirische Risikominimierung",
+    "lecture": 6,
+    "definition": "Training principle: choose the parameters that minimise the average loss over the training examples."
+  },
+  {
+    "key": "evaluation-function",
+    "term": "Evaluation function",
+    "de": "Bewertungsfunktion",
+    "lecture": 3,
+    "definition": "Function that estimates the utility of a non-terminal game position, used when search is cut off at a depth limit."
+  },
+  {
+    "key": "expert-system",
+    "term": "Expert system",
+    "de": "Expertensystem",
+    "lecture": 1,
+    "definition": "Rule-based program encoding a human expert's knowledge as if-then rules; the dominant AI technology of the 1980s."
+  },
+  {
+    "key": "exploration-exploitation",
+    "term": "Exploration–exploitation dilemma",
+    "de": "Exploration-Exploitation-Dilemma",
+    "lecture": 12,
+    "definition": "The trade-off between choosing the best-known action (exploit) and trying others that might be better (explore)."
+  },
+  {
+    "key": "fine-tuning",
+    "term": "Fine-tuning",
+    "de": "Feinabstimmung, Fine-Tuning",
+    "lecture": 11,
+    "definition": "Continuing to train a pre-trained model on a smaller, task-specific dataset."
+  },
+  {
+    "key": "fol",
+    "term": "First-order logic",
+    "de": "Prädikatenlogik erster Stufe",
+    "lecture": 4,
+    "definition": "Logic with objects, predicates, functions and the quantifiers ∀ and ∃; far more expressive than propositional logic, but entailment is only semi-decidable."
+  },
+  {
+    "key": "frontier",
+    "term": "Frontier",
+    "de": "Rand, Frontier",
+    "lecture": 2,
+    "definition": "The set of nodes generated but not yet expanded during search. Search strategies differ in which frontier node they expand next."
+  },
+  {
+    "key": "gguf",
+    "term": "GGUF",
+    "de": "GGUF",
+    "lecture": 11,
+    "definition": "File format of llama.cpp (and LM Studio) for storing model weights, usually quantised, together with tokenizer and metadata."
+  },
+  {
+    "key": "gradient",
+    "term": "Gradient",
+    "de": "Gradient",
+    "lecture": 7,
+    "definition": "Vector of partial derivatives of a function with respect to each parameter; points in the direction of steepest increase."
+  },
+  {
+    "key": "gradient-descent",
+    "term": "Gradient descent",
+    "de": "Gradientenabstieg",
+    "lecture": 7,
+    "definition": "Optimisation by repeatedly stepping against the gradient: θ ← θ − η∇L(θ)."
+  },
+  {
+    "key": "hallucination",
+    "term": "Hallucination",
+    "de": "Halluzination",
+    "lecture": 11,
+    "definition": "Fluent, confident model output that is false or unsupported by the input."
+  },
+  {
+    "key": "heuristic",
+    "term": "Heuristic",
+    "de": "Heuristik",
+    "lecture": 2,
+    "definition": "A function h(n) estimating the cost of the cheapest path from a node to a goal, used to guide informed search."
+  },
+  {
+    "key": "hyperparameter",
+    "term": "Hyperparameter",
+    "de": "Hyperparameter",
+    "lecture": 6,
+    "definition": "A setting chosen before training rather than learned, e.g. learning rate, batch size, number of layers, regularisation strength."
+  },
+  {
+    "key": "ids",
+    "term": "Iterative deepening search",
+    "de": "iterative Tiefensuche",
+    "lecture": 2,
+    "definition": "Repeated depth-limited DFS with increasing limits. Complete and optimal for unit costs with only O(bd) memory."
+  },
+  {
+    "key": "in-context-learning",
+    "term": "In-context learning",
+    "de": "In-Context-Learning",
+    "lecture": 11,
+    "definition": "An LLM's ability to perform a task from instructions or examples given in the prompt, without any weight updates."
+  },
+  {
+    "key": "independence",
+    "term": "Independence",
+    "de": "stochastische Unabhängigkeit",
+    "lecture": 5,
+    "definition": "A and B are independent if P(A, B) = P(A)P(B); conditionally independent given C if P(A, B | C) = P(A | C)P(B | C)."
+  },
+  {
+    "key": "inductive-bias",
+    "term": "Inductive bias",
+    "de": "induktiver Bias",
+    "lecture": 9,
+    "definition": "The assumptions a learning method builds in, which determine how it generalises beyond its training data, e.g. locality in CNNs."
+  },
+  {
+    "key": "inference",
+    "term": "Inference",
+    "de": "Inferenz, Schlussfolgerung",
+    "lecture": 4,
+    "definition": "In logic: deriving new sentences from a knowledge base. In machine learning, also: running a trained model to make predictions."
+  },
+  {
+    "key": "jailbreak",
+    "term": "Jailbreak",
+    "de": "Jailbreak",
+    "lecture": 14,
+    "definition": "A prompt crafted to make a model bypass its safety training and produce output it would normally refuse."
+  },
+  {
+    "key": "joint-distribution",
+    "term": "Joint distribution",
+    "de": "gemeinsame Verteilung",
+    "lecture": 5,
+    "definition": "The probability of every combination of values of a set of random variables."
+  },
+  {
+    "key": "knowledge-base",
+    "term": "Knowledge base",
+    "de": "Wissensbasis",
+    "lecture": 4,
+    "definition": "A set of sentences in a formal language representing what an agent knows."
+  },
+  {
+    "key": "knowledge-graph",
+    "term": "Knowledge graph",
+    "de": "Wissensgraph",
+    "lecture": 4,
+    "definition": "A large store of facts as subject–predicate–object triples connecting entities, e.g. Wikidata."
+  },
+  {
+    "key": "kv-cache",
+    "term": "KV cache",
+    "de": "KV-Cache",
+    "lecture": 11,
+    "definition": "Stored attention keys and values of all previous tokens, so that each generation step only computes them for the new token. Grows linearly with context length."
+  },
+  {
+    "key": "learning-rate",
+    "term": "Learning rate",
+    "de": "Lernrate",
+    "lecture": 7,
+    "definition": "Step size η in gradient descent; usually the most important hyperparameter."
+  },
+  {
+    "key": "likelihood",
+    "term": "Likelihood",
+    "de": "Likelihood, Plausibilität",
+    "lecture": 5,
+    "definition": "P(E | H): the probability of the observed evidence under a hypothesis, viewed as a function of the hypothesis or parameters."
+  },
+  {
+    "key": "llm",
+    "term": "Large language model",
+    "de": "großes Sprachmodell",
+    "lecture": 11,
+    "definition": "A Transformer with billions of parameters trained on next-token prediction over very large text corpora, usually followed by instruction tuning and preference optimisation."
+  },
+  {
+    "key": "llm-agent",
+    "term": "LLM agent",
+    "de": "LLM-Agent",
+    "lecture": 13,
+    "definition": "A system that runs a language model in a loop, letting it call tools, observe results and act until a task is done."
+  },
+  {
+    "key": "logistic-regression",
+    "term": "Logistic regression",
+    "de": "logistische Regression",
+    "lecture": 6,
+    "definition": "Linear classifier that maps a weighted sum of features through the sigmoid function to a probability."
+  },
+  {
+    "key": "logits",
+    "term": "Logits",
+    "de": "Logits",
+    "lecture": 11,
+    "definition": "The raw, unnormalised scores a model outputs for each class or token, before the softmax turns them into probabilities."
+  },
+  {
+    "key": "lora",
+    "term": "LoRA",
+    "de": "LoRA (Low-Rank Adaptation)",
+    "lecture": 11,
+    "definition": "Parameter-efficient fine-tuning that freezes the model and learns small low-rank update matrices for selected weight matrices."
+  },
+  {
+    "key": "loss-function",
+    "term": "Loss function",
+    "de": "Verlustfunktion",
+    "lecture": 6,
+    "definition": "Function measuring how wrong a prediction is; training minimises its average over the data."
+  },
+  {
+    "key": "lstm",
+    "term": "LSTM",
+    "de": "LSTM (Long Short-Term Memory)",
+    "lecture": 9,
+    "definition": "Recurrent network unit with a cell state and gates controlling what to keep, forget and output; remembers over much longer spans than a plain RNN."
+  },
+  {
+    "key": "machine-learning",
+    "term": "Machine learning",
+    "de": "maschinelles Lernen",
+    "lecture": 6,
+    "definition": "Methods that improve at a task from data or experience instead of being explicitly programmed."
+  },
+  {
+    "key": "mcts",
+    "term": "Monte Carlo tree search",
+    "de": "Monte-Carlo-Baumsuche",
+    "lecture": 3,
+    "definition": "Game-tree search that estimates move values from many simulated playouts and grows the tree towards promising moves, balancing exploration and exploitation."
+  },
+  {
+    "key": "mdp",
+    "term": "Markov decision process",
+    "de": "Markov-Entscheidungsprozess",
+    "lecture": 12,
+    "definition": "Formal model of sequential decisions: states, actions, transition probabilities, rewards and a discount factor, with the Markov property."
+  },
+  {
+    "key": "mini-batch",
+    "term": "Mini-batch",
+    "de": "Mini-Batch",
+    "lecture": 7,
+    "definition": "A small random subset of the training data used to estimate the gradient for one update step."
+  },
+  {
+    "key": "minimax",
+    "term": "Minimax",
+    "de": "Minimax-Verfahren",
+    "lecture": 3,
+    "definition": "Decision rule for two-player zero-sum games: MAX picks the move with the highest value assuming MIN always replies with the move of lowest value."
+  },
+  {
+    "key": "mle",
+    "term": "Maximum likelihood estimation",
+    "de": "Maximum-Likelihood-Schätzung",
+    "lecture": 5,
+    "definition": "Choosing the parameters that make the observed data most probable. MAP estimation additionally multiplies by a prior."
+  },
+  {
+    "key": "mlp",
+    "term": "Multilayer perceptron",
+    "de": "mehrschichtiges Perzeptron",
+    "lecture": 8,
+    "definition": "Feed-forward neural network of fully connected layers with non-linear activations between them."
+  },
+  {
+    "key": "moe",
+    "term": "Mixture of experts",
+    "de": "Mixture of Experts (MoE)",
+    "lecture": 10,
+    "definition": "Architecture where a router sends each token to a few of many expert sub-networks, so only a fraction of the parameters is used per token."
+  },
+  {
+    "key": "multi-head-attention",
+    "term": "Multi-head attention",
+    "de": "Multi-Head-Attention",
+    "lecture": 10,
+    "definition": "Several attention operations run in parallel on separate learned projections, with their outputs concatenated; lets the model capture several kinds of relations at once."
+  },
+  {
+    "key": "naive-bayes",
+    "term": "Naive Bayes",
+    "de": "naiver Bayes-Klassifikator",
+    "lecture": 5,
+    "definition": "Classifier that assumes features are conditionally independent given the class: P(C | x) ∝ P(C)∏P(xᵢ | C)."
+  },
+  {
+    "key": "neural-network",
+    "term": "Neural network",
+    "de": "neuronales Netz",
+    "lecture": 8,
+    "definition": "A model composed of layers of simple units (weighted sum plus non-linearity), trained by gradient descent."
+  },
+  {
+    "key": "normalization",
+    "term": "Normalisation layer",
+    "de": "Normalisierung",
+    "lecture": 8,
+    "definition": "Layer that rescales activations to a standard mean and variance (batch norm, layer norm) or root mean square (RMSNorm), stabilising deep-network training."
+  },
+  {
+    "key": "ontology",
+    "term": "Ontology",
+    "de": "Ontologie",
+    "lecture": 4,
+    "definition": "A formal specification of the concepts in a domain and the relations between them."
+  },
+  {
+    "key": "optimality",
+    "term": "Optimality",
+    "de": "Optimalität",
+    "lecture": 2,
+    "definition": "A search algorithm is optimal if the solution it returns has the lowest path cost among all solutions."
+  },
+  {
+    "key": "overfitting",
+    "term": "Overfitting",
+    "de": "Überanpassung",
+    "lecture": 6,
+    "definition": "Fitting the training data, including its noise, so closely that performance on new data suffers."
+  },
+  {
+    "key": "parameter",
+    "term": "Parameter",
+    "de": "Parameter",
+    "lecture": 6,
+    "definition": "A value learned during training, e.g. a weight or bias. Model sizes such as \"27B\" count parameters."
+  },
+  {
+    "key": "peas",
+    "term": "PEAS",
+    "de": "PEAS",
+    "lecture": 1,
+    "definition": "Task description by Performance measure, Environment, Actuators and Sensors."
+  },
+  {
+    "key": "percept-sequence",
+    "term": "Percept sequence",
+    "de": "Wahrnehmungsfolge",
+    "lecture": 1,
+    "definition": "The complete history of everything an agent has perceived."
+  },
+  {
+    "key": "perceptron",
+    "term": "Perceptron",
+    "de": "Perzeptron",
+    "lecture": 8,
+    "definition": "Rosenblatt's single artificial neuron with a step activation (1958); learns any linearly separable classification but not XOR."
+  },
+  {
+    "key": "performance-measure",
+    "term": "Performance measure",
+    "de": "Leistungsmaß",
+    "lecture": 1,
+    "definition": "The criterion that defines success for an agent's behaviour."
+  },
+  {
+    "key": "perplexity",
+    "term": "Perplexity",
+    "de": "Perplexität",
+    "lecture": 11,
+    "definition": "exp of the average cross-entropy per token; the effective number of choices a language model is uncertain between. Lower is better."
+  },
+  {
+    "key": "policy",
+    "term": "Policy",
+    "de": "Strategie, Policy",
+    "lecture": 12,
+    "definition": "A mapping from states to actions, or to probability distributions over actions."
+  },
+  {
+    "key": "policy-gradient",
+    "term": "Policy gradient",
+    "de": "Policy-Gradient",
+    "lecture": 12,
+    "definition": "Reinforcement learning by gradient ascent on expected return with respect to the policy's parameters; PPO and GRPO are examples."
+  },
+  {
+    "key": "positional-encoding",
+    "term": "Positional encoding",
+    "de": "Positionskodierung",
+    "lecture": 10,
+    "definition": "Information about token order added to a Transformer's input or attention, e.g. sinusoids or rotary position embeddings (RoPE)."
+  },
+  {
+    "key": "posterior",
+    "term": "Posterior",
+    "de": "A-posteriori-Wahrscheinlichkeit",
+    "lecture": 5,
+    "definition": "P(H | E): the probability of a hypothesis after taking the evidence into account."
+  },
+  {
+    "key": "precision-recall",
+    "term": "Precision and recall",
+    "de": "Genauigkeit und Trefferquote",
+    "lecture": 6,
+    "definition": "Precision: share of predicted positives that are correct. Recall: share of actual positives that are found. F1 is their harmonic mean."
+  },
+  {
+    "key": "prefill",
+    "term": "Prefill phase",
+    "de": "Prefill-Phase",
+    "lecture": 11,
+    "definition": "The first phase of LLM inference, which processes the whole prompt in parallel and fills the KV cache; limited by compute."
+  },
+  {
+    "key": "pretraining",
+    "term": "Pre-training",
+    "de": "Vortraining",
+    "lecture": 11,
+    "definition": "Self-supervised training of a model on a very large general corpus, e.g. next-token prediction on web text, before any task-specific training."
+  },
+  {
+    "key": "prior",
+    "term": "Prior",
+    "de": "A-priori-Wahrscheinlichkeit",
+    "lecture": 5,
+    "definition": "P(H): the probability of a hypothesis before seeing the evidence."
+  },
+  {
+    "key": "prompt",
+    "term": "Prompt",
+    "de": "Prompt, Eingabeaufforderung",
+    "lecture": 11,
+    "definition": "The input text given to a language model, including any system instructions, conversation history and tool results."
+  },
+  {
+    "key": "prompt-injection",
+    "term": "Prompt injection",
+    "de": "Prompt-Injection",
+    "lecture": 13,
+    "definition": "An attack in which instructions hidden in data the model processes (web pages, files, tool output) are followed as if they came from the user."
+  },
+  {
+    "key": "q-learning",
+    "term": "Q-learning",
+    "de": "Q-Learning",
+    "lecture": 12,
+    "definition": "Model-free reinforcement learning that updates action-value estimates towards r + γ maxₐ′ Q(s′, a′) after each transition."
+  },
+  {
+    "key": "qkv",
+    "term": "Query, key, value",
+    "de": "Query, Key, Value",
+    "lecture": 10,
+    "definition": "The three learned projections of each position in attention: the query is matched against keys to weight the values."
+  },
+  {
+    "key": "quantization",
+    "term": "Quantisation",
+    "de": "Quantisierung",
+    "lecture": 11,
+    "definition": "Storing model weights (and sometimes activations or the KV cache) with fewer bits, e.g. 4 instead of 16, to save memory and bandwidth."
+  },
+  {
+    "key": "rag",
+    "term": "Retrieval-augmented generation",
+    "de": "Retrieval-Augmented Generation (RAG)",
+    "lecture": 13,
+    "definition": "Answering by first retrieving relevant documents and adding them to the model's prompt."
+  },
+  {
+    "key": "rational-agent",
+    "term": "Rational agent",
+    "de": "rationaler Agent",
+    "lecture": 1,
+    "definition": "An agent that, for each percept sequence, chooses the action expected to maximise its performance measure given its evidence and knowledge."
+  },
+  {
+    "key": "reasoning-model",
+    "term": "Reasoning model",
+    "de": "Reasoning-Modell",
+    "lecture": 11,
+    "definition": "An LLM trained, usually with reinforcement learning on verifiable tasks, to produce an extended chain of thought before answering."
+  },
+  {
+    "key": "regularization",
+    "term": "Regularisation",
+    "de": "Regularisierung",
+    "lecture": 6,
+    "definition": "Any technique that reduces overfitting by preferring simpler models, e.g. weight decay, dropout, early stopping, data augmentation."
+  },
+  {
+    "key": "relaxed-problem",
+    "term": "Relaxed problem",
+    "de": "relaxiertes Problem",
+    "lecture": 2,
+    "definition": "A version of a problem with fewer constraints; the cost of its optimal solution is an admissible heuristic for the original."
+  },
+  {
+    "key": "relu",
+    "term": "ReLU",
+    "de": "ReLU (Rectified Linear Unit)",
+    "lecture": 8,
+    "definition": "Activation function max(0, z)."
+  },
+  {
+    "key": "residual-connection",
+    "term": "Residual connection",
+    "de": "Residualverbindung",
+    "lecture": 9,
+    "definition": "Skip connection that adds a block's input to its output, h + F(h); lets gradients flow through very deep networks."
+  },
+  {
+    "key": "resolution",
+    "term": "Resolution",
+    "de": "Resolution",
+    "lecture": 4,
+    "definition": "Inference rule combining two clauses with complementary literals into one; refutation-complete for propositional logic."
+  },
+  {
+    "key": "rlhf",
+    "term": "RLHF",
+    "de": "bestärkendes Lernen aus menschlichem Feedback",
+    "lecture": 11,
+    "definition": "Reinforcement learning from human feedback: train a reward model on human preference comparisons, then optimise the language model against it."
+  },
+  {
+    "key": "rnn",
+    "term": "Recurrent neural network",
+    "de": "rekurrentes neuronales Netz",
+    "lecture": 9,
+    "definition": "Network that processes a sequence step by step, carrying a hidden state from each step to the next."
+  },
+  {
+    "key": "scaling-laws",
+    "term": "Scaling laws",
+    "de": "Skalierungsgesetze",
+    "lecture": 11,
+    "definition": "Empirical power laws relating model loss to parameter count, training data and compute."
+  },
+  {
+    "key": "search-problem",
+    "term": "Search problem",
+    "de": "Suchproblem",
+    "lecture": 2,
+    "definition": "States, initial state, actions, transition model, goal test and action costs; a solution is an action sequence from the initial state to a goal."
+  },
+  {
+    "key": "search-tree",
+    "term": "Search tree",
+    "de": "Suchbaum",
+    "lecture": 2,
+    "definition": "Tree of paths explored from the initial state during search; nodes correspond to paths, not to unique states."
+  },
+  {
+    "key": "self-attention",
+    "term": "Self-attention",
+    "de": "Selbstaufmerksamkeit",
+    "lecture": 10,
+    "definition": "Attention in which queries, keys and values all come from the same sequence."
+  },
+  {
+    "key": "self-supervised-learning",
+    "term": "Self-supervised learning",
+    "de": "selbstüberwachtes Lernen",
+    "lecture": 6,
+    "definition": "Learning from labels derived automatically from the data itself, e.g. predicting the next token or a masked part of the input."
+  },
+  {
+    "key": "sft",
+    "term": "Supervised fine-tuning",
+    "de": "überwachtes Fine-Tuning",
+    "lecture": 11,
+    "definition": "Fine-tuning a pre-trained model on curated input–output examples, e.g. instruction–response conversations."
+  },
+  {
+    "key": "sgd",
+    "term": "Stochastic gradient descent",
+    "de": "stochastischer Gradientenabstieg",
+    "lecture": 7,
+    "definition": "Gradient descent using gradient estimates from random mini-batches instead of the full dataset."
+  },
+  {
+    "key": "softmax",
+    "term": "Softmax",
+    "de": "Softmax",
+    "lecture": 6,
+    "definition": "Function turning a vector of scores into a probability distribution: softmax(z)ₖ = e^{zₖ} / Σⱼ e^{zⱼ}."
+  },
+  {
+    "key": "soundness",
+    "term": "Soundness",
+    "de": "Korrektheit",
+    "lecture": 4,
+    "definition": "An inference procedure is sound if everything it derives is entailed by the knowledge base."
+  },
+  {
+    "key": "specification-gaming",
+    "term": "Specification gaming",
+    "de": "Specification Gaming",
+    "lecture": 14,
+    "definition": "An agent satisfying the literal objective it was given in an unintended way; also called reward hacking."
+  },
+  {
+    "key": "state-space",
+    "term": "State space",
+    "de": "Zustandsraum",
+    "lecture": 2,
+    "definition": "The set of all states reachable from the initial state, as a graph whose edges are actions."
+  },
+  {
+    "key": "subagent",
+    "term": "Subagent",
+    "de": "Subagent",
+    "lecture": 13,
+    "definition": "A separate agent loop with its own context, started by a main agent for a sub-task; returns only its result."
+  },
+  {
+    "key": "supervised-learning",
+    "term": "Supervised learning",
+    "de": "überwachtes Lernen",
+    "lecture": 6,
+    "definition": "Learning a function from input–output pairs; classification for categorical outputs, regression for numeric ones."
+  },
+  {
+    "key": "temperature",
+    "term": "Temperature",
+    "de": "Temperatur",
+    "lecture": 11,
+    "definition": "Sampling parameter that divides logits before the softmax: below 1 makes output more deterministic, above 1 more random."
+  },
+  {
+    "key": "test-set",
+    "term": "Test set",
+    "de": "Testdatensatz",
+    "lecture": 6,
+    "definition": "Held-out data used once, at the end, to estimate a model's performance on unseen data."
+  },
+  {
+    "key": "token",
+    "term": "Token",
+    "de": "Token",
+    "lecture": 11,
+    "definition": "The unit of text an LLM reads and writes: a word, word piece, character or byte sequence from its vocabulary."
+  },
+  {
+    "key": "tool-use",
+    "term": "Tool use",
+    "de": "Werkzeugnutzung, Function Calling",
+    "lecture": 13,
+    "definition": "A model emitting structured calls to external functions, described by name, description and JSON Schema, which the application executes."
+  },
+  {
+    "key": "top-p",
+    "term": "Top-p sampling",
+    "de": "Nucleus-Sampling",
+    "lecture": 11,
+    "definition": "Sampling only from the smallest set of tokens whose total probability reaches p."
+  },
+  {
+    "key": "transformer",
+    "term": "Transformer",
+    "de": "Transformer",
+    "lecture": 10,
+    "definition": "Neural architecture built from stacked blocks of self-attention and position-wise feed-forward networks with residual connections and normalisation (Vaswani et al., 2017)."
+  },
+  {
+    "key": "transition-model",
+    "term": "Transition model",
+    "de": "Übergangsmodell",
+    "lecture": 2,
+    "definition": "Description of the result of each action in each state; deterministic Result(s, a) or probabilistic P(s′ | s, a)."
+  },
+  {
+    "key": "turing-test",
+    "term": "Turing test",
+    "de": "Turing-Test",
+    "lecture": 1,
+    "definition": "Turing's 1950 \"imitation game\": a machine passes if a human interrogator cannot reliably tell it from a human in text conversation."
+  },
+  {
+    "key": "ucs",
+    "term": "Uniform-cost search",
+    "de": "Suche mit einheitlichen Kosten",
+    "lecture": 2,
+    "definition": "Uninformed search that expands the node with the lowest path cost g(n); Dijkstra's algorithm. Complete and optimal for positive costs."
+  },
+  {
+    "key": "underfitting",
+    "term": "Underfitting",
+    "de": "Unteranpassung",
+    "lecture": 6,
+    "definition": "A model too simple to capture the patterns in the data; both training and test error are high."
+  },
+  {
+    "key": "universal-approximation",
+    "term": "Universal approximation theorem",
+    "de": "universeller Approximationssatz",
+    "lecture": 8,
+    "definition": "A network with one hidden layer and enough units can approximate any continuous function on a bounded domain to any accuracy."
+  },
+  {
+    "key": "unsupervised-learning",
+    "term": "Unsupervised learning",
+    "de": "unüberwachtes Lernen",
+    "lecture": 6,
+    "definition": "Finding structure in data without labels, e.g. clustering, dimensionality reduction, density estimation."
+  },
+  {
+    "key": "utility",
+    "term": "Utility",
+    "de": "Nutzen",
+    "lecture": 1,
+    "definition": "A numeric measure of how desirable a state or outcome is for an agent."
+  },
+  {
+    "key": "validation-set",
+    "term": "Validation set",
+    "de": "Validierungsdatensatz",
+    "lecture": 6,
+    "definition": "Held-out data used during development to choose hyperparameters and compare models, kept separate from the test set."
+  },
+  {
+    "key": "value-function",
+    "term": "Value function",
+    "de": "Wertfunktion",
+    "lecture": 12,
+    "definition": "V(s): the expected return from state s under a policy; Q(s, a) is the same after first taking action a."
+  },
+  {
+    "key": "vector-database",
+    "term": "Vector database",
+    "de": "Vektordatenbank",
+    "lecture": 13,
+    "definition": "Store for embedding vectors that supports fast (approximate) nearest-neighbour search."
+  },
+  {
+    "key": "vocabulary",
+    "term": "Vocabulary",
+    "de": "Vokabular",
+    "lecture": 11,
+    "definition": "The fixed set of tokens a language model can read and produce, typically 32,000 to 256,000 entries."
+  }
+]

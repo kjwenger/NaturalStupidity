@@ -1,0 +1,59 @@
+<section class="unit lecture" id="l07" data-title="Optimisation">
+  <p class="eyebrow">Lecture 7 · Week 7 · Part III Machine learning</p>
+  <h1>Optimisation and gradient descent</h1>
+  <p class="lede">Almost every modern model, from logistic regression to a 400-billion-parameter LLM, is trained by the same simple idea: take small steps downhill on the loss.</p>
+
+  <div class="box"><h4>Learning objectives</h4><ul>
+    <li>Compute gradients of simple losses and perform gradient descent steps by hand.</li>
+    <li>Explain the role of the learning rate, mini-batches and stochastic gradients.</li>
+    <li>Describe momentum and Adam and why they help.</li>
+    <li>Recognise common training failures from the loss curve.</li>
+  </ul></div>
+
+  <h2>7.1 Gradient descent</h2>
+  <p>The <dfn data-g="gradient">gradient</dfn> \(\nabla_\theta L\) is the vector of partial derivatives of the loss with respect to each parameter. It points in the direction of steepest ascent. <dfn data-g="gradient-descent">Gradient descent</dfn> repeatedly steps the other way:</p>
+  \[ \theta_{t+1} = \theta_t - \eta\,\nabla_\theta L(\theta_t), \]
+  <p>where the <dfn data-g="learning-rate">learning rate</dfn> \(\eta\) sets the step size. Too small and training crawls; too large and the loss oscillates or diverges.</p>
+  <div class="env ex"><span class="lbl">Example 7.1 (One step by hand)</span>
+    <p>Fit \(\hat y = wx\) to the single point \((x, y) = (2, 4)\) with squared loss \(L = (wx - y)^2\). Then \(\partial L / \partial w = 2(wx - y)x\). At \(w = 0\): gradient \(= 2 \cdot (0 - 4) \cdot 2 = -16\). With \(\eta = 0.05\): \(w \leftarrow 0 + 0.8 = 0.8\). Next step: gradient \(= 2(1.6 - 4)\cdot 2 = -9.6\), \(w = 1.28\). The weight approaches the optimum \(w = 2\). With \(\eta = 0.3\), the first step would jump to \(w = 4.8\) and overshoot ever further: divergence.</p>
+  </div>
+  <p>For convex losses (linear and logistic regression) gradient descent reaches the global minimum. Neural network losses are non-convex, with many local minima and saddle points, but in very high dimensions most local minima turn out to be about as good as each other, and plain gradient methods work remarkably well.</p>
+
+  <h2>7.2 Stochastic and mini-batch gradient descent</h2>
+  <p>Computing the exact gradient needs a pass over the whole training set, which is far too slow for millions of examples. <dfn data-g="sgd">Stochastic gradient descent</dfn> (SGD) estimates it from a random <dfn data-g="mini-batch">mini-batch</dfn> of, say, 32 to a few thousand examples. The estimate is noisy but unbiased, and much cheaper, so we can take many more steps. The noise even helps escape sharp minima, which tend to generalise poorly. One pass over the training data is an <dfn data-g="epoch">epoch</dfn>.</p>
+  <p class="note"><b>Batch size and hardware.</b> GPUs are efficient on large batches, so batch size is usually set by memory. When it grows, the learning rate is often scaled up with it.</p>
+
+  <h2>7.3 Better optimisers</h2>
+  <p><strong>Momentum</strong> keeps a running average of past gradients and steps along that, like a ball rolling downhill. It speeds up progress along consistent directions and damps oscillation across narrow valleys:</p>
+  \[ v_{t+1} = \beta v_t + \nabla L(\theta_t), \qquad \theta_{t+1} = \theta_t - \eta\, v_{t+1}. \]
+  <p><dfn data-g="adam">Adam</dfn> (adaptive moment estimation) additionally keeps a running average of <em>squared</em> gradients and divides each parameter's step by its square root. Parameters with large, noisy gradients get smaller steps, and rarely updated ones get larger steps. Adam with weight decay (AdamW) is the default for training Transformers.</p>
+  <h3>Learning-rate schedules</h3>
+  <p>Large models are trained with a short <em>warm-up</em> (the learning rate rises linearly from zero for the first few thousand steps, avoiding instability while Adam's statistics settle), followed by <em>decay</em>, typically cosine, towards a small final value.</p>
+
+  <h2>7.4 Reading loss curves</h2>
+  <ul>
+    <li><strong>Loss explodes or becomes NaN:</strong> learning rate too high, missing warm-up, or numerical overflow. Lower the rate; clip gradients to a maximum norm.</li>
+    <li><strong>Loss flat from the start:</strong> learning rate too low, a bug in the data pipeline, or dead activations.</li>
+    <li><strong>Training loss falls, validation loss rises:</strong> overfitting (lecture 6).</li>
+    <li><strong>Can't overfit a single small batch:</strong> a bug. Checking that the model can memorise 10 examples is the first sanity test of any new training script.</li>
+  </ul>
+
+  <div class="box"><h4>Summary</h4><ul>
+    <li>Gradient descent steps against the gradient; the learning rate is the most important hyperparameter.</li>
+    <li>Mini-batch SGD trades exact gradients for many cheap, noisy steps.</li>
+    <li>Momentum and Adam, plus warm-up and decay, make training large networks stable and fast.</li>
+  </ul></div>
+
+  <h2>Exercises (Sheet 7)</h2>
+  <ol class="exercise">
+    <li data-n="7.1">For \(L(w) = (w-3)^2\), find the range of learning rates for which gradient descent converges. What happens at \(\eta = 0.5\)? <span class="pts">[4 pts]</span>
+      <details><summary>Solution</summary><div><p>Update: w ← w − 2η(w − 3), so w − 3 ← (1 − 2η)(w − 3). It converges iff |1 − 2η| &lt; 1, i.e. 0 &lt; η &lt; 1. At η = 0.5 the factor is 0: it jumps to the minimum in one step. For 0.5 &lt; η &lt; 1 it oscillates around the minimum but still converges.</p></div></details></li>
+    <li data-n="7.2">Compute the gradient of the logistic loss \(L = -[y\log\sigma(z) + (1-y)\log(1-\sigma(z))]\), with \(z = wx + b\), with respect to \(w\). <span class="pts">[4 pts]</span>
+      <details><summary>Solution</summary><div><p>Using σ′(z) = σ(z)(1 − σ(z)): ∂L/∂z = σ(z) − y, so ∂L/∂w = (σ(z) − y)·x and ∂L/∂b = σ(z) − y. The prediction error times the input.</p></div></details></li>
+    <li data-n="7.3">A training set has 1.2 million examples and the batch size is 256. How many steps is one epoch? How many updates does full-batch gradient descent make per epoch? <span class="pts">[2 pts]</span>
+      <details><summary>Solution</summary><div><p>1,200,000 / 256 ≈ 4,688 steps. Full-batch gradient descent makes 1 update per epoch.</p></div></details></li>
+    <li data-n="7.4">Why does Adam need a warm-up phase in Transformer training? <span class="pts">[2 pts]</span>
+      <details><summary>Solution</summary><div><p>At the start its running estimates of the gradient variance rest on very few steps and are unreliable, so the normalised steps can be very large and destabilise training. Small initial learning rates give the statistics time to settle.</p></div></details></li>
+  </ol>
+  <p><strong>Reading:</strong> [UDL] chapter 6; [GBC] chapter 8.</p>
+</section>

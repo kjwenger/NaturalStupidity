@@ -1,0 +1,64 @@
+<section class="unit lecture" id="l03" data-title="Games & constraints">
+  <p class="eyebrow">Lecture 3 · Week 3 · Part I Classical AI</p>
+  <h1>Adversarial search and constraint satisfaction</h1>
+  <p class="lede">Two extensions of search: playing against an opponent who wants you to lose, and problems where the goal is a set of constraints rather than a path.</p>
+
+  <div class="box"><h4>Learning objectives</h4><ul>
+    <li>Compute minimax values and apply alpha-beta pruning by hand.</li>
+    <li>Explain evaluation functions and Monte Carlo tree search.</li>
+    <li>Formulate a CSP and solve it with backtracking, variable ordering and arc consistency.</li>
+  </ul></div>
+
+  <h2>3.1 Games as search</h2>
+  <p>In a two-player, zero-sum game with perfect information (chess, Go, tic-tac-toe), one player, MAX, tries to maximise the final score and the other, MIN, tries to minimise it. A game is defined by an initial state, the player to move, the legal actions, a transition model, a terminal test and a utility for terminal states.</p>
+  <div class="env def"><span class="lbl">Definition 3.1 (Minimax value)</span>
+    <p>The <dfn data-g="minimax">minimax</dfn> value of a state is its utility if it is terminal; otherwise the maximum of its successors' values if MAX is to move, and the minimum if MIN is to move:</p>
+    \[ \mathrm{MM}(s) = \begin{cases} \mathrm{Utility}(s) & \text{terminal} \\ \max_a \mathrm{MM}(\mathrm{Result}(s,a)) & \text{MAX to move} \\ \min_a \mathrm{MM}(\mathrm{Result}(s,a)) & \text{MIN to move} \end{cases} \]
+  </div>
+  <p>Minimax is optimal against an optimal opponent, but it visits the whole tree: \(O(b^m)\) time. Chess has \(b \approx 35\) and games last about 80 plies, so \(35^{80}\) is out of the question.</p>
+
+  <h3>Alpha-beta pruning</h3>
+  <p><dfn data-g="alpha-beta">Alpha-beta pruning</dfn> computes the same value while skipping branches that cannot affect the decision. It tracks \(\alpha\), the best value MAX can already guarantee on the current path, and \(\beta\), the best value MIN can guarantee. When a node's value is known to be worse than an alternative already available to the player above it (\(\alpha \ge \beta\)), the rest of its children are pruned.</p>
+  <p>With perfect move ordering, alpha-beta examines \(O(b^{m/2})\) nodes, which doubles the searchable depth in the same time. Good move ordering (captures first, the best move from the previous iteration first) gets close to that.</p>
+  <div class="env ex"><span class="lbl">Example 3.1 (Pruning)</span>
+    <p>MAX at the root has two MIN children. The first MIN node's leaves are 3, 12, 8, so its value is 3 and \(\alpha = 3\). The second MIN node's first leaf is 2. Since MIN will choose at most 2 there, and MAX already has 3, the remaining leaves of the second node are never examined.</p>
+  </div>
+
+  <h3>Cutting off search</h3>
+  <p>Real programs stop at a depth limit and apply an <dfn data-g="evaluation-function">evaluation function</dfn> that estimates the utility of a non-terminal position: in chess classically a weighted sum of material, mobility and king safety, today often a neural network. <dfn data-g="mcts">Monte Carlo tree search</dfn> (MCTS) takes another approach: it estimates a position's value from the results of many simulated games (playouts) and focuses its tree on promising moves, balancing exploration and exploitation with the UCB1 formula. AlphaGo (2016) and AlphaZero combined MCTS with neural networks that predict values and good moves.</p>
+
+  <h2>3.2 Constraint satisfaction problems</h2>
+  <div class="env def"><span class="lbl">Definition 3.2 (CSP)</span>
+    <p>A <dfn data-g="csp">constraint satisfaction problem</dfn> consists of variables \(X_1,\dots,X_n\), a domain \(D_i\) of possible values for each, and a set of constraints, each restricting the allowed combinations of values for a subset of variables. A <em>solution</em> is a complete assignment that satisfies all constraints.</p>
+  </div>
+  <div class="env ex"><span class="lbl">Example 3.2 (Map colouring)</span>
+    <p>Colour the German states with red, green and blue so that neighbouring states differ. Variables: the 16 states. Domains: {R, G, B}. Constraints: \(X_i \ne X_j\) for every pair of neighbours. Sudoku, timetabling and register allocation are CSPs too.</p>
+  </div>
+  <p>CSPs have structure that general search ignores: the order of assignments does not matter, and a violated constraint can be detected as soon as its variables are assigned. <dfn data-g="backtracking">Backtracking search</dfn> assigns one variable at a time and backs up as soon as a constraint is violated. Three heuristics make it much faster:</p>
+  <ul>
+    <li><strong>Minimum remaining values (MRV):</strong> choose the variable with the fewest legal values left ("fail first").</li>
+    <li><strong>Degree heuristic:</strong> break ties by choosing the variable involved in the most constraints with unassigned variables.</li>
+    <li><strong>Least constraining value:</strong> try first the value that rules out the fewest values for neighbours.</li>
+  </ul>
+  <h3>Constraint propagation</h3>
+  <p><em>Forward checking</em> removes, after each assignment, inconsistent values from the neighbours' domains. <dfn data-g="arc-consistency">Arc consistency</dfn> goes further: an arc \(X \to Y\) is consistent if for every value of \(X\) there is some allowed value of \(Y\). The AC-3 algorithm repeatedly removes values that violate this until nothing changes, often detecting failure long before search would. Sudoku puzzles for newspapers can usually be solved by propagation alone.</p>
+
+  <div class="box"><h4>Summary</h4><ul>
+    <li>Minimax gives optimal play in zero-sum games; alpha-beta finds the same answer with far fewer nodes.</li>
+    <li>Real game programs cut off search with evaluation functions or use MCTS, today guided by neural networks.</li>
+    <li>CSPs are solved by backtracking plus smart ordering and constraint propagation.</li>
+  </ul></div>
+
+  <h2>Exercises (Sheet 3)</h2>
+  <ol class="exercise">
+    <li data-n="3.1">A MAX root has three MIN children with leaves (3, 12, 8), (2, 4, 6), (14, 5, 2), examined left to right. Compute the minimax value and list the leaves alpha-beta prunes. <span class="pts">[5 pts]</span>
+      <details><summary>Solution</summary><div><p>MIN values: 3, 2, 2. Root value: 3. Pruned: 4 and 6 (after seeing 2 in the second node, which is below α = 3). In the third node, 14 and 5 must be examined (both above 3); only after 2 is the node known to be ≤ 2. Nothing is pruned there since 2 is the last leaf.</p></div></details></li>
+    <li data-n="3.2">Reorder the children in 3.1 so that alpha-beta prunes as much as possible. How many leaves are examined? <span class="pts">[3 pts]</span>
+      <details><summary>Solution</summary><div><p>Put the best MIN node first and, inside each other node, its smallest leaf first: (3, 12, 8), (2, 4, 6), (2, 14, 5). The first node needs all 3 leaves; the others are cut after their first leaf: 3 + 1 + 1 = 5 leaves.</p></div></details></li>
+    <li data-n="3.3">Formulate 4-queens as a CSP. Then apply forward checking after placing the first queen in row 1 of column 1. <span class="pts">[5 pts]</span>
+      <details><summary>Solution</summary><div><p>Variables Q₁…Q₄ (the row of the queen in each column), domains {1,2,3,4}, constraints for all i &lt; j: Qᵢ ≠ Qⱼ and |Qᵢ − Qⱼ| ≠ j − i. After Q₁ = 1: Q₂ ∈ {3,4}, Q₃ ∈ {2,4}, Q₄ ∈ {2,3}.</p></div></details></li>
+    <li data-n="3.4">Why does MRV help even though it adds work at every step? <span class="pts">[2 pts]</span>
+      <details><summary>Solution</summary><div><p>Choosing the most constrained variable makes failures surface at the top of the tree, where pruning a branch saves exponentially more work than the cheap bookkeeping costs.</p></div></details></li>
+  </ol>
+  <p><strong>Reading:</strong> [RN] chapters 5–6.</p>
+</section>

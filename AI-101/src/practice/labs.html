@@ -1,0 +1,64 @@
+<section class="unit" id="labs" data-title="Lab assignments">
+  <p class="eyebrow">Practice · 30% of the grade</p>
+  <h1>Lab assignments</h1>
+  <p class="lede">Six programming labs, each due two weeks after it is set. Python 3.11+, NumPy and PyTorch. Labs 4–6 run on your own hardware: BosGameM5's GPU, LM Studio, and the LiteLLM router on JoNAS.</p>
+
+  <p>Every lab is handed in as a repository folder with the code, a <code>README.md</code> with how to run it, a short write-up of results (one page), the answer to the reflection question, and a statement of which AI tools you used and for what. Grading: 60% correctness, 25% write-up, 15% reflection.</p>
+
+  <h2>Lab 1 · Route planner with A* <span class="pts">(after lecture 3)</span></h2>
+  <p>Implement BFS, uniform-cost search and A* on a grid map with walls and terrain costs (road 1, forest 3, swamp 8). Read maps from text files.</p>
+  <ul>
+    <li>Return the path, its cost and the number of expanded nodes for each algorithm.</li>
+    <li>Implement two heuristics (Manhattan distance, and Manhattan × the minimum terrain cost) and show which are admissible.</li>
+    <li>Plot the expanded nodes for each algorithm on a 100×100 map.</li>
+  </ul>
+  <p><strong>Reflection:</strong> Your A* with an inadmissible heuristic (Manhattan × 3) is 10× faster. When would you accept that trade-off?</p>
+
+  <h2>Lab 2 · Naive Bayes spam filter <span class="pts">(after lecture 5)</span></h2>
+  <p>Build a naive Bayes classifier from scratch (no scikit-learn) on a public SMS spam dataset.</p>
+  <ul>
+    <li>Tokenise, build the vocabulary, estimate \(P(\text{word} \mid \text{class})\) with Laplace smoothing; compute in log space.</li>
+    <li>Report precision, recall and F1 on a held-out test set; plot precision against recall as you vary the decision threshold.</li>
+    <li>List the 20 words with the highest spam-to-ham likelihood ratio.</li>
+  </ul>
+  <p><strong>Reflection:</strong> Which threshold would you deploy, given that a lost legitimate message costs more than a missed spam?</p>
+
+  <h2>Lab 3 · A neural network from scratch <span class="pts">(after lecture 7)</span></h2>
+  <p>Implement an MLP with NumPy only, including the forward pass, backpropagation, mini-batch SGD and Adam. Train it on MNIST.</p>
+  <ul>
+    <li>Verify your gradients against numerical finite differences on a tiny network.</li>
+    <li>Reach at least 97% test accuracy with one hidden layer.</li>
+    <li>Plot training and validation loss for three learning rates and for SGD vs. Adam; show one run that overfits and fix it with weight decay or early stopping.</li>
+  </ul>
+  <p><strong>Reflection:</strong> What did writing backprop by hand teach you that using PyTorch would not?</p>
+
+  <h2>Lab 4 · A tiny Transformer on your GPU <span class="pts">(after lecture 10)</span></h2>
+  <p>Train a character-level, decoder-only Transformer (about 10M parameters; Karpathy's nanoGPT is a good reference) on a German text corpus, such as Goethe's works from Project Gutenberg, on BosGameM5 with PyTorch for ROCm.</p>
+  <ul>
+    <li>Implement causal multi-head self-attention yourself; you may use PyTorch for everything else.</li>
+    <li>Report training throughput (tokens/s), final validation loss and perplexity.</li>
+    <li>Generate samples at temperatures 0.5, 1.0 and 1.5 and describe the difference.</li>
+    <li>Visualise one attention head's weights on a sample sentence.</li>
+  </ul>
+  <p><strong>Reflection:</strong> How does your model's validation loss change if you halve the context length? Explain using lecture 10.</p>
+
+  <h2>Lab 5 · Measuring local inference <span class="pts">(after lecture 11)</span></h2>
+  <p>Benchmark the models in your LM Studio through its OpenAI-compatible API on <code>localhost:1234</code>.</p>
+  <ul>
+    <li>Measure prompt-processing (prefill) and generation (decode) speed for prompts of 1k, 8k, 32k and 128k tokens, for a dense model (Qwen3.8-27B) and an MoE model (e.g. Qwen3-Coder-30B-A3B).</li>
+    <li>Compare decode speed with the bandwidth bound from example 11.1.</li>
+    <li>Compare one model at two quantisation levels (e.g. Q4_K_M and Q8_0) on 20 questions of your own with known answers.</li>
+    <li>Compute the KV-cache size per token from each model's <code>config.json</code> and check it against LM Studio's memory use.</li>
+  </ul>
+  <p><strong>Reflection:</strong> Which model would you choose for interactive coding, and which for overnight batch jobs? Justify with your numbers.</p>
+
+  <h2>Lab 6 · A RAG agent on your own router <span class="pts">(after lecture 13)</span></h2>
+  <p>Build a question-answering agent over the Markdown documentation in your NaturalStupidity and JoNAS repositories, using the LiteLLM router on JoNAS with a personal key (<code>scripts/llm-guest-key.sh add lab6 --models …</code>).</p>
+  <ul>
+    <li>Index: chunk the files, embed them with the <code>nomic-embed-text</code> model, store vectors in a NumPy array or SQLite.</li>
+    <li>Agent loop with two tools: <code>search_docs(query)</code> and <code>read_file(path)</code>, using function calling.</li>
+    <li>Write 15 test questions with known answers (e.g. "Which port does JoNAS's Caddy listen on publicly?"), and measure retrieval hit rate and answer accuracy.</li>
+    <li>Try one prompt-injection test: add a document containing instructions and check whether your agent follows them.</li>
+  </ul>
+  <p><strong>Reflection:</strong> Where did your agent fail: retrieval, reasoning, or tool use? What single change helped most?</p>
+</section>

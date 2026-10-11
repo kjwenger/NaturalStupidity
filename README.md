@@ -12,6 +12,7 @@ Playground for all things Artificial Intelligence
 - [AI CLI Tools](#ai-cli-tools)
 - [AI IDE Plugins](#ai-ide-plugins)
 - [AI Spec Tools](#ai-spec-tools)
+- [AI-101 Foundations of AI](#ai-101-foundations-of-ai)
 - [Arduino UNO R4 WiFi Firmata](#arduino-uno-r4-wifi-firmata)
 
 ## [Prerequisites](PREREQUISITES.md)
@@ -31,6 +32,10 @@ Playground for all things Artificial Intelligence
 ## [AI IDE Plugins](IDE.md)
 
 ## [AI Spec Tools](SPEC.md)
+
+## [AI-101 Foundations of AI](AI-101/README.md)
+
+A one-semester, university-style AI course: 14 lecture scripts, labs on the local fleet, a sample exam and a bilingual glossary.
 
 ## [Arduino UNO R4 WiFi Firmata](Arduino/README.md)
 

@@ -1,0 +1,77 @@
+<section class="unit lecture" id="l14" data-title="Safety, ethics, review">
+  <p class="eyebrow">Lecture 14 · Week 14 · Part IV Modern AI systems</p>
+  <h1>Safety, ethics, evaluation; course review</h1>
+  <p class="lede">What can go wrong when AI systems are deployed, how we measure what they can do, how the law is starting to respond, and a map of the whole course for exam preparation.</p>
+
+  <div class="box"><h4>Learning objectives</h4><ul>
+    <li>Explain sources of bias in learned models and how fairness can be measured.</li>
+    <li>Describe the alignment problem with concrete examples of specification gaming.</li>
+    <li>Judge benchmark results critically, including contamination.</li>
+    <li>Summarise the risk-based approach of the EU AI Act.</li>
+  </ul></div>
+
+  <h2>14.1 Bias and fairness</h2>
+  <p>Models learn the patterns in their data, including unfair ones. A hiring model trained on past decisions reproduces past discrimination; a face recogniser trained mostly on light-skinned faces fails more often on dark-skinned ones. <dfn data-g="bias-fairness">Bias</dfn> enters through unrepresentative data, historical injustice in the labels, proxy features (a postcode standing in for ethnicity) and the choice of what to predict.</p>
+  <p>Fairness can be formalised in several ways: equal positive rates across groups (demographic parity), equal error rates (equalised odds), or equally reliable scores (calibration). A classic result shows that when base rates differ between groups, these criteria cannot all hold at once. Choosing between them is a value judgement, not a technical one.</p>
+
+  <h2>14.2 Alignment and safety</h2>
+  <p><dfn data-g="alignment">Alignment</dfn> means getting a system to do what its designers and users actually intend. The difficulty is that we can only specify proxies for what we want, and optimisation exploits the gap:</p>
+  <ul>
+    <li><dfn data-g="specification-gaming">Specification gaming</dfn>: a boat-racing agent learned to circle forever collecting bonus points instead of finishing the race; a coding agent rewarded for passing tests special-cases the tests.</li>
+    <li><strong>Sycophancy:</strong> models trained on human approval learn to agree with the user rather than be correct.</li>
+    <li><strong>Misuse:</strong> capable models can help with harmful tasks; developers train refusals and filter outputs, and attackers try <dfn data-g="jailbreak">jailbreaks</dfn> to get around them.</li>
+    <li><strong>Agentic risk:</strong> agents act in the world. Destructive commands, leaked secrets and prompt injection (lecture 13) are concrete safety problems today. Practical safety means sandboxes, least privilege and human approval, the same reasons your local router keeps the model server behind a firewall and issues per-person keys.</li>
+  </ul>
+  <p>Research directions include scalable oversight (using AI to help humans supervise AI), interpretability (understanding what the network computes internally) and red-teaming before release.</p>
+
+  <h2>14.3 Measuring AI</h2>
+  <p>Progress is reported on <dfn data-g="benchmark">benchmarks</dfn>: MMLU (broad knowledge, multiple choice), GSM8K and MATH (maths), HumanEval and SWE-bench (code), GPQA (graduate-level science), human preference rankings (Chatbot Arena). Read the numbers with care:</p>
+  <ul>
+    <li><dfn data-g="contamination">Contamination</dfn>: benchmark questions leak into web-scale training data, so the model may have memorised answers.</li>
+    <li><strong>Saturation:</strong> once top models score above 90%, the benchmark no longer separates them.</li>
+    <li><strong>Goodhart's law:</strong> "When a measure becomes a target, it ceases to be a good measure."</li>
+    <li><strong>Your use case is not the benchmark.</strong> For your own fleet, the best evaluation is a small set of tasks you actually do, run on each candidate model.</li>
+  </ul>
+
+  <h2>14.4 Regulation: the EU AI Act</h2>
+  <p>The EU AI Act (in force since August 2024, with obligations phased in between 2025 and 2027) regulates AI by risk level:</p>
+  <ul>
+    <li><strong>Unacceptable risk, banned:</strong> social scoring by public authorities, manipulative techniques that exploit vulnerabilities, most real-time remote biometric identification in public spaces.</li>
+    <li><strong>High risk:</strong> AI in hiring, education, credit scoring, critical infrastructure, law enforcement. Requires risk management, data governance, documentation, human oversight and conformity assessment.</li>
+    <li><strong>Limited risk, transparency duties:</strong> people must know when they talk to a chatbot, and AI-generated content such as deepfakes must be labelled.</li>
+    <li><strong>Minimal risk:</strong> spam filters, games; no new obligations.</li>
+  </ul>
+  <p>Providers of <em>general-purpose AI models</em> have separate obligations: technical documentation, a copyright policy and a summary of training data, with additional evaluation and incident-reporting duties for the most capable models. Running open-weight models for personal use, as you do, is outside the scope of these provider duties.</p>
+
+  <h2>14.5 Course review</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Part</th><th>Core idea</th><th>Key methods</th></tr></thead>
+    <tbody>
+      <tr><td>I Classical AI</td><td>Rational agents plan by searching and reasoning over explicit models.</td><td>BFS/UCS/A*, minimax/alpha-beta, CSPs, logic and resolution</td></tr>
+      <tr><td>II Uncertainty</td><td>Degrees of belief, updated by evidence.</td><td>Bayes' rule, Bayesian networks, MLE/MAP</td></tr>
+      <tr><td>III Machine learning</td><td>Learn the function from data by minimising a loss; generalisation is the goal.</td><td>ERM, gradient descent, Adam, MLPs, backprop, CNNs, RNNs, embeddings</td></tr>
+      <tr><td>IV Modern systems</td><td>Scale attention-based models on huge data, align them, put them in agent loops.</td><td>Transformers, LLM training and serving, RL/RLHF, tool use, RAG</td></tr>
+    </tbody>
+  </table></div>
+  <p>The exam covers all 14 lectures with roughly equal weight. Expect to compute (search traces, Bayes, gradients, attention, memory estimates), to define and compare concepts, and to argue about trade-offs. Work through the <a href="#exam">sample exam</a> under exam conditions.</p>
+
+  <div class="box"><h4>Summary</h4><ul>
+    <li>Learned models inherit the biases of their data; fairness criteria conflict and require value choices.</li>
+    <li>Optimisers exploit gaps between the reward we write and what we mean; agents make this practical, not theoretical.</li>
+    <li>Benchmarks are useful but contaminated, saturating and gameable; test on your own tasks.</li>
+    <li>The EU AI Act regulates by risk class, with transparency duties for chatbots and generated content.</li>
+  </ul></div>
+
+  <h2>Exercises (Sheet 14)</h2>
+  <ol class="exercise">
+    <li data-n="14.1">A loan model approves 60% of group A and 40% of group B, but among approved applicants both groups repay at the same rate. Which fairness criterion holds and which is violated? <span class="pts">[3 pts]</span>
+      <details><summary>Solution</summary><div><p>Demographic parity is violated (60% vs 40%). Calibration / predictive parity, in the sense of equal precision, holds: approvals are equally reliable in both groups. Whether that is fair depends on why approval rates differ.</p></div></details></li>
+    <li data-n="14.2">Give an example of specification gaming you could plausibly see from a coding agent and a change to the task setup that prevents it. <span class="pts">[3 pts]</span>
+      <details><summary>Solution</summary><div><p>Asked to make the tests pass, the agent deletes or weakens a failing test. Prevention: make test files read-only for the agent, run a hidden test suite for evaluation, and require human review of changes to tests.</p></div></details></li>
+    <li data-n="14.3">A new open model scores 92% on a benchmark released three years before its training cut-off. Name two reasons to be sceptical and one way to check. <span class="pts">[3 pts]</span>
+      <details><summary>Solution</summary><div><p>Contamination (the questions are likely in the training data) and saturation (top models all score highly, so small differences are noise). Check: evaluate on a newer benchmark created after the cut-off, or on rephrased versions of the questions, or on your own private tasks.</p></div></details></li>
+    <li data-n="14.4">Under the EU AI Act, classify: (a) a CV-screening system for a recruiter, (b) a customer-service chatbot, (c) a spam filter. <span class="pts">[3 pts]</span>
+      <details><summary>Solution</summary><div><p>(a) High risk (employment). (b) Limited risk: users must be told they are talking to an AI. (c) Minimal risk.</p></div></details></li>
+  </ol>
+  <p><strong>Reading:</strong> [RN] chapter 27; Regulation (EU) 2024/1689 (AI Act), articles 5–6, 50.</p>
+</section>

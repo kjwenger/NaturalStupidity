@@ -1,0 +1,104 @@
+<section class="unit lecture" id="l01" data-title="What is AI?">
+  <p class="eyebrow">Lecture 1 · Week 1 · Part I Classical AI</p>
+  <h1>What is AI? Agents and environments</h1>
+  <p class="lede">Four definitions of AI, a short history in three waves, and the one framework this whole course uses: the rational agent.</p>
+
+  <div class="box"><h4>Learning objectives</h4><ul>
+    <li>Distinguish the four classic views of AI (thinking/acting × humanly/rationally).</li>
+    <li>Place symbolic AI, machine learning and deep learning on a timeline and explain why each wave rose and stalled.</li>
+    <li>Describe a task as an agent with a PEAS specification and classify its environment.</li>
+    <li>Name the main agent architectures, from simple reflex to learning agents.</li>
+  </ul></div>
+
+  <h2>1.1 Four ways to define AI</h2>
+  <p>There is no single accepted definition of artificial intelligence. Russell and Norvig sort the historical definitions along two axes: whether they concern <em>thinking</em> or <em>behaviour</em>, and whether they measure success against <em>human</em> performance or against an ideal of <em>rationality</em>.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th></th><th>Human-like</th><th>Rational</th></tr></thead>
+    <tbody>
+      <tr><th>Thinking</th><td>Cognitive modelling: build programs whose reasoning resembles human reasoning (cognitive science).</td><td>Laws of thought: derive correct conclusions with formal logic.</td></tr>
+      <tr><th>Acting</th><td>The <span class="g" data-g="turing-test">Turing test</span>: behave so that a judge cannot tell machine from human.</td><td>Rational agents: act to achieve the best expected outcome.</td></tr>
+    </tbody>
+  </table></div>
+  <p>This course takes the bottom-right view. A rational agent is easier to define precisely than "human-like thinking", it covers logic as one tool among several, and it is how practitioners actually build systems: you state what counts as success and design the system to maximise it.</p>
+  <p class="note"><b>Turing 1950.</b> Turing proposed his "imitation game" to replace the question "Can machines think?", which he considered too vague to be meaningful. Modern LLMs pass casual versions of it, which says more about the test than about thinking.</p>
+
+  <h2>1.2 A short history in three waves</h2>
+  <h3>Symbolic AI (1956 – 1990s)</h3>
+  <p>The 1956 Dartmouth workshop named the field. Early successes in theorem proving, game playing and toy-world planning led to great optimism. Knowledge was written by hand as symbols and rules; <span class="g" data-g="expert-system">expert systems</span> of the 1980s encoded thousands of if-then rules from human experts. They were brittle: every situation the rule-writers had not foreseen broke them, and maintaining large rule bases proved too expensive. Funding collapsed twice, in the so-called <span class="g" data-g="ai-winter">AI winters</span> of the mid-1970s and late 1980s.</p>
+  <h3>Statistical machine learning (1990s – 2012)</h3>
+  <p>Instead of writing rules, systems <em>learned</em> them from data: spam filters, speech recognisers, recommender systems. Probabilistic methods (Bayesian networks, hidden Markov models) and kernel methods (support vector machines) dominated. Features still had to be designed by hand.</p>
+  <h3>Deep learning (2012 – today)</h3>
+  <p>In 2012 a convolutional network trained on GPUs (AlexNet) won the ImageNet competition by a wide margin. Neural networks learn their own features from raw data, and they keep improving with more data and compute. The Transformer (2017) made it possible to train very large language models, and since about 2022 these models are good enough to be general-purpose assistants and agents.</p>
+  <div class="env ex"><span class="lbl">Example 1.1 (Three waves on one task)</span>
+    <p>Recognising handwritten digits. <em>Symbolic:</em> rules such as "a 1 is a vertical stroke". <em>Statistical ML:</em> hand-designed features (stroke counts, pixel histograms) fed to an SVM. <em>Deep learning:</em> raw pixels fed to a CNN that learns the features itself, with error rates below 0.3% on MNIST.</p>
+  </div>
+
+  <h2>1.3 Agents</h2>
+  <div class="env def"><span class="lbl">Definition 1.1 (Agent)</span>
+    <p>An <dfn data-g="agent">agent</dfn> is anything that perceives its environment through <em>sensors</em> and acts upon it through <em>actuators</em>. The sequence of everything it has perceived so far is its <dfn data-g="percept-sequence">percept sequence</dfn>. Its behaviour is described by the <dfn data-g="agent-function">agent function</dfn>, a mapping from percept sequences to actions, and implemented by an <em>agent program</em>.</p>
+  </div>
+  <div class="env def"><span class="lbl">Definition 1.2 (Rational agent)</span>
+    <p>For each possible percept sequence, a <dfn data-g="rational-agent">rational agent</dfn> selects an action that is expected to maximise its <dfn data-g="performance-measure">performance measure</dfn>, given the evidence of the percept sequence and whatever built-in knowledge it has.</p>
+  </div>
+  <p>Rational is not the same as omniscient or perfect. A rational agent can make a decision that turns out badly, as long as it was the best decision given what it knew. Rationality also includes <em>information gathering</em>: looking before crossing the road is the rational action.</p>
+
+  <h3>PEAS: specifying a task</h3>
+  <p>Before designing an agent, write down its task environment as <dfn data-g="peas">PEAS</dfn>: Performance measure, Environment, Actuators, Sensors.</p>
+  <div class="env ex"><span class="lbl">Example 1.2 (PEAS for a coding agent)</span>
+    <p>A coding agent such as Claude Code running on a local LLM:</p>
+    <ul>
+      <li><strong>P</strong>: tests pass, the user's request is met, few wasted steps, no destructive actions.</li>
+      <li><strong>E</strong>: a source repository, a shell, the user, the model server.</li>
+      <li><strong>A</strong>: edit files, run commands, write messages to the user.</li>
+      <li><strong>S</strong>: file contents, command output, user messages.</li>
+    </ul>
+  </div>
+
+  <h3>Environment types</h3>
+  <p>Environments differ along several dimensions, and each one affects which methods work:</p>
+  <ul>
+    <li><strong>Fully vs. partially observable:</strong> can the sensors see the complete relevant state? Chess: fully. Poker, driving: partially.</li>
+    <li><strong>Deterministic vs. stochastic:</strong> is the next state fully determined by the current state and action?</li>
+    <li><strong>Episodic vs. sequential:</strong> do current decisions affect future ones? Classifying one image: episodic. Chess: sequential.</li>
+    <li><strong>Static vs. dynamic:</strong> does the world change while the agent deliberates?</li>
+    <li><strong>Discrete vs. continuous:</strong> states, time, percepts and actions.</li>
+    <li><strong>Single vs. multi-agent:</strong> are there other agents, cooperative or competitive?</li>
+    <li><strong>Known vs. unknown:</strong> does the agent know the rules (the transition model) of the environment?</li>
+  </ul>
+  <p>The hardest case is partially observable, stochastic, sequential, dynamic, continuous, multi-agent and unknown. Driving a taxi is the textbook example.</p>
+
+  <h2>1.4 Agent architectures</h2>
+  <ol>
+    <li><strong>Simple reflex agent:</strong> acts on the current percept only, with condition–action rules. Works only in fully observable environments.</li>
+    <li><strong>Model-based reflex agent:</strong> keeps an internal state that tracks the parts of the world it cannot currently see.</li>
+    <li><strong>Goal-based agent:</strong> considers the future: "what will happen if I do this, and does it get me to my goal?" This needs search and planning (lectures 2–3).</li>
+    <li><strong>Utility-based agent:</strong> replaces a yes/no goal with a <dfn data-g="utility">utility</dfn> function that rates how desirable a state is, so it can trade off conflicting goals and uncertainty.</li>
+    <li><strong>Learning agent:</strong> any of the above, plus a learning element that improves the agent from feedback. A <em>critic</em> judges performance, a <em>problem generator</em> suggests exploratory actions.</li>
+  </ol>
+  <p class="note"><b>Today's LLM agents</b> fit this scheme: the LLM is the agent program, the context window is the internal state, and tool calls are the actuators. Lecture 13 returns to this.</p>
+
+  <div class="box"><h4>Summary</h4><ul>
+    <li>We define AI as the study of rational agents: systems that act to maximise expected performance.</li>
+    <li>AI has gone through symbolic, statistical and deep-learning waves; each solved its predecessor's main bottleneck.</li>
+    <li>PEAS and the environment dimensions tell you which methods a task needs.</li>
+  </ul></div>
+
+  <h2>Exercises (Sheet 1)</h2>
+  <ol class="exercise">
+    <li data-n="1.1">Write a PEAS description for (a) a robot vacuum cleaner, (b) a spam filter, (c) a chess engine. <span class="pts">[6 pts]</span>
+      <details><summary>Solution</summary><div>
+        <p>(a) P: floor area cleaned, energy used, collisions, time. E: rooms, furniture, dirt, people, pets. A: wheels, brushes, suction. S: bump sensors, cliff sensors, lidar or camera, dirt sensor, battery level.</p>
+        <p>(b) P: accuracy, with false positives (good mail marked spam) weighted much higher than false negatives. E: incoming mail stream, senders, users. A: label as spam / not spam, move to folder. S: message headers, body text, attachments, user feedback.</p>
+        <p>(c) P: games won, drawn, lost; Elo rating; time used. E: board, opponent, clock. A: moves. S: board state, opponent's moves, clock.</p>
+      </div></details></li>
+    <li data-n="1.2">Classify each environment from 1.1 along the seven dimensions of section 1.3. <span class="pts">[6 pts]</span>
+      <details><summary>Solution</summary><div>
+        <p>Vacuum: partially observable, stochastic, sequential, dynamic, continuous, single-agent (people are part of the environment), partly known. Spam filter: partially observable (sender intent hidden), stochastic, episodic per message (though spammers adapt over time), static per decision, discrete, multi-agent in the adversarial sense (spammers), known. Chess: fully observable, deterministic, sequential, semi-dynamic (the clock runs), discrete, multi-agent competitive, known.</p>
+      </div></details></li>
+    <li data-n="1.3">"A rational agent never makes mistakes." True or false? Justify with an example. <span class="pts">[3 pts]</span>
+      <details><summary>Solution</summary><div><p>False. Rationality maximises <em>expected</em> performance given the available evidence. An agent that crosses an empty road after looking both ways acts rationally even if a meteorite then hits it; the outcome was not foreseeable from its percepts.</p></div></details></li>
+    <li data-n="1.4">Why did the expert systems of the 1980s fail to scale? Name two reasons and say how machine learning addresses each. <span class="pts">[4 pts]</span>
+      <details><summary>Solution</summary><div><p>(1) The knowledge-acquisition bottleneck: rules had to be elicited from experts by hand, which was slow and expensive. ML learns the mapping from examples instead. (2) Brittleness: rules failed silently outside the situations their authors foresaw, and rule interactions became unmanageable. Learned models generalise statistically and degrade more gracefully, and they can be retrained when the data changes.</p></div></details></li>
+  </ol>
+  <p><strong>Reading:</strong> [RN] chapters 1–2.</p>
+</section>

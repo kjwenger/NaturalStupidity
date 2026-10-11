@@ -1,0 +1,69 @@
+<section class="unit lecture" id="l06" data-title="Machine learning basics">
+  <p class="eyebrow">Lecture 6 · Week 6 · Part III Machine learning</p>
+  <h1>Machine learning fundamentals</h1>
+  <p class="lede">Instead of programming the answer, we program a way to learn it from examples. This lecture sets out the vocabulary and the central problem: generalising to data the model has never seen.</p>
+
+  <div class="box"><h4>Learning objectives</h4><ul>
+    <li>Distinguish supervised, unsupervised, self-supervised and reinforcement learning.</li>
+    <li>State empirical risk minimisation and explain overfitting, underfitting and the bias–variance trade-off.</li>
+    <li>Set up a sound evaluation with training, validation and test sets and appropriate metrics.</li>
+    <li>Describe linear and logistic regression as the simplest learned models.</li>
+  </ul></div>
+
+  <h2>6.1 Kinds of learning</h2>
+  <ul>
+    <li><dfn data-g="supervised-learning">Supervised learning</dfn>: learn a function \(f: x \mapsto y\) from labelled pairs \((x_i, y_i)\). If \(y\) is a category, it is <em>classification</em>; if it is a number, <em>regression</em>.</li>
+    <li><dfn data-g="unsupervised-learning">Unsupervised learning</dfn>: find structure in unlabelled data, e.g. clusters (k-means), low-dimensional projections (PCA) or the data distribution itself.</li>
+    <li><dfn data-g="self-supervised-learning">Self-supervised learning</dfn>: create labels from the data itself, e.g. predict the next word of a text or a masked patch of an image. This is how LLMs are pre-trained, and it is why they can use the whole internet as training data.</li>
+    <li><em>Reinforcement learning</em>: learn from rewards for actions (lecture 12).</li>
+  </ul>
+
+  <h2>6.2 Learning as optimisation</h2>
+  <p>We choose a <em>model class</em>, functions \(f_\theta\) with parameters \(\theta\), and a <dfn data-g="loss-function">loss function</dfn> \(L(\hat y, y)\) that measures how wrong a prediction is. Training means <dfn data-g="erm">empirical risk minimisation</dfn>:</p>
+  \[ \hat\theta = \arg\min_\theta \frac{1}{N}\sum_{i=1}^{N} L\big(f_\theta(x_i),\, y_i\big). \]
+  <p>Common losses are the squared error \((\hat y - y)^2\) for regression and the <dfn data-g="cross-entropy">cross-entropy</dfn> \(-\log \hat p(y)\) for classification, where \(\hat p(y)\) is the probability the model assigns to the correct class. Minimising cross-entropy is exactly maximum likelihood estimation (lecture 5).</p>
+
+  <h3>Linear and logistic regression</h3>
+  <p><em>Linear regression</em> predicts \(\hat y = w^\top x + b\). With squared loss it has a closed-form solution. <dfn data-g="logistic-regression">Logistic regression</dfn> is the simplest classifier: it squashes a linear score through the sigmoid \(\sigma(z) = 1/(1+e^{-z})\) to get a probability, \(\hat p(y=1 \mid x) = \sigma(w^\top x + b)\). Its decision boundary is a hyperplane. For \(K\) classes, the <dfn data-g="softmax">softmax</dfn> generalises the sigmoid:</p>
+  \[ \mathrm{softmax}(z)_k = \frac{e^{z_k}}{\sum_j e^{z_j}}. \]
+  <p>A neural network classifier is the same thing with a learned, non-linear feature extractor in front (lecture 8). Every LLM ends in a softmax over its vocabulary.</p>
+
+  <h2>6.3 Generalisation</h2>
+  <p>What matters is not the training loss but the error on <em>new</em> data from the same distribution, the <em>generalisation error</em>.</p>
+  <div class="env def"><span class="lbl">Definition 6.1 (Overfitting and underfitting)</span>
+    <p>A model <dfn data-g="overfitting">overfits</dfn> when it fits the training data, including its noise, much better than new data: low training error, high test error. It <dfn data-g="underfitting">underfits</dfn> when it is too simple to capture the pattern: both errors are high.</p>
+  </div>
+  <p>Classically, expected test error decomposes as</p>
+  \[ \text{error} = \text{bias}^2 + \text{variance} + \text{noise}. \]
+  <p><em>Bias</em> is error from wrong assumptions (a straight line through a parabola). <em>Variance</em> is sensitivity to the particular training sample. More flexible models have less bias and more variance: this is the <dfn data-g="bias-variance">bias–variance trade-off</dfn>.</p>
+  <p class="note"><b>Double descent.</b> Very large neural networks break the classical U-curve: past the point where they fit the training data perfectly, test error falls again as models grow. Why over-parameterised networks generalise is still an active research question.</p>
+  <p><dfn data-g="regularization">Regularisation</dfn> fights overfitting by preferring simpler models: an L2 penalty \(\lambda\lVert\theta\rVert^2\) on the weights (weight decay; the MAP estimate with a Gaussian prior), L1 for sparsity, early stopping, dropout, data augmentation, and above all more data.</p>
+
+  <h2>6.4 Evaluating models honestly</h2>
+  <p>Split the data three ways: a <em>training set</em> to fit parameters, a <dfn data-g="validation-set">validation set</dfn> to choose <dfn data-g="hyperparameter">hyperparameters</dfn> (model size, learning rate, \(\lambda\)), and a <dfn data-g="test-set">test set</dfn> used once, at the end, to report performance. Every decision made by looking at test results leaks information and makes the reported number optimistic. With little data, use <dfn data-g="cross-validation">k-fold cross-validation</dfn>: train \(k\) times, each time holding out a different fold.</p>
+  <p>Choose the metric to fit the task:</p>
+  <ul>
+    <li><strong>Accuracy</strong> misleads on imbalanced data: a fraud detector that always says "no fraud" is 99.9% accurate.</li>
+    <li><dfn data-g="precision-recall">Precision</dfn> = TP / (TP + FP): of the items flagged, how many are right. <strong>Recall</strong> = TP / (TP + FN): of the real positives, how many were found. <strong>F1</strong> is their harmonic mean.</li>
+    <li>For LLMs, held-out loss or perplexity during training, and task benchmarks afterwards (lecture 14).</li>
+  </ul>
+
+  <div class="box"><h4>Summary</h4><ul>
+    <li>Supervised learning minimises an average loss over training examples; cross-entropy is maximum likelihood.</li>
+    <li>The goal is generalisation. Too simple underfits, too flexible overfits; regularisation and more data help.</li>
+    <li>Keep the test set untouched until the end, and pick metrics that fit the cost of each kind of error.</li>
+  </ul></div>
+
+  <h2>Exercises (Sheet 6)</h2>
+  <ol class="exercise">
+    <li data-n="6.1">A classifier for a rare disease (1% prevalence) finds 80 of 100 sick patients in a test set of 10,000, and flags 400 healthy patients. Compute accuracy, precision, recall and F1. <span class="pts">[4 pts]</span>
+      <details><summary>Solution</summary><div><p>TP = 80, FN = 20, FP = 400, TN = 9,500. Accuracy = 9,580 / 10,000 = 95.8%. Precision = 80 / 480 ≈ 0.167. Recall = 0.8. F1 = 2·0.167·0.8 / (0.967) ≈ 0.28.</p></div></details></li>
+    <li data-n="6.2">You tune 50 hyperparameter settings, picking the best by test-set accuracy, and report that accuracy. What is wrong, and how do you fix it? <span class="pts">[3 pts]</span>
+      <details><summary>Solution</summary><div><p>The test set was used for model selection, so the reported number is biased upward (you picked the setting that got luckiest on that set). Select on a separate validation set (or with cross-validation) and evaluate only the final choice once on the test set.</p></div></details></li>
+    <li data-n="6.3">Training loss is 0.02 and validation loss 0.95, and validation loss has been rising for several epochs. Diagnose and name three remedies. <span class="pts">[3 pts]</span>
+      <details><summary>Solution</summary><div><p>Overfitting. Remedies: early stopping at the validation minimum, stronger regularisation (weight decay, dropout), more or augmented data, or a smaller model.</p></div></details></li>
+    <li data-n="6.4">Show that for a single example with true class \(y\), the cross-entropy loss of a softmax classifier is \(-z_y + \log\sum_j e^{z_j}\). <span class="pts">[3 pts]</span>
+      <details><summary>Solution</summary><div><p>−log softmax(z)_y = −log(e^{z_y} / Σ_j e^{z_j}) = −z_y + log Σ_j e^{z_j}. This "log-sum-exp" form is how frameworks compute it, for numerical stability.</p></div></details></li>
+  </ol>
+  <p><strong>Reading:</strong> [UDL] chapters 2, 5, 8; [RN] chapter 19.</p>
+</section>

@@ -1,0 +1,70 @@
+<section class="unit lecture" id="l05" data-title="Probability">
+  <p class="eyebrow">Lecture 5 · Week 5 · Part II Uncertainty</p>
+  <h1>Probability and Bayesian reasoning</h1>
+  <p class="lede">Logic says true or false. Real agents face sensors that lie, rules with exceptions and worlds they cannot fully see. Probability is the calculus for reasoning with degrees of belief.</p>
+
+  <div class="box"><h4>Learning objectives</h4><ul>
+    <li>Compute with joint, marginal and conditional probabilities.</li>
+    <li>Apply Bayes' rule, including the base-rate effect.</li>
+    <li>Read independence assumptions from a Bayesian network and compute simple queries.</li>
+    <li>Estimate parameters by maximum likelihood and MAP.</li>
+  </ul></div>
+
+  <h2>5.1 The basics</h2>
+  <p>A <em>random variable</em> takes values with probabilities that sum to 1. The <dfn data-g="joint-distribution">joint distribution</dfn> \(P(X,Y)\) gives the probability of every combination of values. From it we get the <em>marginal</em> \(P(X) = \sum_y P(X, y)\) and the <dfn data-g="conditional-probability">conditional probability</dfn></p>
+  \[ P(X \mid Y) = \frac{P(X, Y)}{P(Y)}. \]
+  <p>The <em>product rule</em> \(P(X,Y) = P(X \mid Y)\,P(Y)\) and the chain rule \(P(X_1,\dots,X_n) = \prod_i P(X_i \mid X_1,\dots,X_{i-1})\) follow directly. Two variables are <dfn data-g="independence">independent</dfn> if \(P(X,Y) = P(X)P(Y)\), and <em>conditionally independent</em> given \(Z\) if \(P(X,Y \mid Z) = P(X \mid Z)P(Y \mid Z)\).</p>
+  <p class="note"><b>Why not just use the joint table?</b> For \(n\) binary variables it has \(2^n - 1\) free entries. At 30 variables that is a billion numbers, none of which you could estimate reliably.</p>
+
+  <h2>5.2 Bayes' rule</h2>
+  <div class="env thm"><span class="lbl">Theorem 5.1 (Bayes' rule)</span>
+    \[ P(H \mid E) = \frac{P(E \mid H)\,P(H)}{P(E)}, \qquad P(E) = \sum_h P(E \mid h)\,P(h). \]
+    <p>\(P(H)\) is the <dfn data-g="prior">prior</dfn>, \(P(E \mid H)\) the <dfn data-g="likelihood">likelihood</dfn>, and \(P(H \mid E)\) the <dfn data-g="posterior">posterior</dfn>.</p>
+  </div>
+  <p>Bayes' rule turns causal knowledge ("how likely is this symptom given the disease?"), which is stable and easy to obtain, into diagnostic knowledge ("how likely is the disease given the symptom?"), which is what the agent needs.</p>
+  <div class="env ex"><span class="lbl">Example 5.1 (The base-rate effect)</span>
+    <p>A disease affects 1 in 1,000 people. A test detects it 99% of the time and has a 5% false-positive rate. You test positive. Then</p>
+    \[ P(D \mid +) = \frac{0.99 \cdot 0.001}{0.99 \cdot 0.001 + 0.05 \cdot 0.999} \approx 0.019. \]
+    <p>Less than 2%. Most positives come from the 999 healthy people, because the prior is so small. Doctors and juries routinely get this wrong.</p>
+  </div>
+
+  <h3>Naive Bayes</h3>
+  <p>If we assume that the observed features \(E_1,\dots,E_n\) are conditionally independent given the class \(C\), then</p>
+  \[ P(C \mid E_1,\dots,E_n) \propto P(C)\prod_i P(E_i \mid C). \]
+  <p>This <dfn data-g="naive-bayes">naive Bayes</dfn> classifier needs only one small table per feature. The assumption is almost always false (the words "free" and "money" are correlated in spam), yet the classifier often works well, because it only needs to rank classes correctly, not to get the probabilities right. It powered the first generation of spam filters.</p>
+
+  <h2>5.3 Bayesian networks</h2>
+  <div class="env def"><span class="lbl">Definition 5.1 (Bayesian network)</span>
+    <p>A <dfn data-g="bayesian-network">Bayesian network</dfn> is a directed acyclic graph whose nodes are random variables, together with a conditional probability table \(P(X_i \mid \mathrm{Parents}(X_i))\) for each node. It represents the joint distribution</p>
+    \[ P(X_1,\dots,X_n) = \prod_i P(X_i \mid \mathrm{Parents}(X_i)). \]
+  </div>
+  <p>Each node is conditionally independent of its non-descendants given its parents. When every node has at most \(k\) parents, the network needs \(O(n \cdot 2^k)\) numbers instead of \(2^n\).</p>
+  <div class="env ex"><span class="lbl">Example 5.2 (Burglary alarm)</span>
+    <p>Burglary → Alarm ← Earthquake; Alarm → JohnCalls; Alarm → MaryCalls. Five binary variables need 1 + 1 + 4 + 2 + 2 = 10 numbers instead of 31. To compute \(P(Burglary \mid JohnCalls, MaryCalls)\), sum the factored joint over the hidden variables Alarm and Earthquake (<em>inference by enumeration</em>). With the textbook numbers the answer is about 0.28.</p>
+  </div>
+  <p>Exact inference is NP-hard in general. Variable elimination makes it efficient for networks with simple structure; otherwise we use <em>approximate inference</em> by sampling.</p>
+
+  <h2>5.4 Learning probabilities from data</h2>
+  <p>Where do the numbers come from? Given data \(D\), the <dfn data-g="mle">maximum likelihood estimate</dfn> picks the parameters \(\theta\) that make the data most probable:</p>
+  \[ \hat\theta_{\text{MLE}} = \arg\max_\theta P(D \mid \theta). \]
+  <p>For a coin with \(h\) heads in \(n\) tosses, \(\hat\theta = h/n\). After 3 tosses with 3 heads the MLE claims the coin always lands heads, which is clearly overconfident. The <em>maximum a posteriori</em> (MAP) estimate includes a prior: \(\arg\max_\theta P(D \mid \theta)P(\theta)\). With a uniform-ish prior this amounts to adding pseudo-counts, e.g. \((h+1)/(n+2)\) (Laplace smoothing). We will meet this idea again as <em>regularisation</em> in lecture 6, and the MLE idea as the cross-entropy loss used to train every LLM.</p>
+
+  <div class="box"><h4>Summary</h4><ul>
+    <li>Probability quantifies uncertainty; Bayes' rule turns causal into diagnostic knowledge, but small priors dominate.</li>
+    <li>Conditional independence makes large models tractable: naive Bayes and Bayesian networks factor the joint.</li>
+    <li>MLE fits parameters to data; MAP adds prior knowledge and prevents overconfidence on small samples.</li>
+  </ul></div>
+
+  <h2>Exercises (Sheet 5)</h2>
+  <ol class="exercise">
+    <li data-n="5.1">In example 5.1, how does the posterior change if you take a second, independent test and it is also positive? <span class="pts">[4 pts]</span>
+      <details><summary>Solution</summary><div><p>Use the first posterior 0.019 as the new prior: 0.99·0.019 / (0.99·0.019 + 0.05·0.981) ≈ 0.0188 / 0.0679 ≈ 0.28. Two positives raise the probability to about 28%.</p></div></details></li>
+    <li data-n="5.2">A spam filter has P(spam) = 0.4, P("free" | spam) = 0.3, P("free" | ham) = 0.02, P("meeting" | spam) = 0.01, P("meeting" | ham) = 0.1. Classify a message containing both words with naive Bayes. <span class="pts">[4 pts]</span>
+      <details><summary>Solution</summary><div><p>Spam: 0.4 · 0.3 · 0.01 = 0.0012. Ham: 0.6 · 0.02 · 0.1 = 0.0012. A tie: P(spam | words) = 0.5. In practice the remaining words would decide.</p></div></details></li>
+    <li data-n="5.3">How many numbers does a Bayesian network over 20 binary variables need if each has at most 3 parents? Compare with the full joint. <span class="pts">[2 pts]</span>
+      <details><summary>Solution</summary><div><p>At most 20 · 2³ = 160, versus 2²⁰ − 1 ≈ 1,048,575.</p></div></details></li>
+    <li data-n="5.4">Show that the MLE for a coin is h/n. Hint: maximise the log-likelihood \(h \log\theta + (n-h)\log(1-\theta)\). <span class="pts">[4 pts]</span>
+      <details><summary>Solution</summary><div><p>The derivative is h/θ − (n − h)/(1 − θ). Setting it to zero: h(1 − θ) = (n − h)θ, so h = nθ and θ = h/n. The second derivative is negative, so this is a maximum.</p></div></details></li>
+  </ol>
+  <p><strong>Reading:</strong> [RN] chapters 12–13, section 20.1; [BB] chapter 2.</p>
+</section>

@@ -1,0 +1,73 @@
+<section class="unit lecture" id="l02" data-title="Search">
+  <p class="eyebrow">Lecture 2 · Week 2 · Part I Classical AI</p>
+  <h1>Problem solving by search</h1>
+  <p class="lede">When an agent knows how the world works, it can plan by searching through possible action sequences. This lecture covers the formal setup and the core algorithms, from breadth-first search to A*.</p>
+
+  <div class="box"><h4>Learning objectives</h4><ul>
+    <li>Formulate a problem as a search problem: states, actions, transition model, goal test, path cost.</li>
+    <li>Run BFS, DFS, uniform-cost search and A* by hand and state their properties.</li>
+    <li>Design admissible and consistent heuristics and prove that A* is then optimal.</li>
+  </ul></div>
+
+  <h2>2.1 Search problems</h2>
+  <div class="env def"><span class="lbl">Definition 2.1 (Search problem)</span>
+    <p>A <dfn data-g="search-problem">search problem</dfn> consists of: a set of <em>states</em> \(S\); an <em>initial state</em> \(s_0\); for each state, a set of applicable <em>actions</em> \(A(s)\); a <dfn data-g="transition-model">transition model</dfn> \(\mathrm{Result}(s,a)\); a <em>goal test</em>; and an <em>action cost</em> \(c(s,a,s') \ge 0\). A <em>solution</em> is a sequence of actions from \(s_0\) to a goal state; an <em>optimal</em> solution has the lowest total path cost.</p>
+  </div>
+  <p>The states and actions implicitly define a graph, the <dfn data-g="state-space">state space</dfn>. It is usually far too large to write down: the 15-puzzle has about \(10^{13}\) states, chess about \(10^{44}\). Search algorithms therefore build a <dfn data-g="search-tree">search tree</dfn> on the fly, expanding one node at a time. The set of generated but not yet expanded nodes is the <dfn data-g="frontier">frontier</dfn>. Algorithms differ only in <em>which frontier node they expand next</em>.</p>
+
+  <div class="env ex"><span class="lbl">Example 2.1 (Route finding)</span>
+    <p>States: cities. Actions: drive along a road to a neighbouring city. Cost: kilometres. Goal: arrive in Munich. The state space is the road map itself.</p>
+  </div>
+
+  <h3>Measuring algorithms</h3>
+  <p>We judge search algorithms by four criteria: <dfn data-g="completeness">completeness</dfn> (does it always find a solution if one exists?), <dfn data-g="optimality">optimality</dfn> (does it find a cheapest one?), and time and space complexity, expressed with the <em>branching factor</em> \(b\) (maximum number of successors), the depth \(d\) of the shallowest solution and the maximum depth \(m\).</p>
+
+  <h2>2.2 Uninformed search</h2>
+  <p>Uninformed (blind) strategies use only the problem definition.</p>
+  <ul>
+    <li><dfn data-g="bfs">Breadth-first search</dfn> (BFS) expands the shallowest node first, using a FIFO queue. It is complete, and optimal when all action costs are equal. Time and space are both \(O(b^d)\); in practice memory runs out first.</li>
+    <li><dfn data-g="ucs">Uniform-cost search</dfn> (UCS, Dijkstra's algorithm) expands the node with the lowest path cost \(g(n)\), using a priority queue. It is complete and optimal for positive costs.</li>
+    <li><dfn data-g="dfs">Depth-first search</dfn> (DFS) expands the deepest node first, using a stack. It needs only \(O(bm)\) memory but is neither complete (infinite paths) nor optimal.</li>
+    <li><dfn data-g="ids">Iterative deepening</dfn> runs depth-limited DFS with limits 0, 1, 2, … It combines DFS's small memory with BFS's completeness and optimality for unit costs. Re-expanding the shallow levels costs surprisingly little, because most nodes are in the deepest level.</li>
+  </ul>
+  <p class="note"><b>Graph vs. tree search.</b> Keeping a set of already reached states avoids exploring the same state twice through different paths. Without it, even a small grid produces an exponential tree.</p>
+
+  <h2>2.3 Informed search and A*</h2>
+  <div class="env def"><span class="lbl">Definition 2.2 (Heuristic)</span>
+    <p>A <dfn data-g="heuristic">heuristic</dfn> \(h(n)\) estimates the cost of the cheapest path from node \(n\) to a goal. It is <dfn data-g="admissible">admissible</dfn> if it never overestimates: \(h(n) \le h^*(n)\) for the true cost \(h^*\). It is <em>consistent</em> if \(h(n) \le c(n,a,n') + h(n')\) for every successor \(n'\) (a triangle inequality).</p>
+  </div>
+  <p><em>Greedy best-first search</em> expands the node with the smallest \(h(n)\). It is fast but not optimal: it chases whatever looks closest. <dfn data-g="a-star">A* search</dfn> expands the node with the smallest</p>
+  \[ f(n) = g(n) + h(n), \]
+  <p>the estimated cost of the cheapest solution through \(n\).</p>
+  <div class="env thm"><span class="lbl">Theorem 2.1 (Optimality of A*)</span>
+    <p>With an admissible heuristic, A* tree search is optimal. With a consistent heuristic, A* graph search is optimal, and it expands every node at most once.</p>
+  </div>
+  <p><em>Proof sketch.</em> Suppose a suboptimal goal \(G_2\) is on the frontier, and let \(n\) be a frontier node on an optimal path to the optimal goal \(G\) with cost \(C^*\). Then \(f(n) = g(n) + h(n) \le C^*\) by admissibility, while \(f(G_2) = g(G_2) > C^*\) since \(h(G_2) = 0\). So \(n\) is expanded before \(G_2\), and by induction the whole optimal path is expanded first. \(\square\)</p>
+
+  <div class="env ex"><span class="lbl">Example 2.2 (Heuristics for the 8-puzzle)</span>
+    <p>\(h_1\): number of misplaced tiles. \(h_2\): sum of the Manhattan distances of the tiles from their goal squares. Both are admissible, because every move fixes at most one tile by at most one square. Since \(h_2(n) \ge h_1(n)\) for all \(n\), \(h_2\) <em>dominates</em> \(h_1\) and A* with \(h_2\) never expands more nodes. At solution depth 24, A* with \(h_1\) expands about 39,000 nodes, with \(h_2\) about 1,600.</p>
+  </div>
+  <p>Good heuristics often come from <dfn data-g="relaxed-problem">relaxed problems</dfn>: remove a constraint and solve the easier problem exactly. If tiles could move to any adjacent square even when occupied, the exact solution cost would be \(h_2\).</p>
+
+  <div class="box"><h4>Summary</h4><ul>
+    <li>Search algorithms differ only in the order they expand frontier nodes.</li>
+    <li>BFS and UCS are complete and optimal but memory-hungry; DFS is frugal but neither; iterative deepening gets the best of both for unit costs.</li>
+    <li>A* with \(f = g + h\) is optimal for admissible (tree) or consistent (graph) heuristics. Better heuristics mean far fewer expansions.</li>
+  </ul></div>
+
+  <h2>Exercises (Sheet 2)</h2>
+  <ol class="exercise">
+    <li data-n="2.1">A graph has nodes S, A, B, C, G with edges S–A (1), S–B (4), A–B (2), A–C (5), B–C (1), C–G (3). Heuristic: h(S)=5, h(A)=4, h(B)=3, h(C)=2, h(G)=0. Run UCS and A* from S to G. Give the expansion order and the path found. <span class="pts">[6 pts]</span>
+      <details><summary>Solution</summary><div>
+        <p>UCS: expand S (0); frontier A(1), B(4). Expand A (1); B improves to 3 via A, C(6). Expand B (3); C improves to 4. Expand C (4); G(7). Expand G (7). Order S, A, B, C, G. Path S–A–B–C–G, cost 7.</p>
+        <p>A*: f(S)=5. Expand S; A: f=1+4=5, B: f=4+3=7. Expand A; B via A: f=3+3=6, C: f=6+2=8. Expand B (6); C via B: f=4+2=6. Expand C (6); G: f=7+0=7. Expand G. Same order and path, cost 7. Check: h is admissible (true costs to G: S 7, A 6, B 4, C 3).</p>
+      </div></details></li>
+    <li data-n="2.2">Show that the straight-line distance is an admissible heuristic for route finding on a road map. Is it consistent? <span class="pts">[3 pts]</span>
+      <details><summary>Solution</summary><div><p>No road between two points is shorter than the straight line, so it never overestimates. It is also consistent: by the triangle inequality, the straight-line distance from n to the goal is at most the road length from n to n′ plus the straight-line distance from n′ to the goal.</p></div></details></li>
+    <li data-n="2.3">Why is iterative deepening's overhead small? Compute the number of generated nodes for b = 10, d = 5 and compare with BFS. <span class="pts">[4 pts]</span>
+      <details><summary>Solution</summary><div><p>Level i is generated (d − i + 1) times: N(IDS) = 5·10 + 4·100 + 3·1,000 + 2·10,000 + 1·100,000 = 123,450. BFS generates 10 + 100 + 1,000 + 10,000 + 100,000 = 111,110. The overhead is about 11%, because the last level dominates.</p></div></details></li>
+    <li data-n="2.4">Is h(n) = max(h₁(n), h₂(n)) admissible if h₁ and h₂ are? Is it better than each? <span class="pts">[2 pts]</span>
+      <details><summary>Solution</summary><div><p>Yes: both are ≤ h*, so their maximum is too. It dominates both, so A* expands no more nodes than with either one, at the price of computing both.</p></div></details></li>
+  </ol>
+  <p><strong>Reading:</strong> [RN] chapter 3.</p>
+</section>

@@ -1,0 +1,75 @@
+<section class="unit lecture" id="l11" data-title="Large language models">
+  <p class="eyebrow">Lecture 11 · Week 11 · Part IV Modern AI systems</p>
+  <h1>Large language models</h1>
+  <p class="lede">From a Transformer that predicts the next token to an assistant that follows instructions, reasons and calls tools: how LLMs are built, aligned and served. Examples use the models running on your own BosGameM5.</p>
+
+  <div class="box"><h4>Learning objectives</h4><ul>
+    <li>Explain tokenisation and next-token prediction as the pre-training objective.</li>
+    <li>Describe scaling laws and compute-optimal training.</li>
+    <li>Distinguish pre-training, supervised fine-tuning and preference optimisation.</li>
+    <li>Explain decoding (temperature, top-p), the KV cache, quantisation and context windows, and estimate memory needs.</li>
+  </ul></div>
+
+  <h2>11.1 Tokens</h2>
+  <p>LLMs do not see characters or words but <dfn data-g="token">tokens</dfn>, pieces from a fixed <dfn data-g="vocabulary">vocabulary</dfn> of typically 32,000 to 256,000 entries. The vocabulary is built with <dfn data-g="bpe">byte-pair encoding</dfn> (BPE): start from single bytes and repeatedly merge the most frequent adjacent pair into a new token. Common words become single tokens; rare words split into pieces ("Vorlesungsskript" might become "Vor", "les", "ungs", "skript"). In English, one token is about ¾ of a word; German and code need more tokens per word.</p>
+  <p class="note"><b>Why LLMs miscount letters.</b> The model sees "strawberry" as two or three tokens, not ten letters, so counting the r's requires knowledge it was never directly shown.</p>
+
+  <h2>11.2 Pre-training</h2>
+  <p>A decoder-only Transformer is trained to predict the next token. For a text \(x_1, \dots, x_T\) the loss is the average cross-entropy</p>
+  \[ L = -\frac{1}{T}\sum_{t=1}^{T} \log p_\theta(x_t \mid x_1,\dots,x_{t-1}). \]
+  <p>Its exponential, \(e^{L}\), is the <dfn data-g="perplexity">perplexity</dfn>: the effective number of tokens the model is choosing between at each step. This is <dfn data-g="pretraining">pre-training</dfn>, self-supervised learning on trillions of tokens of web text, books and code. To predict the next token well across all of that, the model must pick up grammar, facts, reasoning patterns and programming. The result is a <em>base model</em>: a powerful text continuer, but not yet an assistant.</p>
+  <h3>Scaling laws</h3>
+  <p>Kaplan et al. (2020) found that loss falls as a smooth power law in model size \(N\), data \(D\) and compute \(C \approx 6ND\) FLOPs, over many orders of magnitude. These <dfn data-g="scaling-laws">scaling laws</dfn> let labs predict a large model's loss from small runs. The Chinchilla study (2022) showed that for a fixed compute budget, parameters and tokens should grow together, at about 20 tokens per parameter. Current models are trained well past that point (Llama 3 8B saw 15 trillion tokens, about 1,900 per parameter), because a smaller model trained longer is cheaper to <em>serve</em>.</p>
+  <p>Some abilities appear to emerge suddenly at scale; others improve smoothly but are measured with all-or-nothing metrics that make them look sudden.</p>
+
+  <h2>11.3 From base model to assistant</h2>
+  <ol>
+    <li><dfn data-g="sft">Supervised fine-tuning</dfn> (SFT), also called instruction tuning: continue training on curated (instruction, good response) conversations in a chat format. The model learns the assistant role and the format.</li>
+    <li><strong>Preference optimisation:</strong> humans (or models) compare pairs of responses. <dfn data-g="rlhf">RLHF</dfn> trains a reward model on these preferences, then optimises the LLM against it with reinforcement learning (lecture 12). <dfn data-g="dpo">DPO</dfn> skips the reward model and optimises directly on the preference pairs with a classification-style loss.</li>
+    <li><strong>Reinforcement learning on verifiable tasks:</strong> reward correct answers to maths problems and passing unit tests. This produced <dfn data-g="reasoning-model">reasoning models</dfn> that write a long chain of thought before answering. The "thinking" blocks you see from Qwen3 and gpt-oss in Claude Code are this.</li>
+  </ol>
+  <p><dfn data-g="fine-tuning">Fine-tuning</dfn> for your own purposes rarely updates all weights. <dfn data-g="lora">LoRA</dfn> freezes the model and trains small low-rank matrices added to some weight matrices, often less than 1% of the parameters. <code>thinkingcap-qwen3.8-27b</code> in your library is a community fine-tune of Qwen.</p>
+
+  <h2>11.4 Generating text</h2>
+  <p>Generation is a loop: run the model, get a probability distribution over the vocabulary for the next token, choose a token, append it, repeat. How to choose is the <em>decoding</em> strategy:</p>
+  <ul>
+    <li><strong>Greedy:</strong> always the most likely token. Deterministic but repetitive.</li>
+    <li><dfn data-g="temperature">Temperature</dfn> \(T\): divide the logits by \(T\) before the softmax. \(T &lt; 1\) sharpens the distribution (more focused), \(T &gt; 1\) flattens it (more varied), \(T \to 0\) is greedy.</li>
+    <li><dfn data-g="top-p">Top-p</dfn> (nucleus) sampling: sample only from the smallest set of tokens whose probabilities sum to \(p\), e.g. 0.95, cutting off the long tail of unlikely tokens. Top-k does the same with a fixed count.</li>
+  </ul>
+  <p>Because every output is a sample, an LLM can state false things fluently, so-called <dfn data-g="hallucination">hallucinations</dfn>: the model is trained to produce plausible continuations, and plausible is not the same as true.</p>
+
+  <h2>11.5 Serving LLMs on your own hardware</h2>
+  <p>Generation has two phases. <dfn data-g="prefill">Prefill</dfn> processes the whole prompt in parallel (compute-bound; the "47 tokens per second of prompt processing" you measured). <dfn data-g="decode">Decode</dfn> then generates one token at a time; each step must read <em>all</em> weights from memory, so its speed is bounded by memory bandwidth.</p>
+  <div class="env ex"><span class="lbl">Example 11.1 (Decode speed on BosGameM5)</span>
+    <p>Strix Halo has about 256 GB/s memory bandwidth. Qwen3.8-27B at Q4_K_M is about 17.4 GB. Upper bound: \(256 / 17.4 \approx 15\) tokens/s. An MoE model with 3B active parameters reads only about 2 GB per token, so it can run five to ten times faster: this is why MoE models are popular for local inference.</p>
+  </div>
+  <h3>The KV cache</h3>
+  <p>During decode, the keys and values of all earlier tokens do not change, so they are stored rather than recomputed: the <dfn data-g="kv-cache">KV cache</dfn>. Its size per token is</p>
+  \[ 2 \times n_{\text{layers}} \times n_{\text{kv-heads}} \times d_{\text{head}} \times \text{bytes per value}. \]
+  <div class="env ex"><span class="lbl">Example 11.2 (Why context costs memory)</span>
+    <p>Take a typical configuration for a dense ~27B model: 64 layers, 8 KV heads (GQA) of dimension 128, 16-bit values. That is \(2 \cdot 64 \cdot 8 \cdot 128 \cdot 2 = 262{,}144\) bytes, i.e. 256 KiB per token. A full <dfn data-g="context-window">context window</dfn> of 262,144 tokens then needs 64 GiB of KV cache, almost four times the weights. (Check the model's <code>config.json</code> for the real values; llama.cpp can also store the cache at 8 bits to halve it.) With 4 parallel slots, LM Studio splits that budget between them.</p>
+  </div>
+  <h3>Quantisation</h3>
+  <p><dfn data-g="quantization">Quantisation</dfn> stores weights with fewer bits. A 27B model needs 54 GB at 16 bits, about 29 GB at 8 bits, and about 16–17 GB at <code>Q4_K_M</code>, a llama.cpp scheme that averages roughly 4.8 bits per weight by storing small blocks of 4-bit integers with shared scale factors. Quality loss at 4–5 bits is small for large models; below 3 bits it grows quickly. The GGUF files in your LM Studio library are quantised this way.</p>
+
+  <div class="box"><h4>Summary</h4><ul>
+    <li>LLMs are decoder-only Transformers pre-trained on next-token prediction over trillions of tokens; loss scales predictably with size, data and compute.</li>
+    <li>SFT, preference optimisation (RLHF, DPO) and RL on verifiable tasks turn a base model into an assistant and a reasoner.</li>
+    <li>Decoding samples from the predicted distribution; temperature and top-p control randomness.</li>
+    <li>Local inference is limited by memory bandwidth (decode speed) and memory size (weights plus KV cache); quantisation and MoE help with both.</li>
+  </ul></div>
+
+  <h2>Exercises (Sheet 11)</h2>
+  <ol class="exercise">
+    <li data-n="11.1">Logits for three tokens are (2, 1, 0). Compute the probabilities at temperature 1 and at temperature 0.5. <span class="pts">[4 pts]</span>
+      <details><summary>Solution</summary><div><p>T = 1: e² : e¹ : e⁰ = 7.39 : 2.72 : 1 → 0.665, 0.245, 0.090. T = 0.5: logits (4, 2, 0) → 54.6 : 7.39 : 1 → 0.867, 0.117, 0.016. Lower temperature concentrates the probability on the top token.</p></div></details></li>
+    <li data-n="11.2">A model has a loss of 2.0 nats per token on held-out text. What is its perplexity, and what does that number mean? <span class="pts">[2 pts]</span>
+      <details><summary>Solution</summary><div><p>e² ≈ 7.4. On average the model is as uncertain as if it were choosing uniformly among about 7 tokens at each step.</p></div></details></li>
+    <li data-n="11.3">How much memory do the weights of a 120B-parameter model need at 16 bits, 8 bits and 4.25 bits per weight? Which fits on a 128 GB Strix Halo with room for the KV cache? <span class="pts">[4 pts]</span>
+      <details><summary>Solution</summary><div><p>240 GB, 120 GB, about 64 GB. Only the 4-bit version leaves room (gpt-oss-120b ships at roughly this size natively), as long as the GPU memory allocation in the BIOS and kernel settings permits it.</p></div></details></li>
+    <li data-n="11.4">Using Chinchilla's rule of thumb, how many training tokens would be compute-optimal for a 27B model? Why are real models trained on far more? <span class="pts">[3 pts]</span>
+      <details><summary>Solution</summary><div><p>About 20 · 27B = 540B tokens. Real models use 10–40 trillion, because Chinchilla minimises training compute only. A smaller model trained on more data reaches the same quality and is much cheaper to run for millions of users.</p></div></details></li>
+  </ol>
+  <p><strong>Reading:</strong> [JM] chapters 10–12; Kaplan et al. 2020; Hoffmann et al. 2022; Ouyang et al. 2022.</p>
+</section>

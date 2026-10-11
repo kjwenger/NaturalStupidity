@@ -1,0 +1,56 @@
+<section class="unit lecture" id="l09" data-title="Deep architectures">
+  <p class="eyebrow">Lecture 9 · Week 9 · Part III Machine learning</p>
+  <h1>Deep architectures: CNNs, RNNs and embeddings</h1>
+  <p class="lede">A plain MLP ignores the structure of its input. Convolutional networks exploit the grid structure of images, recurrent networks the order of sequences, and embeddings turn discrete symbols into vectors a network can work with.</p>
+
+  <div class="box"><h4>Learning objectives</h4><ul>
+    <li>Compute output sizes and parameter counts of convolutional layers.</li>
+    <li>Explain inductive bias, weight sharing and residual connections.</li>
+    <li>Describe how RNNs and LSTMs process sequences and why they were replaced.</li>
+    <li>Explain word embeddings and what their geometry captures.</li>
+  </ul></div>
+
+  <h2>9.1 Inductive bias</h2>
+  <p>Every architecture builds in assumptions about its data, its <dfn data-g="inductive-bias">inductive bias</dfn>. A good bias lets the model learn from less data; a wrong one caps what it can learn. CNNs assume that nearby pixels belong together and that a cat is a cat wherever it is in the image. RNNs assume that order matters. Transformers (lecture 10) assume very little and compensate with enormous amounts of data.</p>
+
+  <h2>9.2 Convolutional neural networks</h2>
+  <p>A <dfn data-g="cnn">convolutional neural network</dfn> slides small learned filters (kernels), typically \(3\times3\), over the image. Each filter computes a weighted sum of a local patch at every position, producing a <em>feature map</em>. Because the same filter is used everywhere (<em>weight sharing</em>), a conv layer has very few parameters and detects a pattern regardless of its position.</p>
+  <div class="env def"><span class="lbl">Definition 9.1 (Output size of a convolution)</span>
+    <p>For input width \(W\), kernel size \(K\), padding \(P\) and stride \(S\), the output width is \(\lfloor (W - K + 2P)/S \rfloor + 1\). A layer with \(C_{\text{in}}\) input and \(C_{\text{out}}\) output channels has \(C_{\text{out}}(K^2 C_{\text{in}} + 1)\) parameters.</p>
+  </div>
+  <p><em>Pooling</em> (e.g. max over \(2\times2\) blocks) or strided convolutions shrink the feature maps, so deeper layers see larger regions of the image (a larger receptive field). Early layers learn edges and colours, middle layers textures and parts, late layers whole objects.</p>
+  <h3>Residual networks</h3>
+  <p>Simply stacking more layers made networks <em>worse</em> beyond about 20 layers, even on training data. ResNet (2015) added <dfn data-g="residual-connection">residual connections</dfn>: each block computes \(h + F(h)\) instead of \(F(h)\). The block only has to learn a correction, and gradients flow straight through the identity path. Networks with over 100 layers became trainable. Every Transformer uses the same trick.</p>
+
+  <h2>9.3 Recurrent networks</h2>
+  <p>A <dfn data-g="rnn">recurrent neural network</dfn> reads a sequence one element at a time and keeps a hidden state: \(h_t = \tanh(W_h h_{t-1} + W_x x_t + b)\). The same weights are used at every step. Training unrolls the loop and backpropagates through time.</p>
+  <p>Gradients through long sequences are products of many Jacobians and vanish or explode, so plain RNNs forget after a few dozen steps. The <dfn data-g="lstm">LSTM</dfn> (1997) adds a cell state with gates that decide what to keep, forget and output, which carries information much further. LSTMs powered machine translation and speech recognition until about 2017.</p>
+  <p>Their remaining weakness is structural: step \(t\) cannot start until step \(t-1\) is done, so training cannot be parallelised along the sequence, and everything the model knows about the past must squeeze through one fixed-size vector. Attention removes both limits.</p>
+
+  <h2>9.4 Embeddings</h2>
+  <p>Networks need numbers, but words are discrete symbols. A one-hot vector (a 1 at the word's index) treats all words as equally different. An <dfn data-g="embedding">embedding</dfn> maps each symbol to a dense vector of, say, 300 to 8,000 dimensions, learned so that symbols used in similar contexts get similar vectors.</p>
+  <div class="env ex"><span class="lbl">Example 9.1 (Word2vec arithmetic)</span>
+    <p>Word2vec (2013) learned embeddings by predicting a word's neighbours. The result has geometric regularities: \(\vec{\text{king}} - \vec{\text{man}} + \vec{\text{woman}} \approx \vec{\text{queen}}\), and \(\vec{\text{Paris}} - \vec{\text{France}} + \vec{\text{Germany}} \approx \vec{\text{Berlin}}\). Similarity is measured by <dfn data-g="cosine-similarity">cosine similarity</dfn> \(\cos(u,v) = u^\top v / (\lVert u\rVert \lVert v\rVert)\).</p>
+  </div>
+  <p>Embeddings are everywhere: the first layer of every LLM is an embedding table for its tokens, and <em>sentence embedding</em> models (such as the <code>nomic-embed-text</code> model in your LM Studio library) map whole passages to vectors for semantic search, the basis of retrieval-augmented generation in lecture 13.</p>
+
+  <div class="box"><h4>Summary</h4><ul>
+    <li>Architectures encode inductive biases: locality and weight sharing for CNNs, order for RNNs.</li>
+    <li>Residual connections made very deep networks trainable.</li>
+    <li>RNNs and LSTMs process sequences step by step, which limits memory and parallelism.</li>
+    <li>Embeddings turn symbols into vectors whose geometry reflects meaning.</li>
+  </ul></div>
+
+  <h2>Exercises (Sheet 9)</h2>
+  <ol class="exercise">
+    <li data-n="9.1">A 224×224×3 image passes a conv layer with 64 filters of size 7×7, stride 2, padding 3. Give the output shape and the number of parameters. <span class="pts">[4 pts]</span>
+      <details><summary>Solution</summary><div><p>Width: ⌊(224 − 7 + 6)/2⌋ + 1 = 112. Output 112×112×64. Parameters: 64·(7·7·3 + 1) = 9,472. (This is ResNet's first layer.)</p></div></details></li>
+    <li data-n="9.2">Compare with a fully connected layer mapping the same input to the same output size. How many parameters? <span class="pts">[2 pts]</span>
+      <details><summary>Solution</summary><div><p>Input 150,528 values, output 802,816 values: about 1.2 · 10¹¹ weights. Weight sharing saves a factor of over ten million.</p></div></details></li>
+    <li data-n="9.3">Explain in two sentences why a residual block can never make a network much worse than the same network without that block. <span class="pts">[2 pts]</span>
+      <details><summary>Solution</summary><div><p>If the block's function F learns to output zero, the block is the identity and the network behaves as if the block were absent. Learning "no change" is easy (small weights), whereas a plain stacked layer has to learn the identity mapping explicitly.</p></div></details></li>
+    <li data-n="9.4">Compute the cosine similarity of (1, 2, 2) and (2, 1, 2). <span class="pts">[2 pts]</span>
+      <details><summary>Solution</summary><div><p>Dot product 2 + 2 + 4 = 8; both norms are 3; cos = 8/9 ≈ 0.89.</p></div></details></li>
+  </ol>
+  <p><strong>Reading:</strong> [UDL] chapters 10–11; [JM] chapter 6 (embeddings).</p>
+</section>

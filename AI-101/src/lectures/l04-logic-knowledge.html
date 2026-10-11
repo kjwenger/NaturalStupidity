@@ -1,0 +1,65 @@
+<section class="unit lecture" id="l04" data-title="Logic & knowledge">
+  <p class="eyebrow">Lecture 4 · Week 4 · Part I Classical AI</p>
+  <h1>Logic and knowledge representation</h1>
+  <p class="lede">How an agent can store what it knows as sentences and derive new facts mechanically, and why this precise approach struggles with the messy real world.</p>
+
+  <div class="box"><h4>Learning objectives</h4><ul>
+    <li>Use the syntax and semantics of propositional logic; decide entailment with truth tables.</li>
+    <li>Convert sentences to conjunctive normal form and prove entailment by resolution.</li>
+    <li>Translate natural-language statements into first-order logic.</li>
+    <li>Compare symbolic knowledge representation with learned representations.</li>
+  </ul></div>
+
+  <h2>4.1 Knowledge-based agents</h2>
+  <p>A knowledge-based agent keeps a <dfn data-g="knowledge-base">knowledge base</dfn> (KB) of sentences in a formal language. It <em>tells</em> the KB what it perceives and <em>asks</em> it what to do. The answers come from <dfn data-g="inference">inference</dfn>: deriving new sentences that follow from the KB. The appeal is that knowledge is explicit, inspectable and reusable for many questions.</p>
+
+  <h2>4.2 Propositional logic</h2>
+  <p>Sentences are built from proposition symbols (\(P\), \(Q\), \(Rain\)) with the connectives \(\neg\) (not), \(\wedge\) (and), \(\vee\) (or), \(\Rightarrow\) (implies) and \(\Leftrightarrow\) (if and only if). A <em>model</em> assigns true or false to every symbol.</p>
+  <div class="env def"><span class="lbl">Definition 4.1 (Entailment)</span>
+    <p>\(KB\) <dfn data-g="entailment">entails</dfn> \(\alpha\), written \(KB \models \alpha\), if \(\alpha\) is true in every model in which \(KB\) is true. An inference procedure is <dfn data-g="soundness">sound</dfn> if it derives only entailed sentences, and <em>complete</em> if it can derive every entailed sentence.</p>
+  </div>
+  <p>Model checking enumerates all \(2^n\) models of \(n\) symbols. That is sound and complete but exponential. Note that \(P \Rightarrow Q\) is false only when \(P\) is true and \(Q\) is false; in particular it is true whenever \(P\) is false.</p>
+
+  <h3>Resolution</h3>
+  <p>Every sentence can be rewritten in <dfn data-g="cnf">conjunctive normal form</dfn> (CNF): a conjunction of clauses, each a disjunction of literals. The <dfn data-g="resolution">resolution</dfn> rule combines two clauses that contain complementary literals:</p>
+  \[ \frac{A \vee B \qquad \neg B \vee C}{A \vee C} \]
+  <p>To prove \(KB \models \alpha\), add \(\neg\alpha\) to the KB and resolve until the empty clause appears (a contradiction). Resolution is sound and refutation-complete for propositional logic. For the restricted case of <em>Horn clauses</em> (at most one positive literal, i.e. rules like \(A \wedge B \Rightarrow C\)), forward and backward chaining decide entailment in linear time; this is the basis of Prolog and rule engines.</p>
+  <div class="env ex"><span class="lbl">Example 4.1 (Proof by resolution)</span>
+    <p>KB: \(Rain \Rightarrow Wet\), \(Rain\). Query: \(Wet\). Clauses: \(\neg Rain \vee Wet\), \(Rain\), and the negated query \(\neg Wet\). Resolving the first two gives \(Wet\); resolving with \(\neg Wet\) gives the empty clause. So \(KB \models Wet\).</p>
+  </div>
+
+  <h2>4.3 First-order logic</h2>
+  <p>Propositional logic cannot say "all humans are mortal" without one symbol per human. <dfn data-g="fol">First-order logic</dfn> (FOL) adds <em>objects</em>, <em>predicates</em> (relations between objects), <em>functions</em> and the quantifiers \(\forall\) (for all) and \(\exists\) (there exists).</p>
+  <div class="env ex"><span class="lbl">Example 4.2 (Translations)</span>
+    <ul>
+      <li>All humans are mortal: \(\forall x\; Human(x) \Rightarrow Mortal(x)\)</li>
+      <li>Some student passed every exam: \(\exists s\; Student(s) \wedge \forall e\; (Exam(e) \Rightarrow Passed(s,e))\)</li>
+      <li>Every student has a supervisor: \(\forall s\; Student(s) \Rightarrow \exists p\; Supervises(p,s)\)</li>
+    </ul>
+    <p>A common error: \(\forall\) goes with \(\Rightarrow\), \(\exists\) goes with \(\wedge\). The sentence \(\exists x\; Human(x) \Rightarrow Mortal(x)\) is true as soon as one non-human exists.</p>
+  </div>
+  <p>Inference in FOL uses <em>unification</em> (finding substitutions that make two expressions identical) together with resolution. FOL entailment is <em>semi-decidable</em>: if the KB entails a sentence, a proof will eventually be found; if not, the search may never stop.</p>
+
+  <h2>4.4 Knowledge representation today</h2>
+  <p>Large symbolic systems live on as <dfn data-g="ontology">ontologies</dfn> and <dfn data-g="knowledge-graph">knowledge graphs</dfn>: Wikidata, medical terminologies such as SNOMED CT, product catalogues. They store facts as subject–predicate–object triples and are queried precisely.</p>
+  <p>Their weakness is the one that sank expert systems. Real-world categories are fuzzy, exceptions are everywhere ("birds fly", except penguins, except in cages…), and every fact must be entered by someone. Neural networks learn <em>sub-symbolic</em> representations instead, vectors with no explicit meaning per dimension, which capture fuzzy similarity well but cannot be inspected or guaranteed correct. Much current research, <em>neuro-symbolic AI</em>, tries to combine the two. In practice, LLM agents often do exactly this: the model translates a question into a SQL or SPARQL query, and a database answers it precisely.</p>
+
+  <div class="box"><h4>Summary</h4><ul>
+    <li>Logic gives knowledge a precise meaning: \(KB \models \alpha\) means \(\alpha\) holds in every model of the KB.</li>
+    <li>Resolution on CNF is a sound and complete proof method for propositional logic; FOL adds quantifiers and is only semi-decidable.</li>
+    <li>Symbolic knowledge is precise but brittle and expensive to build; learned representations are robust but opaque.</li>
+  </ul></div>
+
+  <h2>Exercises (Sheet 4)</h2>
+  <ol class="exercise">
+    <li data-n="4.1">Use a truth table to decide whether \((P \Rightarrow Q) \wedge (Q \Rightarrow R) \models (P \Rightarrow R)\). <span class="pts">[4 pts]</span>
+      <details><summary>Solution</summary><div><p>Of the 8 models, the premise is true in (P,Q,R) = TTT, FTT, FFT, FFF. In all four, P ⇒ R is true. So the entailment holds (this is the transitivity of implication).</p></div></details></li>
+    <li data-n="4.2">Convert \(P \Leftrightarrow (Q \vee R)\) to CNF. <span class="pts">[4 pts]</span>
+      <details><summary>Solution</summary><div><p>(P ⇒ Q ∨ R) ∧ (Q ∨ R ⇒ P) = (¬P ∨ Q ∨ R) ∧ (¬(Q ∨ R) ∨ P) = (¬P ∨ Q ∨ R) ∧ (¬Q ∨ P) ∧ (¬R ∨ P).</p></div></details></li>
+    <li data-n="4.3">Translate into FOL: (a) Every lecture has at least one student who attends it. (b) No student attends every lecture. <span class="pts">[4 pts]</span>
+      <details><summary>Solution</summary><div><p>(a) ∀l Lecture(l) ⇒ ∃s Student(s) ∧ Attends(s,l). (b) ¬∃s Student(s) ∧ ∀l (Lecture(l) ⇒ Attends(s,l)), equivalently ∀s Student(s) ⇒ ∃l Lecture(l) ∧ ¬Attends(s,l).</p></div></details></li>
+    <li data-n="4.4">Give one task where a knowledge graph is clearly better than an LLM, and one where the reverse holds. <span class="pts">[3 pts]</span>
+      <details><summary>Solution</summary><div><p>Knowledge graph: "List every drug that interacts with warfarin". It needs a complete, exact, auditable answer. LLM: "Summarise this patient's complaint from a free-text note". The input is fuzzy natural language with no fixed schema.</p></div></details></li>
+  </ol>
+  <p><strong>Reading:</strong> [RN] chapters 7–8, sections 10.1–10.2.</p>
+</section>

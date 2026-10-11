@@ -1,0 +1,64 @@
+<section class="unit lecture" id="l08" data-title="Neural networks">
+  <p class="eyebrow">Lecture 8 · Week 8 · Part III Machine learning</p>
+  <h1>Neural networks and backpropagation</h1>
+  <p class="lede">Stack simple units in layers, add non-linearities, and train every weight at once with the chain rule. This is the engine of all of deep learning.</p>
+
+  <div class="box"><h4>Learning objectives</h4><ul>
+    <li>Compute the forward pass of a multilayer perceptron.</li>
+    <li>Derive and run backpropagation on a small network.</li>
+    <li>Explain the role of activation functions, initialisation, normalisation and dropout.</li>
+  </ul></div>
+
+  <h2>8.1 From neurons to networks</h2>
+  <p>An artificial neuron computes a weighted sum of its inputs plus a bias and passes it through an <dfn data-g="activation-function">activation function</dfn>: \(a = g(w^\top x + b)\). Rosenblatt's <dfn data-g="perceptron">perceptron</dfn> (1958) used a step function and could learn any linearly separable classification. Minsky and Papert showed in 1969 that a single perceptron cannot learn XOR, which contributed to the first AI winter.</p>
+  <p>The fix is to stack layers. A <dfn data-g="mlp">multilayer perceptron</dfn> (MLP) with layers \(\ell = 1, \dots, L\) computes</p>
+  \[ h^{(0)} = x, \qquad h^{(\ell)} = g\big(W^{(\ell)} h^{(\ell-1)} + b^{(\ell)}\big), \qquad \hat y = W^{(L)} h^{(L-1)} + b^{(L)}. \]
+  <p>Without the non-linearity \(g\), the layers would collapse into one linear map. With it, an MLP is a <dfn data-g="universal-approximation">universal approximator</dfn>: a single hidden layer with enough units can approximate any continuous function on a bounded domain. In practice <em>deep</em> networks need far fewer units than shallow ones for the same function, because they compose features hierarchically.</p>
+
+  <h3>Activation functions</h3>
+  <ul>
+    <li><strong>Sigmoid</strong> and <strong>tanh</strong>: smooth, but they saturate. For large inputs their derivative is near zero, which blocks learning in deep networks (vanishing gradients).</li>
+    <li><dfn data-g="relu">ReLU</dfn> \(\max(0, z)\): cheap, does not saturate for positive inputs. The default since about 2011.</li>
+    <li><strong>GELU</strong> and <strong>SwiGLU</strong>: smooth relatives of ReLU used in Transformers. Qwen, Llama and most current LLMs use SwiGLU in their feed-forward layers.</li>
+  </ul>
+
+  <h2>8.2 Backpropagation</h2>
+  <p>To train with gradient descent we need \(\partial L / \partial W\) for every weight. <dfn data-g="backpropagation">Backpropagation</dfn> computes all of them in one backward sweep through the network, applying the chain rule layer by layer and reusing intermediate results. Its cost is about twice that of the forward pass, independent of how many parameters there are.</p>
+  <p>Write \(z^{(\ell)} = W^{(\ell)} h^{(\ell-1)} + b^{(\ell)}\) and \(\delta^{(\ell)} = \partial L/\partial z^{(\ell)}\). Then</p>
+  \[ \delta^{(\ell)} = \big(W^{(\ell+1)\top}\delta^{(\ell+1)}\big)\odot g'\big(z^{(\ell)}\big), \qquad \frac{\partial L}{\partial W^{(\ell)}} = \delta^{(\ell)}\, h^{(\ell-1)\top}, \qquad \frac{\partial L}{\partial b^{(\ell)}} = \delta^{(\ell)}. \]
+  <div class="env ex"><span class="lbl">Example 8.1 (Backprop on a tiny network)</span>
+    <p>One input \(x = 1\), one hidden ReLU unit with weight \(w_1 = 0.5\), output weight \(w_2 = 2\), target \(y = 3\), loss \(L = \tfrac12(\hat y - y)^2\).</p>
+    <p>Forward: \(z_1 = 0.5\), \(h = 0.5\), \(\hat y = 1\), \(L = 2\).<br>
+    Backward: \(\partial L/\partial \hat y = \hat y - y = -2\). \(\partial L/\partial w_2 = -2 \cdot h = -1\). \(\partial L/\partial h = -2 \cdot w_2 = -4\); ReLU passes it through since \(z_1 > 0\), so \(\partial L/\partial w_1 = -4 \cdot x = -4\).<br>
+    With \(\eta = 0.1\): \(w_1 = 0.9\), \(w_2 = 2.1\); the new output is \(1.89\), closer to 3.</p>
+  </div>
+  <p>Modern frameworks (PyTorch, JAX) do this automatically: <dfn data-g="autodiff">automatic differentiation</dfn> records the operations of the forward pass as a graph and runs the chain rule backwards through it.</p>
+  <p class="note"><b>History.</b> The algorithm was found several times; Rumelhart, Hinton and Williams' 1986 paper made it widely known and ended the first neural-network winter.</p>
+
+  <h2>8.3 Making deep networks trainable</h2>
+  <ul>
+    <li><strong>Initialisation:</strong> weights drawn with variance about \(2/n_{\text{in}}\) (He initialisation for ReLU) keep activations and gradients at a stable scale from layer to layer. All-zero weights would make every unit in a layer identical forever.</li>
+    <li><dfn data-g="normalization">Normalisation</dfn>: batch normalisation (CNNs) or layer normalisation and RMSNorm (Transformers) rescale activations inside the network, allowing higher learning rates and deeper models.</li>
+    <li><strong>Residual connections</strong> \(h + F(h)\) give the gradient a direct path through many layers (lecture 9).</li>
+    <li><dfn data-g="dropout">Dropout</dfn>: during training, randomly zero a fraction of activations. The network cannot rely on any single unit, which regularises it.</li>
+  </ul>
+
+  <div class="box"><h4>Summary</h4><ul>
+    <li>An MLP alternates linear maps and non-linearities; depth lets it build features hierarchically.</li>
+    <li>Backpropagation is the chain rule applied efficiently, at about twice the cost of a forward pass.</li>
+    <li>Careful initialisation, normalisation, residual connections and dropout make deep nets train well.</li>
+  </ul></div>
+
+  <h2>Exercises (Sheet 8)</h2>
+  <ol class="exercise">
+    <li data-n="8.1">Give weights for a 2-2-1 MLP with step activations that computes XOR. <span class="pts">[4 pts]</span>
+      <details><summary>Solution</summary><div><p>Hidden unit 1 computes OR: step(x₁ + x₂ − 0.5). Hidden unit 2 computes AND: step(x₁ + x₂ − 1.5). Output: step(h₁ − h₂ − 0.5), i.e. OR and not AND.</p></div></details></li>
+    <li data-n="8.2">Count the parameters of an MLP with layer sizes 784 → 256 → 128 → 10. <span class="pts">[2 pts]</span>
+      <details><summary>Solution</summary><div><p>784·256 + 256 = 200,960; 256·128 + 128 = 32,896; 128·10 + 10 = 1,290. Total 235,146.</p></div></details></li>
+    <li data-n="8.3">Repeat example 8.1 with \(w_1 = -0.5\). What happens, and what is this problem called? <span class="pts">[3 pts]</span>
+      <details><summary>Solution</summary><div><p>z₁ = −0.5, ReLU outputs 0, so ŷ = 0 and L = 4.5. ∂L/∂w₂ = −3·0 = 0 and the ReLU derivative is 0, so ∂L/∂w₁ = 0 as well. No weight moves: a "dead ReLU". Leaky ReLU or GELU avoid exact zeros.</p></div></details></li>
+    <li data-n="8.4">Why does stacking sigmoid layers lead to vanishing gradients? Use the maximum of σ′. <span class="pts">[3 pts]</span>
+      <details><summary>Solution</summary><div><p>σ′(z) ≤ 0.25. Backprop multiplies one such factor per layer, so after 10 layers the gradient is scaled by at most 0.25¹⁰ ≈ 10⁻⁶ (ignoring weights): early layers barely learn.</p></div></details></li>
+  </ol>
+  <p><strong>Reading:</strong> [UDL] chapters 3, 4, 7; [GBC] chapter 6.</p>
+</section>

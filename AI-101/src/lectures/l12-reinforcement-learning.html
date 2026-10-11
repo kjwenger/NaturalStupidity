@@ -1,0 +1,60 @@
+<section class="unit lecture" id="l12" data-title="Reinforcement learning">
+  <p class="eyebrow">Lecture 12 · Week 12 · Part IV Modern AI systems</p>
+  <h1>Reinforcement learning</h1>
+  <p class="lede">Learning what to do from trial, error and reward, without anyone showing the right answer. The framework behind game-playing agents, robot control and the final training stage of today's LLMs.</p>
+
+  <div class="box"><h4>Learning objectives</h4><ul>
+    <li>Formulate a problem as a Markov decision process.</li>
+    <li>Write down the Bellman equations and run value iteration.</li>
+    <li>Run Q-learning updates by hand and explain exploration vs. exploitation.</li>
+    <li>Explain policy gradients and how RLHF uses them.</li>
+  </ul></div>
+
+  <h2>12.1 Markov decision processes</h2>
+  <div class="env def"><span class="lbl">Definition 12.1 (MDP)</span>
+    <p>A <dfn data-g="mdp">Markov decision process</dfn> consists of states \(S\), actions \(A\), transition probabilities \(P(s' \mid s, a)\), a reward function \(R(s, a, s')\) and a discount factor \(\gamma \in [0, 1)\). The <em>Markov property</em> says that the next state depends only on the current state and action, not on the history.</p>
+  </div>
+  <p>A <dfn data-g="policy">policy</dfn> \(\pi(a \mid s)\) says what to do in each state. The goal is a policy that maximises the expected <em>return</em>, the discounted sum of rewards \(G_t = r_{t+1} + \gamma r_{t+2} + \gamma^2 r_{t+3} + \dots\). Discounting makes infinite sums finite and prefers rewards sooner rather than later.</p>
+  <p>The <dfn data-g="value-function">value function</dfn> \(V^\pi(s)\) is the expected return from \(s\) when following \(\pi\); the action-value \(Q^\pi(s,a)\) is the expected return after taking \(a\) in \(s\) and then following \(\pi\).</p>
+
+  <h2>12.2 Bellman equations and dynamic programming</h2>
+  <p>The optimal values satisfy the <dfn data-g="bellman-equation">Bellman optimality equation</dfn>:</p>
+  \[ V^*(s) = \max_a \sum_{s'} P(s' \mid s,a)\,\big[R(s,a,s') + \gamma V^*(s')\big]. \]
+  <p>The value of a state is the best immediate reward plus the discounted value of where you end up. If the model \(P, R\) is known, <em>value iteration</em> turns this equation into an update and repeats it until the values converge; the optimal policy then picks the maximising action in each state.</p>
+  <div class="env ex"><span class="lbl">Example 12.1 (A three-state corridor)</span>
+    <p>States A – B – C; C is terminal with reward +10 on entering it; each move costs −1; moves are deterministic; \(\gamma = 0.9\). Starting from \(V = 0\): after one iteration \(V(B) = 9\) (step to C: \(-1 + 10\)), \(V(A) = -1\). After two, \(V(A) = -1 + 0.9 \cdot 9 = 7.1\). The values then stay fixed: the policy "move right" is optimal.</p>
+  </div>
+
+  <h2>12.3 Learning without a model: Q-learning</h2>
+  <p>Usually the agent does not know \(P\) and \(R\); it must learn by acting. <dfn data-g="q-learning">Q-learning</dfn> keeps a table of estimates \(Q(s,a)\) and, after each transition \((s, a, r, s')\), moves the estimate towards the observed reward plus the best estimated future:</p>
+  \[ Q(s,a) \leftarrow Q(s,a) + \alpha\big[r + \gamma \max_{a'} Q(s',a') - Q(s,a)\big]. \]
+  <p>The bracket is the <em>temporal-difference error</em>. Q-learning converges to \(Q^*\) if every state–action pair is tried often enough, which raises the <dfn data-g="exploration-exploitation">exploration–exploitation</dfn> dilemma: exploit the best known action, or explore one that might be better? The simplest answer is \(\varepsilon\)-greedy: act randomly with probability \(\varepsilon\), otherwise greedily.</p>
+  <p>For large state spaces, a neural network replaces the table. DeepMind's DQN (2015) learned to play 49 Atari games from raw pixels this way.</p>
+
+  <h2>12.4 Policy gradients and RL for LLMs</h2>
+  <p>Instead of learning values, we can parameterise the policy \(\pi_\theta\) directly and follow the gradient of expected return. The <dfn data-g="policy-gradient">policy gradient</dfn> theorem gives</p>
+  \[ \nabla_\theta J(\theta) = \mathbb{E}_{\pi_\theta}\big[\nabla_\theta \log \pi_\theta(a \mid s)\; \hat A(s,a)\big], \]
+  <p>where the <em>advantage</em> \(\hat A\) measures how much better an action did than expected: make good actions more likely, bad ones less likely. PPO adds a limit on how far each update may move the policy.</p>
+  <p>An LLM is a policy: the state is the text so far, the action is the next token. In RLHF, a complete response gets a score from a reward model trained on human preferences, and PPO (or simplified variants like GRPO) adjusts the model to produce higher-scoring responses, with a penalty for drifting too far from the SFT model. With verifiable rewards (correct maths answer, tests pass) this is how reasoning models learned to think step by step.</p>
+  <p class="note"><b>Reward hacking.</b> An agent optimises the reward you wrote, not the one you meant. A coding model rewarded for passing tests may learn to edit the tests. Lecture 14 returns to this.</p>
+
+  <div class="box"><h4>Summary</h4><ul>
+    <li>MDPs formalise sequential decisions; policies are judged by expected discounted return.</li>
+    <li>The Bellman equation links a state's value to its successors'; value iteration solves known MDPs.</li>
+    <li>Q-learning learns from experience without a model, balancing exploration and exploitation.</li>
+    <li>Policy gradients optimise the policy directly; RLHF and RL with verifiable rewards apply them to LLMs.</li>
+  </ul></div>
+
+  <h2>Exercises (Sheet 12)</h2>
+  <ol class="exercise">
+    <li data-n="12.1">Compute the return for rewards (−1, −1, −1, +10) with γ = 0.9. <span class="pts">[2 pts]</span>
+      <details><summary>Solution</summary><div><p>−1 − 0.9 − 0.81 + 0.729·10 = −2.71 + 7.29 = 4.58.</p></div></details></li>
+    <li data-n="12.2">Perform one Q-learning update: Q(s,a) = 2, r = 1, max Q(s′,·) = 5, α = 0.1, γ = 0.9. <span class="pts">[2 pts]</span>
+      <details><summary>Solution</summary><div><p>Target 1 + 0.9·5 = 5.5; TD error 3.5; new Q = 2 + 0.35 = 2.35.</p></div></details></li>
+    <li data-n="12.3">In example 12.1, add a fourth state D to the left of A. What is V*(D) and how many iterations does value iteration need to get there? <span class="pts">[3 pts]</span>
+      <details><summary>Solution</summary><div><p>V*(D) = −1 + 0.9·7.1 = 5.39. Values propagate one state per iteration, so it is correct after three iterations.</p></div></details></li>
+    <li data-n="12.4">Why does RLHF penalise the KL divergence from the SFT model? <span class="pts">[3 pts]</span>
+      <details><summary>Solution</summary><div><p>The reward model is only accurate near the responses it was trained on. Without the penalty, the policy drifts to strange outputs that exploit the reward model's errors (reward hacking) and can lose fluency and general ability.</p></div></details></li>
+  </ol>
+  <p><strong>Reading:</strong> [SB] chapters 3, 4, 6, 13; [RN] chapters 17, 22.</p>
+</section>

@@ -1,0 +1,111 @@
+<section class="unit" id="exam" data-title="Sample exam">
+  <p class="eyebrow">Practice · 90 minutes · 90 points</p>
+  <h1>Sample exam</h1>
+  <p class="lede">The format of the final exam: nine tasks, one point per minute. Allowed aids: one handwritten A4 sheet (both sides) and a non-programmable calculator. Work it under exam conditions before opening the solutions.</p>
+
+  <ol class="exercise">
+    <li data-n="Task 1">Short questions. <span class="pts">[10 pts]</span>
+      <ol type="a">
+        <li>Name the four components of a PEAS description.</li>
+        <li>Is DFS complete on finite graphs with cycle checking? On infinite graphs?</li>
+        <li>What does it mean for a heuristic to be admissible?</li>
+        <li>Give one reason why the test set must not be used for model selection.</li>
+        <li>What problem do residual connections solve?</li>
+      </ol>
+      <details><summary>Solution</summary><div>
+        <p>(a) Performance measure, Environment, Actuators, Sensors. (b) Yes on finite graphs with cycle checking; no on infinite graphs (it can follow an infinite path). (c) It never overestimates the true remaining cost: h(n) ≤ h*(n). (d) The chosen model's test score is then biased upward; the test set no longer estimates performance on unseen data. (e) Training very deep networks: gradients flow through the identity path, so they do not vanish, and blocks can easily learn to "do nothing".</p>
+        <p>2 points each.</p>
+      </div></details></li>
+
+    <li data-n="Task 2">Search. Nodes S, A, B, C, D, G; edges S–A (2), S–B (5), A–C (2), B–C (1), C–D (3), B–G (6), D–G (1). Heuristic h: S 6, A 5, B 4, C 3, D 1, G 0. <span class="pts">[12 pts]</span>
+      <ol type="a">
+        <li>Run A* (graph search) from S to G. Give the order of expansion with f-values, and the path found.</li>
+        <li>Is h admissible? Is it consistent?</li>
+      </ol>
+      <details><summary>Solution</summary><div>
+        <p>(a) Expand S (f = 6). Frontier: A (2 + 5 = 7), B (5 + 4 = 9). Expand A (7): C (4 + 3 = 7). Expand C (7): B via C costs 5, not better; D (7 + 1 = 8). Expand D (8): G (8 + 0 = 8). Expand G (8). Order S, A, C, D, G; path S–A–C–D–G, cost 8. [8 pts]</p>
+        <p>(b) True costs to G: S 8, A 6, B 5 (B–C–D–G), C 4, D 1. All h ≤ h*, so admissible. Consistency: check each edge, e.g. h(S) = 6 ≤ 2 + h(A) = 7; h(B) = 4 ≤ 1 + h(C) = 4; h(C) = 3 ≤ 3 + h(D) = 4; h(A) = 5 ≤ 2 + 3 = 5; h(D) = 1 ≤ 1 + 0. All hold in both directions, so it is consistent. [4 pts]</p>
+      </div></details></li>
+
+    <li data-n="Task 3">Logic. Translate into first-order logic and give the CNF of (b). <span class="pts">[8 pts]</span>
+      <ol type="a">
+        <li>Every model that is quantised to 4 bits fits on the server.</li>
+        <li>\(\neg(P \wedge Q) \Rightarrow R\)</li>
+      </ol>
+      <details><summary>Solution</summary><div>
+        <p>(a) ∀m (Model(m) ∧ QuantisedTo(m, 4)) ⇒ FitsOn(m, Server). [3 pts]</p>
+        <p>(b) Remove ⇒: ¬¬(P ∧ Q) ∨ R = (P ∧ Q) ∨ R. Distribute: (P ∨ R) ∧ (Q ∨ R). [5 pts]</p>
+      </div></details></li>
+
+    <li data-n="Task 4">Probability. 2% of code changes introduce a bug. A review bot flags 90% of buggy changes and 10% of correct ones. <span class="pts">[8 pts]</span>
+      <ol type="a">
+        <li>A change is flagged. What is the probability that it is buggy?</li>
+        <li>Is the bot useful? Argue in two sentences.</li>
+      </ol>
+      <details><summary>Solution</summary><div>
+        <p>(a) P(bug | flag) = 0.9·0.02 / (0.9·0.02 + 0.1·0.98) = 0.018 / 0.116 ≈ 0.155. [5 pts]</p>
+        <p>(b) Flagged changes are about 8× more likely to be buggy than the 2% base rate, so it focuses review effort well. But 85% of flags are false alarms, so if reviewers start ignoring flags, the value disappears; the false-positive rate is what to improve. [3 pts]</p>
+      </div></details></li>
+
+    <li data-n="Task 5">Learning and optimisation. <span class="pts">[10 pts]</span>
+      <ol type="a">
+        <li>A model reaches 99% training accuracy and 71% validation accuracy. Diagnose, and name two remedies.</li>
+        <li>Perform two gradient descent steps on \(L(w) = (w - 5)^2\) from \(w_0 = 1\) with \(\eta = 0.25\).</li>
+        <li>Why is Adam usually preferred over plain SGD for training Transformers?</li>
+      </ol>
+      <details><summary>Solution</summary><div>
+        <p>(a) Overfitting; remedies: regularisation (weight decay, dropout), more or augmented data, early stopping, a smaller model. [3 pts]</p>
+        <p>(b) L′(w) = 2(w − 5). Step 1: L′(1) = −8, w₁ = 1 + 2 = 3. Step 2: L′(3) = −4, w₂ = 3 + 1 = 4. [4 pts]</p>
+        <p>(c) Per-parameter adaptive step sizes cope with the very different gradient scales of embeddings, attention and FFN weights, and momentum smooths noisy mini-batch gradients; training is less sensitive to the learning rate. [3 pts]</p>
+      </div></details></li>
+
+    <li data-n="Task 6">Neural networks. A network has one input \(x\), one hidden unit \(h = \mathrm{ReLU}(w_1 x)\) and output \(\hat y = w_2 h\). Loss \(L = \tfrac12(\hat y - y)^2\). Given \(x = 2\), \(y = 1\), \(w_1 = 1\), \(w_2 = 1\). <span class="pts">[10 pts]</span>
+      <ol type="a">
+        <li>Compute the forward pass and the loss.</li>
+        <li>Compute \(\partial L/\partial w_2\) and \(\partial L/\partial w_1\).</li>
+        <li>Give the updated weights for \(\eta = 0.1\).</li>
+      </ol>
+      <details><summary>Solution</summary><div>
+        <p>(a) z = 2, h = 2, ŷ = 2, L = 0.5. [3 pts]</p>
+        <p>(b) ∂L/∂ŷ = 1. ∂L/∂w₂ = 1·h = 2. ∂L/∂h = w₂ = 1; ReLU′(2) = 1; ∂L/∂w₁ = 1·x = 2. [5 pts]</p>
+        <p>(c) w₁ = 0.8, w₂ = 0.8. (New output 0.8·1.6 = 1.28, closer to 1.) [2 pts]</p>
+      </div></details></li>
+
+    <li data-n="Task 7">Transformers. <span class="pts">[12 pts]</span>
+      <ol type="a">
+        <li>Write down the formula for scaled dot-product attention and explain the role of each of \(Q\), \(K\), \(V\) and \(\sqrt{d_k}\).</li>
+        <li>Why do decoder-only language models need a causal mask?</li>
+        <li>How does the cost of self-attention grow with sequence length, and what does that mean for a 256k-token context window?</li>
+      </ol>
+      <details><summary>Solution</summary><div>
+        <p>(a) softmax(QKᵀ/√d_k)·V. Queries express what each position looks for, keys what each position offers to be matched against, values the information passed on. √d_k keeps the dot products from growing with dimension, which would saturate the softmax and shrink gradients. [5 pts]</p>
+        <p>(b) In training, every position predicts its next token in parallel; without the mask it could see the answer. At inference, future tokens do not exist yet, so the model must be trained under the same condition. [3 pts]</p>
+        <p>(c) Quadratically: O(n²). A 256k context costs 64× the attention compute of a 32k one, and the KV cache grows linearly with n, so long contexts are slow to prefill and memory-hungry. [4 pts]</p>
+      </div></details></li>
+
+    <li data-n="Task 8">LLMs in practice. A 30B-parameter dense model is served from a machine with 256 GB/s memory bandwidth. <span class="pts">[10 pts]</span>
+      <ol type="a">
+        <li>Estimate the weight memory at 16 bits and at 4.5 bits per weight.</li>
+        <li>Estimate the maximum decode speed at 4.5 bits.</li>
+        <li>An MoE model with the same total size activates 3B parameters per token. Estimate its decode speed and say what does <em>not</em> improve.</li>
+      </ol>
+      <details><summary>Solution</summary><div>
+        <p>(a) 60 GB; 30·10⁹·4.5/8 ≈ 16.9 GB. [3 pts]</p>
+        <p>(b) 256 / 16.9 ≈ 15 tokens/s (upper bound; real figures are lower). [3 pts]</p>
+        <p>(c) About 3·10⁹·4.5/8 ≈ 1.7 GB per token, so ≈ 150 tokens/s upper bound (in practice less, due to attention, routing and overheads). Memory requirement does not improve: all 30B parameters must still be held in memory. [4 pts]</p>
+      </div></details></li>
+
+    <li data-n="Task 9">Agents and society. <span class="pts">[10 pts]</span>
+      <ol type="a">
+        <li>Describe the agent loop of an LLM-based coding agent in terms of lecture 1's agent framework.</li>
+        <li>What is prompt injection, and why is it hard to prevent completely?</li>
+        <li>Classify an AI system that ranks job applicants under the EU AI Act, and name two obligations that follow.</li>
+      </ol>
+      <details><summary>Solution</summary><div>
+        <p>(a) The LLM is the agent program; the conversation (context) is its internal state; tool calls (edit, run commands) are actuators; tool results and user messages are percepts; the loop repeats until the model answers without a tool call. [4 pts]</p>
+        <p>(b) Instructions hidden in data the agent reads (web pages, files, tool output) that the model follows as if they came from the user. Hard to prevent because instructions and data share the same text channel, and the model cannot reliably tell them apart. [3 pts]</p>
+        <p>(c) High risk (employment). Obligations, any two of: risk management system, data governance and quality, technical documentation and logging, transparency to users, human oversight, accuracy and robustness, conformity assessment. [3 pts]</p>
+      </div></details></li>
+  </ol>
+  <p><strong>Grading:</strong> 45 of 90 points pass the exam on its own (50%); the module grade combines it with labs and sheets as described under <a href="#assessment">Assessment &amp; grading</a>.</p>
+</section>
