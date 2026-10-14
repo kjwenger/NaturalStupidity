@@ -12,6 +12,7 @@
   * [Making the Mac Mini Available to Harnesses](#making-the-mac-mini-available-to-harnesses)
   * [Working with BosGameM5 (Strix Halo)](#working-with-bosgamem5-strix-halo)
   * [Alternative Runtimes: Ollama and LM Studio](#alternative-runtimes-ollama-and-lm-studio)
+  * [Benchmarked: GGUF vs. MLX, and the Rest of the 9B Field](#benchmarked-gguf-vs-mlx-and-the-rest-of-the-9b-field)
   * [Using the Neural Engine (ANE)](#using-the-neural-engine-ane)
     * [Why MLX Won't Get You There](#why-mlx-wont-get-you-there)
     * [Core AI: Apple's New Framework — Not a Local Server](#core-ai-apples-new-framework--not-a-local-server)
@@ -141,7 +142,28 @@ Both work identically on a Mac Mini as on any other machine — see [RUNTIMES.md
   Enable authentication in Settings before relying on this beyond a fully trusted LAN.
 - **Ollama** on macOS runs as a native background service the same as on Linux, with the same `OLLAMA_HOST=0.0.0.0` pattern for LAN exposure — see [RUNTIMES.md — OpenAI-Compatible API (Ollama)](./RUNTIMES.md#pulling-and-running-models-ollama).
 
-MLX generally edges out both in raw throughput on Apple Silicon (Apple's own framework, no translation layer), but Ollama/LM Studio's GUI and simpler model management may be worth the small performance gap for a machine you're not optimizing to the last token/sec.
+MLX generally edges out both in raw throughput on Apple Silicon (Apple's own framework, no translation layer), but Ollama/LM Studio's GUI and simpler model management may be worth the small performance gap for a machine you're not optimizing to the last token/sec. **Update:** that "generally" doesn't hold for every model/size — see the actual benchmark below, which found the opposite on this specific machine.
+
+## Benchmarked: GGUF vs. MLX, and the Rest of the 9B Field
+
+Unlike most of this document, this section *is* benchmarked on the author's own EmmFour (Mac Mini M4, 16GB) — prompted by [a YouTube video](https://www.youtube.com/watch?v=tcZ1lde8kkE) claiming MLX beats llama.cpp/GGUF by up to 2x. The production model here is `empero-ai/Qwen3.8-9B-Distill-GGUF` (`qwen3.8-9b-distill` in LM Studio, Q4_K_M, arch `qwen35`), served via LM Studio — see [ORCHESTRATION.md](./ORCHESTRATION.md#how-its-wired). Method: LM Studio's REST API, `max_tokens=300`, `temperature=0`, 8192-token context (held constant across models to isolate throughput — production runs at 140032, per [ORCHESTRATION.md](./ORCHESTRATION.md#how-its-wired)), two prompts (a short explanation, a binary-search code-gen) x 2 runs each, tok/s computed from wall time and `usage.completion_tokens`.
+
+| Model | Format | Size | short tok/s | code tok/s | Usable answer? |
+|---|---|---|---|---|---|
+| **`qwen3.8-9b-distill`** (production) | GGUF Q4_K_M | 5.78 GB | **22.65** | **23.65** | Yes |
+| `keXjos/Qwen3.8-9B-mlx-4Bit` (unofficial MLX conversion of the same distill) | MLX 4-bit | 4.71 GB | 19.68 | 19.71 | Yes |
+| `mlx-community/Qwen3.5-9B-4bit` (official MLX build of the distill's base model) | MLX 4-bit | 5.98 GB | 19.62 | 18.46 | Yes |
+| `deepseek-r1-distill-qwen-7b` | GGUF Q4_K_M | 4.68 GB | 20.67 | 19.56 | **No** — see below |
+| `deepseek-r1-0528-qwen3-8b` | GGUF Q4_K_M | 5.03 GB | 19.11 | 17.22 | **No** — see below |
+| `gemma-2-9b-it` | GGUF Q4_K_M | 5.76 GB | 14.13 | 12.97 | Yes |
+
+Three findings worth keeping in mind before trusting generic "MLX is faster" or "smaller file is faster" claims for a specific model/chip pairing:
+
+- **MLX lost to GGUF by ~15-20% here, on both an official and an unofficial MLX build.** Both MLX builds land within noise of each other, so this isn't a bad-conversion problem — on this M4, for a 9B dense model, LM Studio's llama.cpp/Metal path simply outperforms its own MLX engine. The video's "up to 2x" figure came from Ollama's engine switch on a 35B MoE model — a different engine pairing and a different, much larger, sparse model. Don't extrapolate that number to "swap engine, get the other one's number" without actually measuring your own model.
+- **Raw file size doesn't predict throughput.** `gemma-2-9b-it` is within 0.02GB of the production model's size and still ~40% slower; the smallest file here (`deepseek-r1-distill-qwen-7b`, 4.68GB) wasn't the fastest either. Architecture and how well a given runtime's kernels suit it matter more than GB on disk.
+- **A reasoning model can "finish" a benchmark without answering the question.** Both DeepSeek-R1 distills emit a `<think>...</think>` chain-of-thought in `reasoning_content` before any real answer in `content`. At `max_tokens=300` both hit `finish_reason: "length"` with **zero** code written — one logged `"reasoning_tokens": 298` of its 300-token budget. Their tok/s numbers above are real, but worthless for a short-budget agent turn: swapping one in for `qwen3.8-9b-distill` without raising `max_tokens` substantially (and accounting for the reasoning tax on every turn) would silently break tool-calling agents expecting a direct answer.
+
+**Bottom line:** nothing already on this Mac beats `qwen3.8-9b-distill` for the fast-model role, on speed or on actually producing usable output. Keep it as-is; re-run this same method before swapping in anything new rather than trusting a spec sheet or a general claim about engine or model family.
 
 ## Using the Neural Engine (ANE)
 
