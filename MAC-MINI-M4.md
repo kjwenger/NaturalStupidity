@@ -211,6 +211,7 @@ Notes:
 - **Server refuses connections from another machine.** Confirm you started it with `--host 0.0.0.0` (mlx-lm), `--bind 0.0.0.0` (LM Studio), or `OLLAMA_HOST=0.0.0.0` (Ollama) — all three default to localhost-only.
 - **`iogpu.wired_limit_mb` change disappeared after a restart.** Expected — it's a runtime-only setting; see [Making It Persistent](#making-it-persistent).
 - **Trying to load the same big model recommended for Strix Halo.** It won't fit — see [What doesn't fit](#recommended-models-for-a-16gb-mac-mini) above. This machine's role is the small/fast side of the pairing, not a scaled-down clone of the Strix Halo setup.
+- **Considering a video-gen model (e.g. LTX-2.5) on this Mac.** Don't — it doesn't fit, full stop. LTX-2.5 is a 22B-parameter DiT plus a Gemma-4 12B text encoder plus a VAE/audio decoder; even at 4-bit that's ~17-18GB of weights alone, against a GPU ceiling that tops out around 14GB here even with [the wired-limit raised](#raising-the-gpu-memory-ceiling). Unlike a discrete GPU, there's no separate system RAM to "offload" into on unified memory — CPU and GPU share the same 16GB, so the only fallback is SSD swap, which is far more damaging for a compute-heavy video DiT than it already is for an LLM. A standalone Mac app for this model family independently lists 32GB minimum, 64GB+ recommended — this Mac isn't in range at any quant level. See [STRIX-HALO.md's Troubleshooting](./STRIX-HALO.md#troubleshooting-and-gotchas) for where this actually fits in the fleet.
 
 ## Sources
 

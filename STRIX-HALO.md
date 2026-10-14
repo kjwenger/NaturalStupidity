@@ -467,6 +467,7 @@ Both are worth knowing exist; neither is where to start if your goal is "get som
 - **GPU resets on experimental backends.** If the GPU resets, find and kill the actual owning process before restarting anything else — check `ps -eo pid,ppid,lstart,cmd --forest`, `ss -ltnp`, and `journalctl -k --since '-15 minutes' | grep -iE 'amdgpu|reset|fault'`.
 - **A newer ROCm point release "breaks" gfx1151.** Pin the version in [ROCm Installation](#rocm-installation) above; don't blanket-upgrade ROCm packages without checking gfx1151 support for the specific new version first.
 - **Quantized V-cache (`--cache-type-v q8_0`) refuses to start.** It requires `--flash-attn on` — add it.
+- **Considering a video-gen model (e.g. LTX-2.5) on this box.** Memory-wise it fits comfortably: LTX-2.5 is a 22B-parameter DiT plus a Gemma-4 12B text encoder, ~35GB at 8-bit, well inside 128GB with room to spare — unlike the Mac Mini, where it doesn't fit at all (see [MAC-MINI-M4.md's Troubleshooting](./MAC-MINI-M4.md#troubleshooting-and-gotchas)). What's genuinely unverified is **ROCm/gfx1151 maturity for this specific architecture** — this document's ROCm notes are all LLM-serving experience (llama.cpp, vLLM); a video DiT runs through ComfyUI/diffusers instead and exercises different kernels (3D convolutions, long-sequence attention over video latents) that may or may not be solid on gfx1151 yet. Treat this as an open question to check (ComfyUI + ROCm compatibility for LTX-2.5 specifically), not a confirmed-working setup, before investing time in it.
 
 ## Sources
 
