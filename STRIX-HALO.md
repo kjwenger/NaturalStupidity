@@ -18,6 +18,7 @@
     * [Dynamic GGUF: the Right Default Here](#dynamic-gguf-the-right-default-here)
   * [Recommended Models for a 128GB Strix Halo](#recommended-models-for-a-128gb-strix-halo)
   * [Models Built or Tuned Specifically for This Hardware](#models-built-or-tuned-specifically-for-this-hardware)
+  * [Perplexity's Open Models](#perplexitys-open-models)
   * [Fine-Tuning with Unsloth](#fine-tuning-with-unsloth)
   * [Combining with a Second Machine (e.g. a Mac Mini)](#combining-with-a-second-machine-eg-a-mac-mini)
     * [Option 1: More Agents, No Extra Tooling (Recommended Starting Point)](#option-1-more-agents-no-extra-tooling-recommended-starting-point)
@@ -281,6 +282,38 @@ Beyond generic Dynamic GGUF quants, four genuinely distinct categories of "AMD/S
 
 Treat categories 1, 2, and 4 as low-risk to try alongside your existing setup. Category 3 is a genuinely different (forked, cache-less) stack from everything else in this document — worth trying if raw decode speed on short, one-shot generations matters more to you than agentic multi-turn efficiency, but go in knowing the trade-off rather than discovering it mid-session.
 
+## Perplexity's Open Models
+
+Perplexity publishes open weights under [`perplexity-ai`](https://huggingface.co/perplexity-ai) on Hugging Face. Checked against the repositories and model cards on 2026-10-15; news reports about the October releases got several details wrong, so go by the cards.
+
+**Recommended: the late-interaction embedding models.** This fills the gap in this setup: a strong retrieval model for RAG (see [ORCHESTRATION.md — Embeddings](./ORCHESTRATION.md#the-more-realistic-role-embeddings-and-speech-to-text)).
+
+| Model | Size | What it's for |
+|---|---|---|
+| `perplexity-ai/pplx-embed-v2-late-9b` | 7.4B active, safetensors | Best quality. Multimodal: text, images and visual documents (PDF pages, slides). ViDoRe v3 nDCG@10: 65.2% (images), 64.7% (Markdown). MIT license. |
+| `perplexity-ai/pplx-embed-v2-late-0.6b` | 340M active | Same family, much smaller: 62.3% / 61.2% on the same benchmark. Good enough for most text search, and cheap enough to run next to any main model. MIT. |
+| `perplexity-ai/pplx-embed-v2-context-9b-preview` | 9B, preview | Context-aware variant, marked preview. MIT. |
+
+How to run them, and the catches:
+
+- They are **late-interaction (ColBERT-style)** retrievers built on Qwen3.5: one 128-dimensional vector **per token**, compared with MaxSim, not one vector per document. LM Studio's and llama.cpp's embedding endpoints return a single vector, so they **can't serve these**. Use Python instead: `pip install 'sentence-transformers>=6.0.0' 'transformers>=5.4.0'`, then `MultiVectorEncoder("perplexity-ai/pplx-embed-v2-late-9b", device="cuda")` with `encode_query`, `encode_document` and `similarity`. With the ROCm build of PyTorch, `device="cuda"` runs on this box's GPU.
+- The vector store has to support multi-vector documents (a plain cosine-similarity index won't do), and storage grows with document length, since every token keeps its vector.
+- The 9B model shares GPU memory with whatever LM Studio has loaded: with `qwen3-coder-next` at ~72 GiB of the 96 GiB carve-out, check headroom first, or use the 0.6B model.
+
+**Worth a try: Perplexity's Qwen3.8-27B as GGUF with speculative-decoding drafts.** `perplexity-ai/pplx-computer-qwen-3-8-27b-dflash2-gguf-20260826` is a llama.cpp build of Perplexity's own Qwen3.8-27B checkpoint (the "pplx-computer" model; same hybrid architecture as `unsloth/Qwen3.8-27B-GGUF`):
+
+- `qwen38-27b-Q4_K_M.gguf` (16 GB) is the model; `draft/qwen38-27b-mtp-Q8_0.gguf` (3 GB) is a draft from the checkpoint's own multi-token-prediction (MTP) head and **works with stock llama.cpp** (`-md draft/qwen38-27b-mtp-Q8_0.gguf --spec-type draft-mtp`); `draft/Qwen3.8-27B-DFlash2-Q4_K_M.gguf` (1.1 GB) needs an unmerged llama.cpp pull request (#27342). An optional vision tower is included.
+- That is the same speed-up idea as category 3 above, without the fork. LM Studio 0.4.26's `lms load` has a `--speculative-draft-mtp` option; whether it accepts this separate draft file is untested.
+- The repository has no license tag; its sibling `perplexity-ai/pplx-computer-qwen-3-8-27b-dflash2-20260824` says `license: other`. Read the terms before using it for anything beyond personal experiments.
+- It's still a dense 27B: decode speeds up only as far as the draft is right, and prompt reading stays at the 27B's ~197 tokens/s (see [ORCHESTRATION.md — Choosing the Model](./ORCHESTRATION.md#choosing-the-model-reading-the-prompt-is-the-bottleneck)). For Claude Code, `qwen3-coder-next` remains faster.
+
+**Not usable here:**
+
+- `perplexity-ai/pplx-decider-v1.1-27b` and `perplexity-ai/pplx-decider-v1-27b` (Apache 2.0, fine-tuned from `Qwen/Qwen3.8-27B`) are **classifiers, not chat models**: a decision head over 255 candidates instead of a vocabulary output, with noncausal full-attention layers and Perplexity's own inference code. LM Studio and chat servers can't run them as published.
+- `perplexity-ai/pplx-computer-qwen-3-6-35b-a3b-mlx-20260709` and `…-nvfp4-20260709` are MLX (Apple only) and NVFP4 (NVIDIA Blackwell only) builds — see [What Actually Works on Strix Halo](#what-actually-works-on-strix-halo-and-what-doesnt).
+- R1-1776, Perplexity's 2025 retraining of DeepSeek-R1, is no longer on Hugging Face under `perplexity-ai/r1-1776`; at 671B parameters it wouldn't fit anyway.
+- `perplexity-ai/PII-Tracer` (also as `-GGUF`, `-MLX`, `-vLLM`) is a small model that tags personal data in text. Not a chat model, but a possible building block for scrubbing prompts before they're logged.
+
 ## Fine-Tuning with Unsloth
 
 Everything above this point is about *running* models. This box's ROCm setup and 128GB memory budget also make it a legitimately good machine for *training* — and [Unsloth](./RUNTIMES.md#fine-tuning-training--the-one-thing-this-tool-does-that-the-others-cant) is the tool for it, since none of the inference runtimes above (llama.cpp, Ollama, LM Studio, vLLM) can train at all.
@@ -472,6 +505,7 @@ Both are worth knowing exist; neither is where to start if your goal is "get som
 ## Sources
 
 - [lemonade-server.ai — Running LLMs on Linux with FastFlowLM](https://lemonade-server.ai/flm_npu_linux.html) — the Linux NPU install steps, kernel/firmware requirements, and the IOMMU requirement.
+- [Hugging Face — `perplexity-ai` organization](https://huggingface.co/perplexity-ai), the model cards of [`pplx-embed-v2-late-9b`](https://huggingface.co/perplexity-ai/pplx-embed-v2-late-9b), [`pplx-decider-v1.1-27b`](https://huggingface.co/perplexity-ai/pplx-decider-v1.1-27b) and [`pplx-computer-qwen-3-8-27b-dflash2-gguf-20260826`](https://huggingface.co/perplexity-ai/pplx-computer-qwen-3-8-27b-dflash2-gguf-20260826), and Perplexity's blog post [*Multimodal embeddings beyond a single vector*](https://www.perplexity.ai/hub/blog/multimodal-embeddings-beyond-a-single-vector) — the [Perplexity's Open Models](#perplexitys-open-models) section (checked 2026-10-15).
 - [Phoronix — Lemonade 10.0.1 Improves Setup Process for AMD Ryzen AI NPUs on Linux](https://www.phoronix.com/news/Lemonade-10.0.1) and [DeepWiki — lemonade-sdk NPU Support](https://deepwiki.com/lemonade-sdk/lemonade/7.4-npu-support) — Lemonade 10.0's March 2026 Linux NPU milestone and FastFlowLM's multi-instance (LLM + transcription + embeddings) mode.
 - Linux kernel mailing list patches for `accel/amdxdna` carveout memory support — the IOMMU-off-disables-the-NPU behavior and the `iommu=pt` workaround.
 - [BrandedTamarasu-glitch/OllamaAMDNPU](https://github.com/BrandedTamarasu-glitch/OllamaAMDNPU) and [atassis/xdna-engine](https://github.com/atassis/xdna-engine) — the community llama.cpp-fork and from-scratch Rust/MLIR-AIE alternatives mentioned as rougher options.

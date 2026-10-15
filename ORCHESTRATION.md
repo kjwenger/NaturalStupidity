@@ -89,7 +89,7 @@ Don't expect this machine to carry serious agentic reasoning load — the same c
 
 Given the constraints above, this laptop's most useful job in a three-machine fleet usually isn't chat completion at all:
 
-- **An embedding model** for RAG pipelines — small (100M-600M parameter class), fits trivially in 6GB, and frees the other two machines from ever loading an embedding model alongside their main one. Serve it via llama.cpp's `--embedding` flag on `llama-server`, or Ollama's embedding models.
+- **An embedding model** for RAG pipelines — small (100M-600M parameter class), fits trivially in 6GB, and frees the other two machines from ever loading an embedding model alongside their main one. Serve it via llama.cpp's `--embedding` flag on `llama-server`, or Ollama's embedding models. For higher retrieval quality, Perplexity's `perplexity-ai/pplx-embed-v2-late-0.6b` (340M active, MIT) fits too, but it is a multi-vector (ColBERT-style) model that needs `sentence-transformers` rather than an embedding endpoint; its 9B sibling belongs on the Strix Halo. See [STRIX-HALO.md — Perplexity's Open Models](./STRIX-HALO.md#perplexitys-open-models).
 - **Whisper for speech-to-text** — [whisper.cpp](https://github.com/ggml-org/whisper.cpp) (same project family as llama.cpp) runs comfortably on this card with CUDA offload, giving your fleet a dedicated transcription endpoint without tying up either of the other two machines' GPU memory.
 
 Both are legitimate, low-effort ways to make this card pull its weight instead of sitting idle because it can't compete on raw model size.
