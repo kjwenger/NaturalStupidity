@@ -329,11 +329,11 @@ Verified: from outside (mobile network), a valid key gets `200` and only its all
 { "env": {
     "ANTHROPIC_BASE_URL": "https://pornbach.ddns.net:8443/litellm",
     "ANTHROPIC_AUTH_TOKEN": "<key>",
-    "ANTHROPIC_MODEL": "qwen3.8-27b",
-    "ANTHROPIC_DEFAULT_OPUS_MODEL": "qwen3.8-27b",
-    "ANTHROPIC_DEFAULT_SONNET_MODEL": "qwen3.8-27b",
-    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "qwen3.8-27b",
-    "CLAUDE_CODE_SUBAGENT_MODEL": "qwen3.8-27b",
+    "ANTHROPIC_MODEL": "qwen3-coder-next",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "qwen3-coder-next",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "qwen3-coder-next",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "qwen3-coder-next",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "qwen3-coder-next",
     "CLAUDE_CODE_MAX_CONTEXT_TOKENS": "262144" } }
 ```
 
@@ -341,23 +341,59 @@ Verified: from outside (mobile network), a valid key gets `200` and only its all
 claude --settings ~/.claude/litellm-remote-ddns-net.json
 ```
 
+Both files use `qwen3-coder-next`; the next section explains why.
+
 The first version of this file only had the first three lines. A friend using it got this warning at startup:
 
 > "qwen3.8-27b" isn't described by this version's model catalog; … auto-compact keeps this session within 200k tokens (the context window it assumes) …
 
 It's a **warning, not an error**: the session runs, but Claude Code doesn't know the model's context window, so it assumes 200k. The extra lines fix that and one more problem:
 
-- **`CLAUDE_CODE_MAX_CONTEXT_TOKENS`** gives Claude Code the model's real window, as loaded in LM Studio on BosGameM5. This stops the warning and puts auto-compact at the right point. Use `262144` for `qwen3.8-27b`, `131072` for `gpt-oss-20b`, and `140032` for `qwen3.8-9b-distill` (as loaded in LM Studio on the Mac Mini). The last two matter more: those windows are *smaller* than the assumed 200k, so without the setting a long session overflows instead of compacting.
+- **`CLAUDE_CODE_MAX_CONTEXT_TOKENS`** gives Claude Code the model's real window, as loaded in LM Studio on BosGameM5. This stops the warning and puts auto-compact at the right point. Use `262144` for `qwen3-coder-next` and `qwen3.8-27b`, `131072` for `gpt-oss-20b`, and `140032` for `qwen3.8-9b-distill` (as loaded in LM Studio on the Mac Mini). The last two matter more: those windows are *smaller* than the assumed 200k, so without the setting a long session overflows instead of compacting.
 - **`ANTHROPIC_DEFAULT_{OPUS,SONNET,HAIKU}_MODEL` and `CLAUDE_CODE_SUBAGENT_MODEL`** send every request to the router model. Otherwise Claude Code asks for Claude-named models for background work and subagents, and the router turns those down because a guest key only allows its listed models.
 
 `scripts/llm-guest-key.sh add` prints this full block, with the model and window already filled in for the key's first allowed model.
 
 At home, `~/.claude/litellm-settings.json` (alias `claude-local`) keeps using the personal LiteLLM on BosGameM5's `localhost:4000`. Always resume a LiteLLM-backed session **with** its `--settings` file: without it, Claude Code sends the transcript to Anthropic's API, which rejects the empty thinking blocks local models leave behind (`each thinking block must contain thinking`).
 
+### Choosing the Model: Reading the Prompt Is the Bottleneck
+
+For a coding agent on local hardware, the speed that matters is how fast the model **reads**, not how fast it writes. Claude Code sends about 30,700 tokens of instructions and tool definitions before your first message (measured in LM Studio's logs; OpenCode sends about 7,000), and every tool call is a new request that includes the whole conversation so far. Whatever isn't in the prompt cache has to be read again. This matches what Ash ("I do the math") reported in [*Can a local AI replace a $200 coding subscription?*](https://youtu.be/csUpbxXNMgE): one developer's 9-minute job took 66 minutes, about 50 of them spent rereading.
+
+BosGameM5's LM Studio logs for October 2026 showed the same pattern with the dense `qwen3.8-27b`: 262 requests, **133 minutes spent reading prompts**, and 58% of that time came from 24 requests that reread the whole conversation. Prompt reading ran at a median 197 tokens/s, so a cold Claude Code request spent about 2.5 minutes reading before writing anything.
+
+The fix is a mixture-of-experts model, which uses only a fraction of its weights per token. `qwen3-coder-next` (80B total, about 3B active per token, Q6_K, already in the LM Studio library) measured on BosGameM5 on 2026-10-15:
+
+| | `qwen3-coder-next` | `qwen3.8-27b` (dense) |
+|---|---|---|
+| Prompt reading | ~650–720 tokens/s | ~197 tokens/s (median) |
+| Writing | 42–50 tokens/s | ~16 tokens/s |
+| Cold Claude Code request through the public URL | ~30 s | ~2.5 min for the prompt alone |
+| GPU memory at 262144 context | ~72 GiB | ~17 GiB weights + ~16 GiB context |
+
+It's on the JoNAS router as `qwen3-coder-next`, and both remote settings files use it. The 27B is still the better choice for careful reasoning on a hard problem, but for routine agent work, which is most of it, the coder model is three to four times faster.
+
+**Memory per token of context.** Both Qwen models are hybrid: only every fourth layer uses full attention, the rest use a linear-attention (state-space) layer with no growing cache. Read from the GGUF headers, `qwen3.8-27b` needs **64 KiB per token** (16 full-attention layers × 4 KV heads × 256 dimensions × 2 for keys and values × 2 bytes), i.e. 16 GiB at 262144 tokens. `qwen3-coder-next` needs about 24 KiB per token, about 6 GiB at full context.
+
+**They don't fit together.** At full context the two need about 105 GiB, more than the 96 GiB GPU carve-out. Unload one before using the other; a router request for the unloaded one makes LM Studio try to load it on demand, which fails or is refused by its memory guardrails.
+
+**LM Studio settings for `qwen3-coder-next`.** Saved as the model's defaults in `~/.lmstudio/.internal/user-concrete-model-default-config/lmstudio-community/Qwen3-Coder-Next-GGUF/`, so they also apply when LM Studio reloads it on its own (without this, an on-demand reload once came up with an 8192-token context and broke a long session):
+
+- **Context `262144`** (`llm.load.contextLength`).
+- **2 parallel slots** instead of the default 4 (`llm.load.numParallelSessions`, or `lms load --parallel 2`). Slots share the GPU and one context budget. With 4, overlapping requests dropped below 3 tokens/s of prompt reading, and the log showed 43 "failed to find free space in the KV cache" warnings. Two is enough for you plus one friend.
+- **Batch size left at the default 512.** The video's "read in bigger chunks" fix (raising `llm.load.llama.evalBatchSize` and `llm.load.llama.physicalBatchSize` to 2048) brought nothing here: a 28,441-token prompt read at 650 tokens/s against 688 before. It only costs GPU memory, so it was reverted.
+
+**Prompt caching.** LM Studio (llama.cpp) reuses the cached prefix within a conversation, so a follow-up request only reads what's new. Two things still cause full rereads:
+
+- Every new Claude Code session and subagent starts with a different first line (`x-anthropic-billing-header: cc_version=…`, 30 distinct values across 447 logged requests), so it begins with a cold cache.
+- Subagents and background calls on the same model evict the main session's cache. That's the case for sending them to another machine, e.g. the Mac Mini's `qwen3.8-9b-distill` via `CLAUDE_CODE_SUBAGENT_MODEL` (see [Option 2: Asymmetric Task Routing](#option-2-asymmetric-task-routing-via-named-providers)).
+
+**Thinking effort.** At ~45 tokens/s, every 1,000 thinking tokens is about 20 seconds; on the 27B, about a minute. In the video, Simon Willison's pelican test took 21 minutes with full thinking and 2 with thinking off. Keep thinking low for routine work. Whether Claude Code's thinking budget reaches LM Studio through LiteLLM still needs testing.
+
 ### What to Tell a Friend
 
 - **Privacy:** the router on JoNAS keeps who / which model / token counts / when (`turn_off_message_logging: true`) — not prompt or response text. **But LM Studio on BosGameM5 logs full prompts** to `~/.lmstudio/server-logs/` while its server setting `logSensitiveData` is on (the default seen here). Turn that off in LM Studio's server settings if you promise anyone more than "I could read it" — and either way, you control the boxes; say so plainly.
-- **Availability and speed:** it's up when BosGameM5 is, and slow when your own sessions are using the GPU — a long prompt can take minutes to start answering.
+- **Availability and speed:** it's up when BosGameM5 is. With `qwen3-coder-next` a fresh Claude Code session takes about 30 seconds to start answering; when your own sessions are using the GPU, or with the dense 27B, it can take minutes.
 - **Setup:** `OPENAI_API_BASE=https://pornbach.ddns.net:8443/litellm/v1` plus their key, or the complete Claude Code `env` block above (the model-alias and context-window lines included; without them they get the "isn't described by this version's model catalog" warning).
 
 **Never** forward model server ports, give out SSH/desktop accounts, or expose `rpc-server` (no authentication at all). For admin access to LAN-only services from outside, JoNAS's WireGuard (`docs/VPN.md` there) is the right tool, not more port forwards.
@@ -395,6 +431,7 @@ The bundle's model choices (`qwen2.5-72b-instruct` on Strix Halo, `qwen3.8-9b-di
 - [NousResearch/hermes-agent — configuring-models.md](https://github.com/NousResearch/hermes-agent/blob/main/website/docs/user-guide/configuring-models.md) — auxiliary task slot mechanism and `auto` default behavior.
 - [NousResearch/hermes-agent issue #32704 — Capability-Based Multi-Model Routing](https://github.com/NousResearch/hermes-agent/issues/32704) — confirmation that automatic task-aware routing across models is a feature request, not a shipped capability.
 - [deepseek-ai/deepseek-harness — docs/architecture.md](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/architecture.md) and [docs/subsystems/subagent.md](https://github.com/deepseek-ai/deepseek-harness/blob/master/docs/subsystems/subagent.md) — the subagent capability seam, named providers (`spawn`, `fork`, `claude-code`, `codex`), and the `agentOptions` provider/model override mechanism.
+- Ash, "I do the math": [*Can a local AI replace a $200 coding subscription?*](https://youtu.be/csUpbxXNMgE) (YouTube, 2026) — prompt reading as the bottleneck for local coding agents, Claude Code's ~33k-token system prompt, Qwen3-Coder-Next vs. the dense Qwen 27B, thinking effort and caching settings. Cross-checked against BosGameM5's own LM Studio logs and benchmarks in [Choosing the Model](#choosing-the-model-reading-the-prompt-is-the-bottleneck).
 - This repo's own [STRIX-HALO.md](./STRIX-HALO.md), [MAC-MINI-M4.md](./MAC-MINI-M4.md), [CLI.md](./CLI.md), and [PROVIDERS.md](./PROVIDERS.md) — the two-machine patterns, per-harness config schemas, and LiteLLM setup this document extends to three machines rather than restating from scratch.
 - [ss64.com — launchctl](https://ss64.com/mac/launchctl.html) and community `launchctl` references — the modern `bootstrap`/`bootout`/`kickstart` syntax and `system`/`gui/$UID` domain distinction used in [Starting and Supervising the Fleet](#starting-and-supervising-the-fleet).
 - Community reports on ROCm environment variables under systemd (e.g. `HSA_OVERRIDE_GFX_VERSION` needing an explicit unit-file `Environment=` line, not just shell inheritance) — cross-checked against this repo's own [STRIX-HALO.md — Building llama.cpp for gfx1151](./STRIX-HALO.md#building-llamacpp-for-gfx1151), which already calls out the same requirement.
