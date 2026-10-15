@@ -1,0 +1,5 @@
+#!/bin/bash
+# Start Hermes Agent on the LiteLLM router on JoNAS (provider "litellm-remote"
+# in ~/.hermes/config.yaml). The model is always passed explicitly, so a
+# remote session never falls back to the local default model.
+exec hermes --provider litellm-remote -m qwen3-coder-next "$@"

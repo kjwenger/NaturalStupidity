@@ -153,6 +153,8 @@ Every agentic harness in this document sends far more to the LLM per request tha
 
 **The general mitigation, across harnesses:** start with the fewest tools/capabilities your task actually needs, and add more back in only when you hit a wall — rather than running a full "everything enabled" agent for a quick question. Most harnesses with a subagent/custom-agent system (OpenCode, Claude Code, Hermes Agent, Kilo Code, and others in this document) let you define a stripped-down agent for exactly this. See the [Composio benchmark numbers](#claude-cli) already cited throughout this document's per-harness sections — the wide token-usage spread they measured across harnesses on identical tasks (from Pi Agent's leanest runs to Kimi Code's 15.27M tokens across 24 tasks) is the same phenomenon showing up as a real, measured cost difference, not just a theoretical concern.
 
+**Measured on this repo's own setup:** for the same one-line prompt sent through the LiteLLM router to `qwen3-coder-next`, Pi Agent sent 1,657 tokens, DeepSeek Harness 5,972, OpenCode 10,650, Hermes Agent 12,855 and Claude Code about 30,700. See [ORCHESTRATION.md — Using It From Other Harnesses](./ORCHESTRATION.md#using-it-from-other-harnesses) for the table and the configs that produced it.
+
 **One caveat on the numbers above:** they're drawn from one specific measured example (one harness, one model, one point in time) rather than something re-verified against every tool in this document — treat the *pattern* (large fixed per-request overhead, hidden auxiliary calls, caching not solving either) as the generalizable finding, and the exact token counts as illustrative rather than universal.
 
 ## Installing All AI CLI Tools

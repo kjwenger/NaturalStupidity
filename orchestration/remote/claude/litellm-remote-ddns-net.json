@@ -1,0 +1,12 @@
+{
+  "env": {
+    "ANTHROPIC_BASE_URL": "https://pornbach.ddns.net:8443/litellm",
+    "ANTHROPIC_AUTH_TOKEN": "<your key from scripts/llm-guest-key.sh>",
+    "ANTHROPIC_MODEL": "qwen3-coder-next",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "qwen3-coder-next",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "qwen3-coder-next",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "qwen3-coder-next",
+    "CLAUDE_CODE_SUBAGENT_MODEL": "qwen3-coder-next",
+    "CLAUDE_CODE_MAX_CONTEXT_TOKENS": "262144"
+  }
+}

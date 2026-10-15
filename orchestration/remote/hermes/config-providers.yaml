@@ -1,0 +1,14 @@
+providers:
+  # The LiteLLM router on JoNAS (see NaturalStupidity's ORCHESTRATION.md).
+  # The key is read from the Claude Code remote settings file, so only one
+  # copy of it exists. Use via ~/.local/bin/hermes-remote.
+  litellm-remote:
+    name: LiteLLM router on JoNAS
+    api: https://pornbach.ddns.net:8443/litellm/v1
+    transport: chat_completions
+    key_cmd: "jq -r .env.ANTHROPIC_AUTH_TOKEN /home/kjwenger/.claude/litellm-remote-ddns-net.json"
+    default_model: qwen3-coder-next
+    discover_models: false
+    models:
+      qwen3-coder-next:
+        context_length: 262144

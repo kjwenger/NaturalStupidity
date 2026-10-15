@@ -1,0 +1,25 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  // The LiteLLM router on JoNAS (see NaturalStupidity's ORCHESTRATION.md).
+  // The key comes from the environment; ~/.local/bin/opencode-remote sets it
+  // from the Claude Code remote settings file.
+  "provider": {
+    "litellm": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "LiteLLM router on JoNAS",
+      "options": {
+        "baseURL": "https://pornbach.ddns.net:8443/litellm/v1",
+        "apiKey": "{env:LITELLM_REMOTE_API_KEY}"
+      },
+      "models": {
+        "qwen3-coder-next": {
+          "name": "Qwen3-Coder-Next (BosGameM5 via JoNAS)",
+          "tool_call": true,
+          "limit": { "context": 262144, "output": 8192 }
+        }
+      }
+    }
+  },
+  "model": "litellm/qwen3-coder-next",
+  "small_model": "litellm/qwen3-coder-next"
+}

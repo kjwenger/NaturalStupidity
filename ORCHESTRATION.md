@@ -390,6 +390,24 @@ It's on the JoNAS router as `qwen3-coder-next`, and both remote settings files u
 
 **Thinking effort.** At ~45 tokens/s, every 1,000 thinking tokens is about 20 seconds; on the 27B, about a minute. In the video, Simon Willison's pelican test took 21 minutes with full thinking and 2 with thinking off. Keep thinking low for routine work. Whether Claude Code's thinking budget reaches LM Studio through LiteLLM still needs testing.
 
+### Using It From Other Harnesses
+
+The same router serves Pi Agent, Hermes Agent, OpenCode and DeepSeek Harness. The working configurations and launchers are in [`orchestration/remote/`](./orchestration/remote/), with where each file goes and the pitfalls hit while setting them up. None of them contains a key: each reads it from `~/.claude/litellm-remote-ddns-net.json`, so the key is stored in one place only.
+
+| Harness | Start it with | Tokens sent for a one-line prompt | Extra requests |
+|---|---|---|---|
+| Pi Agent | `pi-remote` | **1,657** | none |
+| DeepSeek Harness | `dsh-remote web` or `dsh-remote headless "…"` | 5,972 | one of 122 tokens |
+| OpenCode | `opencode-remote` | 10,650 | a 539-token session-title request first |
+| Hermes Agent | `hermes-remote` | 12,855 | none seen |
+| Claude Code | `claude --settings ~/.claude/litellm-remote-ddns-net.json` | ~30,700 | titles, subagents |
+
+Measured on 2026-10-15 from the router's spend log (`/spend/logs/v2` on JoNAS), each harness sending "Reply with just: pong" to `qwen3-coder-next`. That's the fixed cost of every request a harness makes: its instructions plus its tool definitions. Inside a session the prompt cache absorbs most of it, but every new session and every subagent pays it again (see [Choosing the Model](#choosing-the-model-reading-the-prompt-is-the-bottleneck)). At ~660 tokens/s that's about 2.5 s for Pi against about 46 s for Claude Code before the first word.
+
+Fewer tokens isn't automatically better: Claude Code's large prompt buys more capable tools, and in Composio's benchmark (see [CLI.md](./CLI.md#understanding-token--context-overhead)) Hermes needed the fewest dollars per *successful* task despite its overhead. For routine local work (tests, small fixes, boilerplate) Pi is the fastest start; for long multi-file tasks Claude Code or Hermes.
+
+All launchers pass `qwen3-coder-next` explicitly. Several harnesses' own defaults still name local models (Hermes defaults to `qwen3.8-27b` on local LM Studio), and on BosGameM5 a request that loads a second large model next to `qwen3-coder-next` overfills the 96 GiB of GPU memory: on 2026-10-15 that crashed the whole desktop session, not just LM Studio.
+
 ### What to Tell a Friend
 
 - **Privacy:** the router on JoNAS keeps who / which model / token counts / when (`turn_off_message_logging: true`) — not prompt or response text. **But LM Studio on BosGameM5 logs full prompts** to `~/.lmstudio/server-logs/` while its server setting `logSensitiveData` is on (the default seen here). Turn that off in LM Studio's server settings if you promise anyone more than "I could read it" — and either way, you control the boxes; say so plainly.

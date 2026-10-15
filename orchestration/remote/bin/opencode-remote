@@ -1,0 +1,6 @@
+#!/bin/bash
+# Start OpenCode on the LiteLLM router on JoNAS (provider "litellm" in
+# ~/.config/opencode/opencode.jsonc). The key is taken from the Claude Code
+# remote settings file unless LITELLM_REMOTE_API_KEY is already set.
+export LITELLM_REMOTE_API_KEY="${LITELLM_REMOTE_API_KEY:-$(jq -r .env.ANTHROPIC_AUTH_TOKEN ~/.claude/litellm-remote-ddns-net.json)}"
+exec opencode "$@"

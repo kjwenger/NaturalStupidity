@@ -1,0 +1,7 @@
+#!/bin/bash
+# Start Pi Agent with remote LLM provisions via LiteLLM router
+
+export PI_CODING_AGENT_DIR="$HOME/.pi/agent"
+export LITELLM_REMOTE_API_KEY="${LITELLM_REMOTE_API_KEY:-$(cat ~/.claude/litellm-remote-ddns-net.json 2>/dev/null | grep -o '"ANTHROPIC_AUTH_TOKEN"[[:space:]]*:[[:space:]]*"[^"]*"' | cut -d'"' -f4)}"
+
+exec pi --provider litellm --model qwen3-coder-next "$@"

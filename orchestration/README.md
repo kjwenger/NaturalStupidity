@@ -85,11 +85,25 @@ dsh --profile headless "reply with the word ready"   # smoke test
 Settings → Models in the DSH web UI will show all three routes with a
 "Custom" badge and a green status dot once credentials resolve.
 
+Note: dsh reads `~/.dsh/settings.yaml` only once. On the next start it imports
+it into the profile being started (`~/.dsh/profiles/<profile>/cordis.patch.yml`)
+and renames it `settings.yaml.imported`; other profiles don't get it. Put the
+same patch into each profile you use — see `remote/dsh/cordis.patch.yml` for an
+example in that format.
+
 ## 5. Claude Code
 
-Claude Code expects Anthropic's Messages API shape, not OpenAI's — point it
-at a translation proxy (e.g. an open-source "claude-code-proxy") sitting in
-front of the LiteLLM endpoint, rather than at LiteLLM directly.
+LiteLLM serves Anthropic's Messages API (`/v1/messages`) itself, so Claude
+Code talks to it directly — no translation proxy needed. Use a settings file
+with `ANTHROPIC_BASE_URL` pointing at the router (see
+`remote/claude/litellm-remote-ddns-net.json` and ORCHESTRATION.md's "Using It
+From Claude Code"); use the `lm_studio/` provider prefix in the LiteLLM config,
+not `openai/`, or thinking-enabled requests fail.
+
+## 6. Other harnesses on the remote router
+
+[`remote/`](./remote/) has working configs and launchers for Pi Agent, Hermes
+Agent, OpenCode and DeepSeek Harness against the router on JoNAS.
 
 ## Gotchas worth knowing up front
 - **Context length**: Ollama silently caps context by VRAM tier (as low as

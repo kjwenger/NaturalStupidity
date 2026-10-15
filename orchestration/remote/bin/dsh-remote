@@ -1,0 +1,7 @@
+#!/bin/bash
+# Start DeepSeek Harness on the LiteLLM router on JoNAS (provider "litellm"
+# in ~/.dsh/settings.yaml). The key is taken from the Claude Code remote
+# settings file unless DSH_REMOTE_API_KEY is already set.
+# Usage: dsh-remote web | dsh-remote headless "task"
+export DSH_REMOTE_API_KEY="${DSH_REMOTE_API_KEY:-$(jq -r .env.ANTHROPIC_AUTH_TOKEN ~/.claude/litellm-remote-ddns-net.json)}"
+exec npx -y @deepseek-ai/dsh "$@"
