@@ -13,6 +13,8 @@ Playground for all things Artificial Intelligence
 - [AI IDE Plugins](#ai-ide-plugins)
 - [AI Spec Tools](#ai-spec-tools)
 - [AI-101 Foundations of AI](#ai-101-foundations-of-ai)
+- [Scripts](#scripts)
+- [Config](#config)
 - [Arduino UNO R4 WiFi Firmata](#arduino-uno-r4-wifi-firmata)
 
 ## [Prerequisites](PREREQUISITES.md)
@@ -36,6 +38,14 @@ Playground for all things Artificial Intelligence
 ## [AI-101 Foundations of AI](AI-101/README.md)
 
 A one-semester, university-style AI course: 14 lecture scripts, labs on the local fleet, a sample exam and a bilingual glossary.
+
+## [Scripts](scripts/README.md)
+
+Fleet checks, router keys, firewall, model-folder bridges, and launchers for five agent harnesses on the remote LiteLLM router.
+
+## [Config](config/README.md)
+
+Versioned, key-free settings: harness configs for the remote router, Claude Code settings, LM Studio per-model defaults.
 
 ## [Arduino UNO R4 WiFi Firmata](Arduino/README.md)
 

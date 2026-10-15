@@ -392,7 +392,7 @@ It's on the JoNAS router as `qwen3-coder-next`, and both remote settings files u
 
 ### Using It From Other Harnesses
 
-The same router serves Pi Agent, Hermes Agent, OpenCode and DeepSeek Harness. The working configurations and launchers are in [`orchestration/remote/`](./orchestration/remote/), with where each file goes and the pitfalls hit while setting them up. None of them contains a key: each reads it from `~/.claude/litellm-remote-ddns-net.json`, so the key is stored in one place only.
+The same router serves Pi Agent, Hermes Agent, OpenCode and DeepSeek Harness. The working configurations are in [`config/`](./config/) (with where each file goes, a smoke test and the pitfalls hit while setting them up) and the launchers in [`scripts/`](./scripts/). None of them contains a key: each reads it from `~/.claude/litellm-remote-ddns-net.json`, so the key is stored in one place only.
 
 | Harness | Start it with | Tokens sent for a one-line prompt | Extra requests |
 |---|---|---|---|

@@ -1,0 +1,4 @@
+#!/bin/bash
+# Start Claude Code on the LiteLLM router on JoNAS. The settings file holds the
+# URL, the key and the model (qwen3-coder-next); see config/claude/.
+exec claude --settings "$HOME/.claude/litellm-remote-ddns-net.json" "$@"
